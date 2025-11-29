@@ -1,4 +1,5 @@
 import React from 'react';
+import { format } from 'date-fns';
 
 interface ShiftInfoProps {
   dateTime: Date;
@@ -7,14 +8,15 @@ interface ShiftInfoProps {
 
 const ShiftInfo: React.FC<ShiftInfoProps> = ({ dateTime, shift }) => {
   return (
-    <div className="col-md-6">
-      <div className="mb-3">
-        <label className="form-label">Date</label>
-        <input type="text" className="form-control" value={dateTime.toLocaleDateString()} readOnly />
+    <div className="shift-info-card">
+      <div className="shift-info-header">
+        <span className="info-label">Current Date</span>
+        <span className="info-value date">{format(dateTime, 'EEEE,')}</span>
+        <span className="info-value">{format(dateTime, 'MMM d, yyyy')}</span>
       </div>
-      <div className="mb-3">
-        <label className="form-label">Shift</label>
-        <input type="text" className="form-control" value={shift} readOnly />
+      <div className="shift-info-time">
+        <span className="info-label">Current Time</span>
+        <span className="time-display">{format(dateTime, 'HH:mm:ss')}</span>
       </div>
     </div>
   );

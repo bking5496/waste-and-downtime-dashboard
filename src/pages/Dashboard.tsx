@@ -1,0 +1,552 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
+import { 
+  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip,
+  PieChart, Pie, Cell
+} from 'recharts';
+import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates } from '../lib/storage';
+import { Machine, ShiftData } from '../types';
+import MachineSettingsModal from '../components/MachineSettingsModal';
+import SubMachineModal from '../components/SubMachineModal';
+
+// Animated number component
+const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: string }> = ({ 
+  value, decimals = 0, suffix = '' 
+}) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  useEffect(() => {
+    const duration = 1000;
+    const steps = 30;
+    const increment = value / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= value) {
+        setDisplayValue(value);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(current);
+      }
+    }, duration / steps);
+    
+    return () => clearInterval(timer);
+  }, [value]);
+  
+  return <>{displayValue.toFixed(decimals)}{suffix}</>;
+};
+
+// Pulse animation for live indicator
+const PulseIndicator: React.FC<{ color: string }> = ({ color }) => (
+  <span className="pulse-indicator">
+    <span className="pulse-dot" style={{ backgroundColor: color }}></span>
+    <span className="pulse-ring" style={{ borderColor: color }}></span>
+  </span>
+);
+
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [shift, setShift] = useState('');
+  const [machines, setMachines] = useState<Machine[]>([]);
+  const [todayStats, setTodayStats] = useState({ totalWaste: 0, totalDowntime: 0, submissionCount: 0 });
+  const [recentHistory, setRecentHistory] = useState<ShiftData[]>([]);
+  const [selectedView, setSelectedView] = useState<'grid' | 'list'>('grid');
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedMachineForSub, setSelectedMachineForSub] = useState<Machine | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = useCallback(() => {
+    const machineData = getMachinesData();
+    setMachines(machineData);
+    
+    const stats = getTodayStats();
+    setTodayStats(stats);
+    
+    const history = getShiftHistory().slice(0, 7);
+    setRecentHistory(history);
+  }, []);
+
+  // Initialize machines from Supabase on mount
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        const machineData = await initializeMachines();
+        setMachines(machineData);
+        
+        const stats = getTodayStats();
+        setTodayStats(stats);
+        
+        const history = getShiftHistory().slice(0, 7);
+        setRecentHistory(history);
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        loadData(); // Fallback to localStorage
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    init();
+    
+    // Subscribe to real-time machine updates
+    const unsubscribe = subscribeToMachineUpdates((updatedMachines) => {
+      console.log('Real-time update received:', updatedMachines.length, 'machines');
+      setMachines(updatedMachines);
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  }, [loadData]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    const hours = currentTime.getUTCHours() + 2;
+    setShift(hours >= 6 && hours < 18 ? 'Day' : 'Night');
+
+    return () => clearInterval(timer);
+  }, [currentTime]);
+
+  const handleMachineClick = (machine: Machine) => {
+    if (machine.status === 'maintenance') return;
+    
+    // If machine has sub-machines, show the selection modal
+    if (machine.subMachineCount && machine.subMachineCount > 0) {
+      setSelectedMachineForSub(machine);
+    } else {
+      navigate(`/capture/${machine.id}`, { state: { machineName: machine.name } });
+    }
+  };
+
+  const handleSubMachineSelect = (machine: Machine, subMachineNumber: number) => {
+    const fullName = `${machine.name} - Machine ${subMachineNumber}`;
+    navigate(`/capture/${machine.id}`, { 
+      state: { 
+        machineName: fullName,
+        parentMachine: machine.name,
+        subMachineNumber: subMachineNumber
+      } 
+    });
+    setSelectedMachineForSub(null);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'running': return '#10b981';
+      case 'idle': return '#f59e0b';
+      case 'maintenance': return '#ef4444';
+      default: return '#64748b';
+    }
+  };
+
+  const getStatusGradient = (status: string) => {
+    switch (status) {
+      case 'running': return 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      case 'idle': return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+      case 'maintenance': return 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+      default: return 'linear-gradient(135deg, #64748b 0%, #475569 100%)';
+    }
+  };
+
+  // Calculate efficiency (mock calculation - running / total * 100)
+  const efficiency = useMemo(() => {
+    const running = machines.filter(m => m.status === 'running').length;
+    const total = machines.filter(m => m.status !== 'maintenance').length;
+    return total > 0 ? Math.round((running / total) * 100) : 0;
+  }, [machines]);
+
+  // Chart data
+  const trendData = useMemo(() => {
+    return recentHistory.map((item) => ({
+      name: format(new Date(item.date), 'EEE'),
+      waste: item.totalWaste,
+      downtime: item.totalDowntime / 60, // convert to hours
+    })).reverse();
+  }, [recentHistory]);
+
+  const statusData = useMemo(() => [
+    { name: 'Running', value: machines.filter(m => m.status === 'running').length, color: '#10b981' },
+    { name: 'Idle', value: machines.filter(m => m.status === 'idle').length, color: '#f59e0b' },
+    { name: 'Maintenance', value: machines.filter(m => m.status === 'maintenance').length, color: '#ef4444' },
+  ].filter(d => d.value > 0), [machines]);
+
+  const runningCount = machines.filter(m => m.status === 'running').length;
+  const idleCount = machines.filter(m => m.status === 'idle').length;
+  const maintenanceCount = machines.filter(m => m.status === 'maintenance').length;
+
+  return (
+    <div className="dashboard-v2">
+      {/* Top Navigation Bar */}
+      <header className="top-nav">
+        <div className="nav-brand">
+          <div className="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div className="brand-text">
+            <span className="brand-name">Production Control</span>
+            <span className="brand-subtitle">Waste & Downtime Tracking</span>
+          </div>
+        </div>
+        
+        <div className="nav-center">
+          <div className="live-clock">
+            <PulseIndicator color="#10b981" />
+            <span className="clock-time">{format(currentTime, 'HH:mm:ss')}</span>
+            <span className="clock-date">{format(currentTime, 'dd MMM yyyy')}</span>
+          </div>
+        </div>
+        
+        <div className="nav-actions">
+          <div className={`shift-indicator ${shift.toLowerCase()}`}>
+            <span className="shift-icon">{shift === 'Day' ? '◐' : '◑'}</span>
+            <span className="shift-text">{shift} Shift</span>
+          </div>
+          <button className="nav-btn" onClick={() => navigate('/history')}>
+            History
+          </button>
+          <button className="nav-btn settings-btn" onClick={() => setShowSettings(true)}>
+            <svg className="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+            <span className="settings-text">Settings</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Machine Settings Modal */}
+      <MachineSettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)}
+        onMachinesUpdated={loadData}
+      />
+
+      {/* Sub-Machine Selection Modal */}
+      <SubMachineModal
+        isOpen={!!selectedMachineForSub}
+        machine={selectedMachineForSub}
+        onClose={() => setSelectedMachineForSub(null)}
+        onSelectSubMachine={handleSubMachineSelect}
+      />
+
+      <main className="dashboard-main">
+        {/* Left Panel - Stats */}
+        <aside className="stats-panel">
+          {/* Efficiency Gauge */}
+          <div className="efficiency-card">
+            <div className="efficiency-ring">
+              <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" className="ring-bg" />
+                <circle 
+                  cx="60" cy="60" r="50" 
+                  className="ring-progress"
+                  strokeDasharray={`${efficiency * 3.14} 314`}
+                  style={{ stroke: efficiency > 70 ? '#10b981' : efficiency > 40 ? '#f59e0b' : '#ef4444' }}
+                />
+              </svg>
+              <div className="efficiency-value">
+                <AnimatedNumber value={efficiency} suffix="%" />
+              </div>
+            </div>
+            <span className="efficiency-label">Line Efficiency</span>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="quick-stats">
+            <div className="stat-item running">
+              <div className="stat-indicator"></div>
+              <div className="stat-info">
+                <span className="stat-value">{runningCount}</span>
+                <span className="stat-label">Running</span>
+              </div>
+            </div>
+            <div className="stat-item idle">
+              <div className="stat-indicator"></div>
+              <div className="stat-info">
+                <span className="stat-value">{idleCount}</span>
+                <span className="stat-label">Idle</span>
+              </div>
+            </div>
+            <div className="stat-item maintenance">
+              <div className="stat-indicator"></div>
+              <div className="stat-info">
+                <span className="stat-value">{maintenanceCount}</span>
+                <span className="stat-label">Maintenance</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Metrics */}
+          <div className="metrics-section">
+            <h3 className="section-title">Today's Performance</h3>
+            <div className="metric-block waste">
+              <div className="metric-header">
+                <span className="metric-icon">◆</span>
+                <span>Total Waste</span>
+              </div>
+              <div className="metric-value">
+                <AnimatedNumber value={todayStats.totalWaste} decimals={1} suffix=" kg" />
+              </div>
+              <div className="metric-bar">
+                <div className="bar-fill" style={{ width: `${Math.min(todayStats.totalWaste / 100 * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <div className="metric-block downtime">
+              <div className="metric-header">
+                <span className="metric-icon">◇</span>
+                <span>Total Downtime</span>
+              </div>
+              <div className="metric-value">
+                {Math.floor(todayStats.totalDowntime / 60)}h {todayStats.totalDowntime % 60}m
+              </div>
+              <div className="metric-bar">
+                <div className="bar-fill" style={{ width: `${Math.min(todayStats.totalDowntime / 480 * 100, 100)}%` }}></div>
+              </div>
+            </div>
+            <div className="metric-block entries">
+              <div className="metric-header">
+                <span className="metric-icon">◈</span>
+                <span>Submissions</span>
+              </div>
+              <div className="metric-value">
+                <AnimatedNumber value={todayStats.submissionCount} suffix=" entries" />
+              </div>
+            </div>
+          </div>
+
+          {/* Mini Chart */}
+          {trendData.length > 0 && (
+            <div className="trend-chart">
+              <h3 className="section-title">7-Day Trend</h3>
+              <ResponsiveContainer width="100%" height={120}>
+                <AreaChart data={trendData}>
+                  <defs>
+                    <linearGradient id="wasteGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3}/>
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis hide />
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#1e293b', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Area type="monotone" dataKey="waste" stroke="#ef4444" fill="url(#wasteGradient)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </aside>
+
+        {/* Main Content - Machine Grid */}
+        <section className="machines-section">
+          <div className="section-header">
+            <h2>Production Lines</h2>
+            <div className="view-toggle">
+              <button 
+                className={selectedView === 'grid' ? 'active' : ''} 
+                onClick={() => setSelectedView('grid')}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </button>
+              <button 
+                className={selectedView === 'list' ? 'active' : ''} 
+                onClick={() => setSelectedView('list')}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <rect x="3" y="4" width="18" height="4" rx="1"/>
+                  <rect x="3" y="10" width="18" height="4" rx="1"/>
+                  <rect x="3" y="16" width="18" height="4" rx="1"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {selectedView === 'grid' ? (
+              <motion.div 
+                key="grid"
+                className="machines-grid-v2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {machines.map((machine, index) => (
+                  <motion.div
+                    key={machine.id}
+                    className={`machine-tile ${machine.status} ${machine.status === 'maintenance' ? 'disabled' : ''}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => handleMachineClick(machine)}
+                    whileHover={machine.status !== 'maintenance' ? { scale: 1.02, y: -4 } : {}}
+                    whileTap={machine.status !== 'maintenance' ? { scale: 0.98 } : {}}
+                  >
+                    <div 
+                      className="tile-glow" 
+                      style={{ background: getStatusGradient(machine.status) }}
+                    />
+                    <div className="tile-content">
+                      <div className="tile-header">
+                        <span className="tile-name">{machine.name}</span>
+                        <div className="tile-status">
+                          <PulseIndicator color={getStatusColor(machine.status)} />
+                        </div>
+                      </div>
+                      
+                      <div className="tile-status-text">
+                        {machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
+                        {machine.subMachineCount && machine.subMachineCount > 0 && (
+                          <span className="sub-count-badge">{machine.subMachineCount} units</span>
+                        )}
+                      </div>
+                      
+                      {machine.currentOperator && (
+                        <div className="tile-operator">{machine.currentOperator}</div>
+                      )}
+                      
+                      <div className="tile-footer">
+                        <span className="tile-time">{machine.lastSubmission || 'No entries'}</span>
+                        {machine.status !== 'maintenance' && (
+                          <span className="tile-action">
+                            {machine.subMachineCount && machine.subMachineCount > 0 ? 'Select →' : 'Record →'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="list"
+                className="machines-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {machines.map((machine, index) => (
+                  <motion.div
+                    key={machine.id}
+                    className={`machine-row ${machine.status} ${machine.status === 'maintenance' ? 'disabled' : ''}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    onClick={() => handleMachineClick(machine)}
+                  >
+                    <div className="row-indicator" style={{ background: getStatusGradient(machine.status) }} />
+                    <div className="row-name">{machine.name}</div>
+                    <div className="row-status">
+                      <PulseIndicator color={getStatusColor(machine.status)} />
+                      <span>{machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}</span>
+                    </div>
+                    <div className="row-operator">{machine.currentOperator || '—'}</div>
+                    <div className="row-time">{machine.lastSubmission || 'No entries'}</div>
+                    {machine.status !== 'maintenance' && (
+                      <button className="row-action">Record</button>
+                    )}
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        {/* Right Panel - Status Overview */}
+        <aside className="overview-panel">
+          <div className="status-donut">
+            <h3 className="section-title">Machine Status</h3>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={70}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    background: '#1e293b', 
+                    border: 'none', 
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="donut-legend">
+              {statusData.map((item, index) => (
+                <div key={index} className="legend-item">
+                  <span className="legend-dot" style={{ backgroundColor: item.color }}></span>
+                  <span className="legend-label">{item.name}</span>
+                  <span className="legend-value">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="recent-activity">
+            <h3 className="section-title">Recent Submissions</h3>
+            <div className="activity-list">
+              {recentHistory.slice(0, 5).map((item, index) => (
+                <motion.div 
+                  key={item.id || index}
+                  className="activity-item"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="activity-icon">
+                    <span className="icon-dot"></span>
+                  </div>
+                  <div className="activity-details">
+                    <span className="activity-machine">{item.machine}</span>
+                    <span className="activity-meta">
+                      {item.totalWaste.toFixed(1)}kg waste · {item.totalDowntime}m downtime
+                    </span>
+                  </div>
+                  <div className="activity-time">
+                    {format(new Date(item.submittedAt), 'HH:mm')}
+                  </div>
+                </motion.div>
+              ))}
+              {recentHistory.length === 0 && (
+                <div className="activity-empty">No recent activity</div>
+              )}
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
