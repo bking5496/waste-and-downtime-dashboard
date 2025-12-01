@@ -9,7 +9,7 @@ import DowntimeSection from '../components/DowntimeSection';
 import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
-import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, CasesPerHourEntry, PalletScanEntry, ShiftSession } from '../types';
+import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession } from '../types';
 import { submitShiftData } from '../lib/supabase';
 import { saveShiftData } from '../lib/storage';
 
@@ -48,20 +48,21 @@ const CaptureScreen: React.FC = () => {
   const [wasteEntries, setWasteEntries] = useState<WasteEntry[]>([]);
   const [downtimeEntries, setDowntimeEntries] = useState<DowntimeEntry[]>([]);
 
-  // New states for Machine Speed, Sachet Mass, Cases per Hour, Pallet Scans
+  // New states for Machine Speed, Sachet Mass, Loose Cases, Pallet Scans
   const [speedEntries, setSpeedEntries] = useState<SpeedEntry[]>([]);
   const [sachetMassEntries, setSachetMassEntries] = useState<SachetMassEntry[]>([]);
-  const [casesPerHourEntries, setCasesPerHourEntries] = useState<CasesPerHourEntry[]>([]);
+  const [looseCasesEntries, setLooseCasesEntries] = useState<LooseCasesEntry[]>([]);
   const [palletScanEntries, setPalletScanEntries] = useState<PalletScanEntry[]>([]);
   
   // Modal states for new entries
   const [showSpeedModal, setShowSpeedModal] = useState(false);
   const [showSachetModal, setShowSachetModal] = useState(false);
-  const [showCasesModal, setShowCasesModal] = useState(false);
+  const [showLooseCasesModal, setShowLooseCasesModal] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [speedInput, setSpeedInput] = useState<number | ''>('');
   const [sachetMassInput, setSachetMassInput] = useState<number | ''>('');
-  const [casesInput, setCasesInput] = useState<number | ''>('');
+  const [looseCasesBatchInput, setLooseCasesBatchInput] = useState('');
+  const [looseCasesQuantityInput, setLooseCasesQuantityInput] = useState<number | ''>('');
 
   // Submission window state
   const [isInSubmissionWindow, setIsInSubmissionWindow] = useState(false);
@@ -149,7 +150,7 @@ const CaptureScreen: React.FC = () => {
           if (session.downtimeEntries) setDowntimeEntries(session.downtimeEntries);
           if (session.speedEntries) setSpeedEntries(session.speedEntries);
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
-          if (session.casesPerHourEntries) setCasesPerHourEntries(session.casesPerHourEntries);
+          if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
         }
       } catch (e) {
@@ -182,7 +183,7 @@ const CaptureScreen: React.FC = () => {
       downtimeEntries,
       speedEntries,
       sachetMassEntries,
-      casesPerHourEntries,
+      looseCasesEntries,
       palletScanEntries,
     };
     
@@ -191,7 +192,7 @@ const CaptureScreen: React.FC = () => {
       setIsSessionLocked(true);
       if (showMessage) showToast('Shift details locked for this session', 'success');
     }
-  }, [machineName, operatorName, orderNumber, product, batchNumber, wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, casesPerHourEntries, palletScanEntries, isSessionLocked]);
+  }, [machineName, operatorName, orderNumber, product, batchNumber, wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked]);
 
   useEffect(() => {
     loadSession();
@@ -218,13 +219,13 @@ const CaptureScreen: React.FC = () => {
         downtimeEntries,
         speedEntries,
         sachetMassEntries,
-        casesPerHourEntries,
+        looseCasesEntries,
         palletScanEntries,
       };
       
       localStorage.setItem(sessionKey, JSON.stringify(session));
     }
-  }, [wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, casesPerHourEntries, palletScanEntries, isSessionLocked, machineName, operatorName, orderNumber, product, batchNumber]);
+  }, [wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked, machineName, operatorName, orderNumber, product, batchNumber]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -342,7 +343,7 @@ const CaptureScreen: React.FC = () => {
       downtimeEntries,
       speedEntries,
       sachetMassEntries,
-      casesPerHourEntries,
+      looseCasesEntries,
       palletScanEntries,
       totalWaste,
       totalDowntime,
@@ -371,8 +372,8 @@ const CaptureScreen: React.FC = () => {
         downtimeEntries.map(e => ({ downtime: e.downtime, downtimeReason: e.downtimeReason, timestamp: e.timestamp })),
         speedEntries.map(e => ({ speed: e.speed, timestamp: e.timestamp })),
         sachetMassEntries.map(e => ({ mass: e.mass, timestamp: e.timestamp })),
-        casesPerHourEntries.map(e => ({ cases: e.cases, hour: e.hour, timestamp: e.timestamp })),
-        palletScanEntries.map(e => ({ qrCode: e.qrCode, palletId: e.palletId, timestamp: e.timestamp }))
+        looseCasesEntries.map(e => ({ batchNumber: e.batchNumber, cases: e.cases, timestamp: e.timestamp })),
+        palletScanEntries.map(e => ({ qrCode: e.qrCode, batchNumber: e.batchNumber, palletNumber: e.palletNumber, casesCount: e.casesCount, timestamp: e.timestamp }))
       );
 
       showToast('Shift data submitted successfully', 'success');
@@ -386,7 +387,7 @@ const CaptureScreen: React.FC = () => {
       setDowntimeEntries([]);
       setSpeedEntries([]);
       setSachetMassEntries([]);
-      setCasesPerHourEntries([]);
+      setLooseCasesEntries([]);
       setPalletScanEntries([]);
       
       // Reset changeover state
@@ -417,7 +418,7 @@ const CaptureScreen: React.FC = () => {
     // Only warn if session is NOT locked (entries won't be auto-saved)
     const hasEntries = wasteEntries.length > 0 || downtimeEntries.length > 0 || 
                        speedEntries.length > 0 || sachetMassEntries.length > 0 || 
-                       casesPerHourEntries.length > 0;
+                       looseCasesEntries.length > 0 || palletScanEntries.length > 0;
     
     if (hasEntries && !isSessionLocked) {
       if (window.confirm('You have entries that are not saved to a session. Are you sure you want to go back? Lock your shift details first to save entries.')) {
@@ -470,54 +471,74 @@ const CaptureScreen: React.FC = () => {
     ));
   };
 
-  // Handle Cases Per Hour Entry
-  const handleCasesSubmit = () => {
-    if (casesInput && casesInput > 0) {
-      const currentHour = new Date().getHours();
-      const newEntry: CasesPerHourEntry = {
+  // Handle Loose Cases Entry (cases not part of a full pallet)
+  const handleLooseCasesSubmit = () => {
+    if (looseCasesBatchInput && looseCasesBatchInput.length === 5 && looseCasesQuantityInput && looseCasesQuantityInput > 0) {
+      const newEntry: LooseCasesEntry = {
         id: uuidv4(),
-        cases: Number(casesInput),
-        hour: currentHour,
+        batchNumber: looseCasesBatchInput,
+        cases: Number(looseCasesQuantityInput),
         timestamp: new Date()
       };
-      setCasesPerHourEntries([...casesPerHourEntries, newEntry]);
-      setCasesInput('');
-      setShowCasesModal(false);
-      showToast('Cases per hour recorded', 'success');
+      setLooseCasesEntries([...looseCasesEntries, newEntry]);
+      setLooseCasesBatchInput('');
+      setLooseCasesQuantityInput('');
+      setShowLooseCasesModal(false);
+      showToast('Loose cases recorded', 'success');
+    } else if (looseCasesBatchInput.length !== 5) {
+      showToast('Batch number must be 5 digits', 'error');
     }
   };
 
-  const handleToggleCasesIgnore = (id: string) => {
-    setCasesPerHourEntries(casesPerHourEntries.map(entry => 
+  const handleToggleLooseCasesIgnore = (id: string) => {
+    setLooseCasesEntries(looseCasesEntries.map(entry => 
       entry.id === id ? { ...entry, ignored: !entry.ignored } : entry
     ));
   };
 
+  // Parse 13-digit QR code: BBBBBPPPPCCCC
+  // B = batch (5 digits), P = pallet number (4 digits), C = cases count (4 digits)
+  const parsePalletQRCode = (qrData: string): { batchNumber: string; palletNumber: string; casesCount: number } | null => {
+    // Remove any whitespace
+    const cleaned = qrData.trim();
+    
+    // Check if it's exactly 13 digits
+    if (!/^\d{13}$/.test(cleaned)) {
+      return null;
+    }
+    
+    return {
+      batchNumber: cleaned.substring(0, 5),    // First 5 digits
+      palletNumber: cleaned.substring(5, 9),   // Next 4 digits
+      casesCount: parseInt(cleaned.substring(9, 13), 10) // Last 4 digits
+    };
+  };
+
   // Handle QR Code Pallet Scan
   const handlePalletScan = (qrData: string) => {
-    // Extract pallet ID from QR code (you can customize this parsing)
-    // For now, we use the full QR data as the pallet ID
+    const parsed = parsePalletQRCode(qrData);
+    
+    if (!parsed) {
+      showToast('Invalid QR code format. Expected 13 digits: BBBBBPPPPCCCC', 'error');
+      return;
+    }
+    
     const newEntry: PalletScanEntry = {
       id: uuidv4(),
       qrCode: qrData,
-      palletId: qrData, // Could extract a specific ID format if needed
+      batchNumber: parsed.batchNumber,
+      palletNumber: parsed.palletNumber,
+      casesCount: parsed.casesCount,
       timestamp: new Date()
     };
     setPalletScanEntries([...palletScanEntries, newEntry]);
-    showToast(`Pallet scanned: ${qrData.substring(0, 20)}${qrData.length > 20 ? '...' : ''}`, 'success');
+    showToast(`Pallet ${parsed.palletNumber} scanned (${parsed.casesCount} cases)`, 'success');
   };
 
   const handleTogglePalletIgnore = (id: string) => {
     setPalletScanEntries(palletScanEntries.map(entry => 
       entry.id === id ? { ...entry, ignored: !entry.ignored } : entry
     ));
-  };
-
-  // Format hour for display
-  const formatHour = (hour: number) => {
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const h = hour % 12 || 12;
-    return `${h}:00 ${ampm}`;
   };
 
   // Format timestamp for pallet scans
@@ -702,71 +723,50 @@ const CaptureScreen: React.FC = () => {
             </div>
           </section>
 
-          {/* Cases Per Hour Section */}
-          <section className="form-section capture-section compact-capture">
+          {/* Product Confirmation Section - Pallets and Loose Cases */}
+          <section className="form-section capture-section product-confirmation-section">
             <h2 className="section-heading">
               <span className="section-icon">📦</span>
-              Cases/Hour
-            </h2>
-            <div className="capture-section-content">
-              <button 
-                className="capture-add-btn"
-                onClick={() => setShowCasesModal(true)}
-              >
-                <span className="btn-icon">+</span>
-                Record
-              </button>
-              {casesPerHourEntries.length > 0 && (
-                <div className="capture-entries-list">
-                  {casesPerHourEntries.map(entry => (
-                    <div key={entry.id} className={`capture-entry-item ${entry.ignored ? 'ignored' : ''}`}>
-                      <div className="entry-main">
-                        <span className="entry-value">{entry.cases}</span>
-                        <span className="entry-unit">cases</span>
-                      </div>
-                      <span className="entry-hour">
-                        {formatHour(entry.hour)}
-                      </span>
-                      <button 
-                        className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
-                        onClick={() => handleToggleCasesIgnore(entry.id)}
-                        title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
-                      >
-                        {entry.ignored ? '↩' : '⊘'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Pallet Scanning Section - Product Confirmation */}
-          <section className="form-section capture-section compact-capture pallet-section">
-            <h2 className="section-heading">
-              <span className="section-icon">📷</span>
-              Pallet Scans
-              {palletScanEntries.length > 0 && (
-                <span className="entry-count-badge">{palletScanEntries.filter(e => !e.ignored).length}</span>
+              Product Confirmation
+              {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
+                <span className="entry-count-badge">
+                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
+                   looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)} cases
+                </span>
               )}
             </h2>
-            <div className="capture-section-content">
+            
+            {/* Action Buttons */}
+            <div className="product-action-buttons">
               <button 
                 className="capture-add-btn scan-btn"
                 onClick={() => setShowQRScanner(true)}
               >
                 <span className="btn-icon">📷</span>
-                Scan Pallet QR
+                Scan Pallet
               </button>
-              {palletScanEntries.length > 0 && (
+              <button 
+                className="capture-add-btn loose-cases-btn"
+                onClick={() => setShowLooseCasesModal(true)}
+              >
+                <span className="btn-icon">+</span>
+                Add Loose Cases
+              </button>
+            </div>
+
+            {/* Pallet Scans List */}
+            {palletScanEntries.length > 0 && (
+              <div className="product-entries-section">
+                <h4 className="entries-subheading">Scanned Pallets ({palletScanEntries.filter(e => !e.ignored).length})</h4>
                 <div className="capture-entries-list pallet-list">
                   {palletScanEntries.slice().reverse().map((entry, index) => (
                     <div key={entry.id} className={`capture-entry-item pallet-entry ${entry.ignored ? 'ignored' : ''} ${index === 0 ? 'latest' : ''}`}>
                       <div className="entry-main">
-                        <span className="pallet-number">#{palletScanEntries.length - index}</span>
-                        <span className="entry-value pallet-id" title={entry.qrCode}>
-                          {entry.qrCode.length > 15 ? entry.qrCode.substring(0, 15) + '...' : entry.qrCode}
-                        </span>
+                        <span className="pallet-badge">P{entry.palletNumber}</span>
+                        <div className="pallet-details">
+                          <span className="pallet-batch">Batch: {entry.batchNumber}</span>
+                          <span className="pallet-cases">{entry.casesCount} cases</span>
+                        </div>
                       </div>
                       <span className="entry-time">
                         {formatScanTime(entry.timestamp)}
@@ -781,8 +781,55 @@ const CaptureScreen: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Loose Cases List */}
+            {looseCasesEntries.length > 0 && (
+              <div className="product-entries-section">
+                <h4 className="entries-subheading">Loose Cases ({looseCasesEntries.filter(e => !e.ignored).length})</h4>
+                <div className="capture-entries-list loose-cases-list">
+                  {looseCasesEntries.slice().reverse().map((entry, index) => (
+                    <div key={entry.id} className={`capture-entry-item loose-entry ${entry.ignored ? 'ignored' : ''}`}>
+                      <div className="entry-main">
+                        <span className="loose-badge">LC</span>
+                        <div className="loose-details">
+                          <span className="loose-batch">Batch: {entry.batchNumber}</span>
+                          <span className="loose-cases">{entry.cases} cases</span>
+                        </div>
+                      </div>
+                      <span className="entry-time">
+                        {formatScanTime(entry.timestamp)}
+                      </span>
+                      <button 
+                        className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
+                        onClick={() => handleToggleLooseCasesIgnore(entry.id)}
+                        title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
+                      >
+                        {entry.ignored ? '↩' : '⊘'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Summary */}
+            {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
+              <div className="product-summary">
+                <div className="summary-item">
+                  <span className="summary-label">Total Pallets:</span>
+                  <span className="summary-value">{palletScanEntries.filter(e => !e.ignored).length}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Total Cases:</span>
+                  <span className="summary-value">
+                    {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
+                     looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
+                  </span>
+                </div>
+              </div>
+            )}
           </section>
         </div>
 
@@ -800,13 +847,16 @@ const CaptureScreen: React.FC = () => {
                 <span className="stat-number">{totalDowntime}</span>
                 <span className="stat-unit">min downtime</span>
               </div>
+              <div className="stat-box cases">
+                <span className="stat-number">
+                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
+                   looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
+                </span>
+                <span className="stat-unit">cases</span>
+              </div>
               <div className="stat-box pallets">
                 <span className="stat-number">{palletScanEntries.filter(e => !e.ignored).length}</span>
                 <span className="stat-unit">pallets</span>
-              </div>
-              <div className="stat-box entries">
-                <span className="stat-number">{wasteEntries.length + downtimeEntries.length}</span>
-                <span className="stat-unit">entries</span>
               </div>
             </div>
           </div>
@@ -1072,18 +1122,18 @@ const CaptureScreen: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Cases Per Hour Modal */}
+      {/* Loose Cases Modal */}
       <AnimatePresence>
-        {showCasesModal && (
+        {showLooseCasesModal && (
           <motion.div 
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowCasesModal(false)}
+            onClick={() => setShowLooseCasesModal(false)}
           >
             <motion.div 
-              className="capture-modal"
+              className="capture-modal loose-cases-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -1091,32 +1141,56 @@ const CaptureScreen: React.FC = () => {
             >
               <h3 className="modal-title">
                 <span className="modal-icon">📦</span>
-                Record Cases Produced
+                Add Loose Cases
               </h3>
+              <p className="modal-description">
+                Enter cases that are not part of a full pallet scan
+              </p>
               <div className="modal-form">
-                <label className="modal-label">Cases Produced This Hour ({formatHour(new Date().getHours())})</label>
-                <input
-                  type="number"
-                  className="modal-input"
-                  placeholder="Enter number of cases..."
-                  value={casesInput}
-                  onChange={e => setCasesInput(e.target.value ? Number(e.target.value) : '')}
-                  autoFocus
-                />
+                <div className="form-row">
+                  <label className="modal-label">Batch Number (5 digits)</label>
+                  <input
+                    type="text"
+                    className="modal-input"
+                    placeholder="e.g., 12345"
+                    value={looseCasesBatchInput}
+                    onChange={e => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                      setLooseCasesBatchInput(value);
+                    }}
+                    maxLength={5}
+                    autoFocus
+                  />
+                </div>
+                <div className="form-row">
+                  <label className="modal-label">Number of Cases</label>
+                  <input
+                    type="number"
+                    className="modal-input"
+                    placeholder="Enter quantity..."
+                    value={looseCasesQuantityInput}
+                    onChange={e => setLooseCasesQuantityInput(e.target.value ? Number(e.target.value) : '')}
+                    min={1}
+                  />
+                </div>
               </div>
               <div className="modal-actions">
                 <button 
                   className="modal-btn cancel"
-                  onClick={() => { setShowCasesModal(false); setCasesInput(''); }}
+                  onClick={() => { 
+                    setShowLooseCasesModal(false); 
+                    setLooseCasesBatchInput('');
+                    setLooseCasesQuantityInput('');
+                  }}
                 >
                   Cancel
                 </button>
                 <button 
                   className="modal-btn confirm"
-                  onClick={handleCasesSubmit}
-                  disabled={!casesInput || casesInput <= 0}
+                  onClick={handleLooseCasesSubmit}
+                  disabled={looseCasesBatchInput.length !== 5 || !looseCasesQuantityInput || looseCasesQuantityInput <= 0}
                 >
-                  Confirm
+                  Add Cases
                 </button>
               </div>
             </motion.div>

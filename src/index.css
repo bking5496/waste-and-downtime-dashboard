@@ -6658,7 +6658,257 @@ html {
   color: #8b5cf6;
 }
 
+/* Stats box for cases */
+.stat-box.cases {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.stat-box.cases .stat-number {
+  color: #34d399;
+}
+
+.stat-box.cases .stat-unit {
+  color: #10b981;
+}
+
 /* Entry count badge for pallet section */
 .pallet-section .entry-count-badge {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* ============================================
+   Product Confirmation Section Styles
+   ============================================ */
+
+.product-confirmation-section {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.product-confirmation-section .section-heading {
+  color: #8b5cf6;
+  border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.product-confirmation-section .entry-count-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.product-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.product-action-buttons .capture-add-btn {
+  flex: 1;
+  min-width: 140px;
+}
+
+.product-action-buttons .scan-btn {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.product-action-buttons .scan-btn:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.product-action-buttons .loose-cases-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.product-action-buttons .loose-cases-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.product-entries-section {
+  margin-bottom: 16px;
+}
+
+.entries-subheading {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Pallet entry styles */
+.pallet-badge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 12px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.pallet-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pallet-batch {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.pallet-cases {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Loose cases entry styles */
+.loose-cases-list .capture-entry-item {
+  border-left: 3px solid #10b981;
+}
+
+.loose-entry {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.loose-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 12px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.loose-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loose-batch {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.loose-cases {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Product summary */
+.product-summary {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* Loose Cases Modal */
+.loose-cases-modal .modal-description {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: -8px 0 16px 0;
+  text-align: center;
+}
+
+.loose-cases-modal .form-row {
+  margin-bottom: 16px;
+}
+
+.loose-cases-modal .modal-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.loose-cases-modal .modal-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 18px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.loose-cases-modal .modal-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.loose-cases-modal .modal-btn.confirm {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.loose-cases-modal .modal-btn.confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* iPad responsive adjustments for product confirmation */
+@media (max-width: 768px) {
+  .product-action-buttons {
+    flex-direction: column;
+  }
+  
+  .product-action-buttons .capture-add-btn {
+    width: 100%;
+  }
+  
+  .product-summary {
+    flex-direction: row;
+    padding: 12px;
+  }
+  
+  .summary-value {
+    font-size: 20px;
+  }
 }

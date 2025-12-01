@@ -26,19 +26,32 @@ export interface SachetMassEntry {
   ignored?: boolean; // Can be set to ignore but not deleted
 }
 
+// Loose cases entry - for cases not part of a full pallet
+export interface LooseCasesEntry {
+  id: string;
+  batchNumber: string; // 5-digit batch number
+  cases: number; // number of loose cases
+  timestamp: Date;
+  ignored?: boolean;
+}
+
+// Pallet Scan entry - QR code is 13 digits: BBBBBPPPPCCCC
+// B = batch number (5 digits), P = pallet number (4 digits), C = cases count (4 digits)
+export interface PalletScanEntry {
+  id: string;
+  qrCode: string; // Full 13-digit QR code
+  batchNumber: string; // Extracted: first 5 digits
+  palletNumber: string; // Extracted: digits 6-9 (4 digits)
+  casesCount: number; // Extracted: last 4 digits
+  timestamp: Date;
+  ignored?: boolean;
+}
+
+// Legacy CasesPerHourEntry - kept for backwards compatibility
 export interface CasesPerHourEntry {
   id: string;
   cases: number;
-  hour: number; // hour of the day (0-23)
-  timestamp: Date;
-  ignored?: boolean; // Can be set to ignore but not deleted
-}
-
-// New Pallet Scan entry - replaces manual cases per hour with QR scanning
-export interface PalletScanEntry {
-  id: string;
-  qrCode: string; // The scanned QR code data
-  palletId?: string; // Extracted pallet ID if available
+  hour: number;
   timestamp: Date;
   ignored?: boolean;
 }
@@ -57,7 +70,8 @@ export interface ShiftData {
   downtimeEntries: DowntimeEntry[];
   speedEntries?: SpeedEntry[];
   sachetMassEntries?: SachetMassEntry[];
-  casesPerHourEntries?: CasesPerHourEntry[];
+  casesPerHourEntries?: CasesPerHourEntry[]; // Legacy - kept for backwards compatibility
+  looseCasesEntries?: LooseCasesEntry[]; // New: loose cases with batch number
   palletScanEntries?: PalletScanEntry[];
   submittedAt: Date;
   totalWaste: number;
@@ -78,7 +92,8 @@ export interface ShiftSession {
   downtimeEntries?: DowntimeEntry[];
   speedEntries?: SpeedEntry[];
   sachetMassEntries?: SachetMassEntry[];
-  casesPerHourEntries?: CasesPerHourEntry[];
+  casesPerHourEntries?: CasesPerHourEntry[]; // Legacy
+  looseCasesEntries?: LooseCasesEntry[]; // New
   palletScanEntries?: PalletScanEntry[];
 }
 

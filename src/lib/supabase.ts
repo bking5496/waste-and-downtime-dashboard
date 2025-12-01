@@ -69,11 +69,24 @@ export interface CasesPerHourRecord {
   created_at?: string;
 }
 
+// New: Loose Cases Record (cases not part of a full pallet)
+export interface LooseCasesRecord {
+  id?: number;
+  shift_submission_id: number;
+  batch_number: string;
+  cases_count: number;
+  recorded_at: string;
+  created_at?: string;
+}
+
+// Updated: Pallet Scan Record with parsed QR data
 export interface PalletScanRecord {
   id?: number;
   shift_submission_id: number;
   qr_code: string;
-  pallet_id?: string;
+  batch_number: string;
+  pallet_number: string;
+  cases_count: number;
   recorded_at: string;
   created_at?: string;
 }
@@ -99,8 +112,9 @@ export interface FullShiftSubmission {
   downtimeEntries: { downtime: number; downtimeReason: string; timestamp: Date }[];
   speedEntries?: { speed: number; timestamp: Date }[];
   sachetMassEntries?: { mass: number; timestamp: Date }[];
-  casesPerHourEntries?: { cases: number; hour: number; timestamp: Date }[];
-  palletScanEntries?: { qrCode: string; palletId?: string; timestamp: Date }[];
+  casesPerHourEntries?: { cases: number; hour: number; timestamp: Date }[]; // Legacy
+  looseCasesEntries?: { batchNumber: string; cases: number; timestamp: Date }[];
+  palletScanEntries?: { qrCode: string; batchNumber: string; palletNumber: string; casesCount: number; timestamp: Date }[];
 }
 
 // Database operations
@@ -110,8 +124,8 @@ export const submitShiftData = async (
   downtimeEntries: { downtime: number; downtimeReason: string; timestamp?: Date }[],
   speedEntries?: { speed: number; timestamp: Date }[],
   sachetMassEntries?: { mass: number; timestamp: Date }[],
-  casesPerHourEntries?: { cases: number; hour: number; timestamp: Date }[],
-  palletScanEntries?: { qrCode: string; palletId?: string; timestamp: Date }[]
+  looseCasesEntries?: { batchNumber: string; cases: number; timestamp: Date }[],
+  palletScanEntries?: { qrCode: string; batchNumber: string; palletNumber: string; casesCount: number; timestamp: Date }[]
 ) => {
   // Calculate totals
   const totalWaste = wasteEntries.reduce((sum, e) => sum + e.waste, 0);
@@ -204,21 +218,21 @@ export const submitShiftData = async (
     }
   }
 
-  // Insert cases per hour records
-  if (casesPerHourEntries && casesPerHourEntries.length > 0) {
-    const casesRecords = casesPerHourEntries.map(entry => ({
+  // Insert loose cases records
+  if (looseCasesEntries && looseCasesEntries.length > 0) {
+    const looseCasesRecords = looseCasesEntries.map(entry => ({
       shift_submission_id: shiftId,
+      batch_number: entry.batchNumber,
       cases_count: entry.cases,
-      hour_of_day: entry.hour,
       recorded_at: new Date(entry.timestamp).toISOString(),
     }));
 
-    const { error: casesError } = await supabase
-      .from('cases_per_hour_records')
-      .insert(casesRecords);
+    const { error: looseCasesError } = await supabase
+      .from('loose_cases_records')
+      .insert(looseCasesRecords);
 
-    if (casesError) {
-      console.error('Failed to submit cases per hour records:', casesError.message);
+    if (looseCasesError) {
+      console.error('Failed to submit loose cases records:', looseCasesError.message);
     }
   }
 
@@ -227,7 +241,9 @@ export const submitShiftData = async (
     const palletRecords = palletScanEntries.map(entry => ({
       shift_submission_id: shiftId,
       qr_code: entry.qrCode,
-      pallet_id: entry.palletId || null,
+      batch_number: entry.batchNumber,
+      pallet_number: entry.palletNumber,
+      cases_count: entry.casesCount,
       recorded_at: new Date(entry.timestamp).toISOString(),
     }));
 
