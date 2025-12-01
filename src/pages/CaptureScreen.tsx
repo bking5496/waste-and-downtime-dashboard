@@ -59,6 +59,8 @@ const CaptureScreen: React.FC = () => {
   const [showSachetModal, setShowSachetModal] = useState(false);
   const [showLooseCasesModal, setShowLooseCasesModal] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showWasteModal, setShowWasteModal] = useState(false);
+  const [showDowntimeModal, setShowDowntimeModal] = useState(false);
   const [speedInput, setSpeedInput] = useState<number | ''>('');
   const [sachetMassInput, setSachetMassInput] = useState<number | ''>('');
   const [looseCasesBatchInput, setLooseCasesBatchInput] = useState('');
@@ -245,8 +247,8 @@ const CaptureScreen: React.FC = () => {
     return () => clearInterval(timer);
   }, [dateTime, checkSubmissionWindow]);
 
-  const handleWasteSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  // Handle Waste Entry from Modal
+  const handleWasteSubmit = () => {
     if (waste && wasteType) {
       const newEntry: WasteEntry = {
         id: uuidv4(),
@@ -257,6 +259,7 @@ const CaptureScreen: React.FC = () => {
       setWasteEntries([...wasteEntries, newEntry]);
       setWaste('');
       setWasteType('');
+      setShowWasteModal(false);
       showToast('Waste entry added', 'success');
     }
   };
@@ -271,13 +274,14 @@ const CaptureScreen: React.FC = () => {
     showToast('Entry removed', 'success');
   };
 
-  const handleDowntimeSubmit = (notes?: string) => {
+  // Handle Downtime Entry from Modal
+  const handleDowntimeSubmit = () => {
     if (downtime && downtimeReason) {
       const newEntry: DowntimeEntry = {
         id: uuidv4(),
         downtime: Number(downtime),
         downtimeReason,
-        notes: notes || undefined,
+        notes: undefined,
         timestamp: new Date()
       };
       setDowntimeEntries([...downtimeEntries, newEntry]);
