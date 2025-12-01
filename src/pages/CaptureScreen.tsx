@@ -4,12 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import ShiftInfo from '../components/ShiftInfo';
 import MainForm from '../components/MainForm';
-import WasteSection from '../components/WasteSection';
-import DowntimeSection from '../components/DowntimeSection';
 import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
-import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession } from '../types';
+import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData } from '../lib/supabase';
 import { saveShiftData } from '../lib/storage';
 
@@ -287,6 +285,7 @@ const CaptureScreen: React.FC = () => {
       setDowntimeEntries([...downtimeEntries, newEntry]);
       setDowntime('');
       setDowntimeReason('');
+      setShowDowntimeModal(false);
       showToast('Downtime entry added', 'success');
     }
   };
@@ -669,30 +668,102 @@ const CaptureScreen: React.FC = () => {
             )}
           </section>
 
-          <section className="form-section">
-            <h2 className="section-heading">Record Waste</h2>
-            <WasteSection
-              waste={waste}
-              setWaste={setWaste}
-              wasteType={wasteType}
-              setWasteType={setWasteType}
-              handleWasteSubmit={handleWasteSubmit}
-              wasteEntries={wasteEntries}
-              onDeleteEntry={handleDeleteWasteEntry}
-            />
+          {/* Waste Section - Button Based */}
+          <section className="form-section capture-section compact-capture waste-section">
+            <h2 className="section-heading">
+              <span className="section-icon">🗑️</span>
+              Record Waste
+              {wasteEntries.length > 0 && (
+                <span className="entry-count-badge waste-badge">{wasteEntries.length}</span>
+              )}
+            </h2>
+            <div className="capture-section-content">
+              <button 
+                className="capture-add-btn waste-btn"
+                onClick={() => setShowWasteModal(true)}
+              >
+                <span className="btn-icon">+</span>
+                Record Waste
+              </button>
+              {wasteEntries.length > 0 && (
+                <div className="capture-entries-list">
+                  {wasteEntries.slice().reverse().map((entry, index) => (
+                    <div key={entry.id} className={`capture-entry-item waste-entry ${index === 0 ? 'latest' : ''}`}>
+                      <div className="entry-main">
+                        <span className="entry-value">{entry.waste}</span>
+                        <span className="entry-unit">kg</span>
+                      </div>
+                      <span className="entry-type">{entry.wasteType}</span>
+                      <span className="entry-time">
+                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <button 
+                        className="entry-delete-btn"
+                        onClick={() => handleDeleteWasteEntry(entry.id)}
+                        title="Delete this entry"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {wasteEntries.length > 0 && (
+                <div className="section-total">
+                  <span>Total Waste:</span>
+                  <strong>{wasteEntries.reduce((sum, e) => sum + e.waste, 0).toFixed(1)} kg</strong>
+                </div>
+              )}
+            </div>
           </section>
 
-          <section className="form-section">
-            <h2 className="section-heading">Record Downtime</h2>
-            <DowntimeSection
-              downtime={downtime}
-              setDowntime={setDowntime}
-              downtimeReason={downtimeReason}
-              setDowntimeReason={setDowntimeReason}
-              handleDowntimeSubmit={handleDowntimeSubmit}
-              downtimeEntries={downtimeEntries}
-              onDeleteEntry={handleDeleteDowntimeEntry}
-            />
+          {/* Downtime Section - Button Based */}
+          <section className="form-section capture-section compact-capture downtime-section">
+            <h2 className="section-heading">
+              <span className="section-icon">⏱️</span>
+              Record Downtime
+              {downtimeEntries.length > 0 && (
+                <span className="entry-count-badge downtime-badge">{downtimeEntries.length}</span>
+              )}
+            </h2>
+            <div className="capture-section-content">
+              <button 
+                className="capture-add-btn downtime-btn"
+                onClick={() => setShowDowntimeModal(true)}
+              >
+                <span className="btn-icon">+</span>
+                Record Downtime
+              </button>
+              {downtimeEntries.length > 0 && (
+                <div className="capture-entries-list">
+                  {downtimeEntries.slice().reverse().map((entry, index) => (
+                    <div key={entry.id} className={`capture-entry-item downtime-entry ${index === 0 ? 'latest' : ''}`}>
+                      <div className="entry-main">
+                        <span className="entry-value">{entry.downtime}</span>
+                        <span className="entry-unit">min</span>
+                      </div>
+                      <span className="entry-reason">{entry.downtimeReason}</span>
+                      <span className="entry-time">
+                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <button 
+                        className="entry-delete-btn"
+                        onClick={() => handleDeleteDowntimeEntry(entry.id)}
+                        title="Delete this entry"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {downtimeEntries.length > 0 && (
+                <div className="section-total">
+                  <span>Total Downtime:</span>
+                  <strong>{Math.floor(downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) / 60)}h {downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) % 60}m</strong>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Sachet Mass Section */}
@@ -1126,6 +1197,149 @@ const CaptureScreen: React.FC = () => {
                   disabled={!sachetMassInput || sachetMassInput <= 0}
                 >
                   Confirm
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Waste Modal */}
+      <AnimatePresence>
+        {showWasteModal && (
+          <motion.div 
+            className="capture-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowWasteModal(false)}
+          >
+            <motion.div 
+              className="capture-modal waste-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="modal-title">
+                <span className="modal-icon">🗑️</span>
+                Record Waste
+              </h3>
+              <div className="modal-form">
+                <div className="form-row">
+                  <label className="modal-label">Waste Type</label>
+                  <select
+                    className="modal-select"
+                    value={wasteType}
+                    onChange={e => setWasteType(e.target.value)}
+                  >
+                    <option value="">Select waste type...</option>
+                    {WASTE_TYPES.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-row">
+                  <label className="modal-label">Weight (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="modal-input"
+                    placeholder="Enter weight in kg..."
+                    value={waste}
+                    onChange={e => setWaste(e.target.value ? Number(e.target.value) : '')}
+                    min={0}
+                  />
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button 
+                  className="modal-btn cancel"
+                  onClick={() => { 
+                    setShowWasteModal(false); 
+                    setWaste('');
+                    setWasteType('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="modal-btn confirm waste-confirm"
+                  onClick={handleWasteSubmit}
+                  disabled={!waste || waste <= 0 || !wasteType}
+                >
+                  Add Waste Entry
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Downtime Modal */}
+      <AnimatePresence>
+        {showDowntimeModal && (
+          <motion.div 
+            className="capture-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDowntimeModal(false)}
+          >
+            <motion.div 
+              className="capture-modal downtime-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="modal-title">
+                <span className="modal-icon">⏱️</span>
+                Record Downtime
+              </h3>
+              <div className="modal-form">
+                <div className="form-row">
+                  <label className="modal-label">Downtime Reason</label>
+                  <select
+                    className="modal-select"
+                    value={downtimeReason}
+                    onChange={e => setDowntimeReason(e.target.value)}
+                  >
+                    <option value="">Select reason...</option>
+                    {DOWNTIME_REASONS.map(reason => (
+                      <option key={reason} value={reason}>{reason}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-row">
+                  <label className="modal-label">Duration (minutes)</label>
+                  <input
+                    type="number"
+                    className="modal-input"
+                    placeholder="Enter minutes..."
+                    value={downtime}
+                    onChange={e => setDowntime(e.target.value ? Number(e.target.value) : '')}
+                    min={1}
+                  />
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button 
+                  className="modal-btn cancel"
+                  onClick={() => { 
+                    setShowDowntimeModal(false); 
+                    setDowntime('');
+                    setDowntimeReason('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="modal-btn confirm downtime-confirm"
+                  onClick={handleDowntimeSubmit}
+                  disabled={!downtime || downtime <= 0 || !downtimeReason}
+                >
+                  Add Downtime Entry
                 </button>
               </div>
             </motion.div>
