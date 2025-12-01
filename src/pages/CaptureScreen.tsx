@@ -523,6 +523,13 @@ const CaptureScreen: React.FC = () => {
       return;
     }
     
+    // Check for duplicate pallet scan (same QR code already scanned)
+    const isDuplicate = palletScanEntries.some(entry => entry.qrCode === qrData);
+    if (isDuplicate) {
+      showToast(`Pallet ${parsed.palletNumber} has already been scanned!`, 'error');
+      return;
+    }
+    
     const newEntry: PalletScanEntry = {
       id: uuidv4(),
       qrCode: qrData,
