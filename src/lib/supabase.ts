@@ -1,11 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Replace these with your actual Supabase project credentials
-// You can find these in your Supabase project settings > API
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://inmrzpmuzwcltionxzcl.supabase.co';
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlubXJ6cG11endjbHRpb254emNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMDcwOTgsImV4cCI6MjA3OTY4MzA5OH0._h4OM9Xblj-N3A9F_jMcUfLrASE6VCGvBfnN04ZhiNI';
+// Supabase project credentials must be provided via environment variables.
+// CRA only exposes env vars prefixed with REACT_APP_ and they are baked into the build.
+// IMPORTANT: The anon key is a *public* client key; the real protection is Row Level Security (RLS).
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use placeholders so importing this module doesn't crash in tests/dev when env vars are missing.
+export const supabase = createClient(
+  isSupabaseConfigured ? supabaseUrl! : 'http://localhost:54321',
+  isSupabaseConfigured ? supabaseAnonKey! : 'public-anon-key'
+);
+
+const requireSupabaseConfigured = () => {
+  if (!isSupabaseConfigured) {
+    throw new Error(
+      'Supabase is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY (for CRA builds) before calling Supabase operations.'
+    );
+  }
+};
 
 // Database types
 export interface ShiftSubmission {
@@ -127,6 +141,7 @@ export const submitShiftData = async (
   looseCasesEntries?: { batchNumber: string; cases: number; timestamp: Date }[],
   palletScanEntries?: { qrCode: string; batchNumber: string; palletNumber: string; casesCount: number; timestamp: Date }[]
 ) => {
+  requireSupabaseConfigured();
   // Calculate totals
   const totalWaste = wasteEntries.reduce((sum, e) => sum + e.waste, 0);
   const totalDowntime = downtimeEntries.reduce((sum, e) => sum + e.downtime, 0);
@@ -261,6 +276,7 @@ export const submitShiftData = async (
 
 // Fetch recent submissions
 export const getRecentSubmissions = async (limit = 10) => {
+  requireSupabaseConfigured();
   const { data, error } = await supabase
     .from('shift_submissions')
     .select(`
@@ -297,6 +313,7 @@ export interface MachineRecord {
 
 // Fetch all machines from Supabase
 export const fetchMachines = async (): Promise<MachineRecord[]> => {
+  requireSupabaseConfigured();
   const { data, error } = await supabase
     .from('machines')
     .select('*')
@@ -312,6 +329,7 @@ export const fetchMachines = async (): Promise<MachineRecord[]> => {
 
 // Upsert a machine (insert or update)
 export const upsertMachine = async (machine: MachineRecord): Promise<MachineRecord | null> => {
+  requireSupabaseConfigured();
   const { data, error } = await supabase
     .from('machines')
     .upsert({
@@ -338,6 +356,7 @@ export const upsertMachine = async (machine: MachineRecord): Promise<MachineReco
 
 // Delete a machine from Supabase
 export const removeMachine = async (machineId: string): Promise<boolean> => {
+  requireSupabaseConfigured();
   const { error } = await supabase
     .from('machines')
     .delete()
@@ -353,6 +372,7 @@ export const removeMachine = async (machineId: string): Promise<boolean> => {
 
 // Sync local machines to Supabase (bulk upsert)
 export const syncMachinesToSupabase = async (machines: MachineRecord[]): Promise<boolean> => {
+  requireSupabaseConfigured();
   const { error } = await supabase
     .from('machines')
     .upsert(
@@ -380,6 +400,7 @@ export const syncMachinesToSupabase = async (machines: MachineRecord[]): Promise
 
 // Subscribe to real-time machine updates
 export const subscribeMachineChanges = (callback: (machines: MachineRecord[]) => void) => {
+  requireSupabaseConfigured();
   const channel = supabase
     .channel('machines-changes')
     .on(
