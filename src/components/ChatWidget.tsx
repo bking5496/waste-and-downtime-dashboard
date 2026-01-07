@@ -154,8 +154,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
 
   const handleSend = async () => {
     try {
+      if (!isSupabaseConfigured) {
+        setError('Chat is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY and redeploy.');
+        return;
+      }
+
       setError(null);
-      await sendChatMessage(userName, draft);
+      const sent = await sendChatMessage(userName, draft);
+
+      // Optimistic UI: show the message immediately for the sender.
+      // This also covers cases where Realtime is not enabled (subscription won't fire).
+      setMessages((prev) => {
+        if (sent.id && prev.some((m) => m.id === sent.id)) return prev;
+        return [...prev, sent];
+      });
+
       setDraft('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send message.');
