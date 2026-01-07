@@ -469,6 +469,13 @@ export const sendChatMessage = async (userName: string, content: string): Promis
     throw new Error(`Failed to send chat message: ${error.message}`);
   }
 
+  // Let other UI update immediately (useful if Realtime is not enabled).
+  try {
+    window.dispatchEvent(new CustomEvent('chat_message_sent', { detail: data }));
+  } catch {
+    // no-op
+  }
+
   return data;
 };
 

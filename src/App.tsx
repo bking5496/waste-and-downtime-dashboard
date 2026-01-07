@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import CaptureScreen from './pages/CaptureScreen';
 import HistoryPage from './pages/HistoryPage';
 import ChatWidget from './components/ChatWidget';
+import LatestMessageBar from './components/LatestMessageBar';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       </AnimatePresence>
 
       <ChatWidget />
+      <LatestMessageBar />
     </Router>
   );
 }

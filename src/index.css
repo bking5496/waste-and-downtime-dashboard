@@ -7139,8 +7139,43 @@ html {
 .chat-widget {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: 68px;
   z-index: 1000;
+}
+
+/* ==========================================
+   Latest Message Bar (system-wide)
+   ========================================== */
+
+.latest-message-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-background);
+}
+
+.latest-message-label {
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+}
+
+.latest-message-text {
+  flex: 1;
+  color: var(--text-primary);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-toggle {
