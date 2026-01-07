@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 // IMPORTANT: The anon key is a *public* client key; the real protection is Row Level Security (RLS).
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
-const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 // Use placeholders so importing this module doesn't crash in tests/dev when env vars are missing.
 export const supabase = createClient(
@@ -13,7 +13,7 @@ export const supabase = createClient(
   isSupabaseConfigured ? supabaseAnonKey! : 'public-anon-key'
 );
 
-const requireSupabaseConfigured = () => {
+export const requireSupabaseConfigured = () => {
   if (!isSupabaseConfigured) {
     throw new Error(
       'Supabase is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY (for CRA builds) before calling Supabase operations.'
@@ -117,6 +117,17 @@ export interface ShiftSessionRecord {
   is_locked: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+// ==========================================
+// CHAT
+// ==========================================
+
+export interface ChatMessageRecord {
+  id?: number;
+  user_name: string;
+  content: string;
+  created_at?: string;
 }
 
 // Enhanced shift data submission with all new fields
@@ -410,6 +421,68 @@ export const subscribeMachineChanges = (callback: (machines: MachineRecord[]) =>
         // Fetch all machines when any change occurs
         const machines = await fetchMachines();
         callback(machines);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+};
+
+export const fetchRecentChatMessages = async (limit = 100): Promise<ChatMessageRecord[]> => {
+  requireSupabaseConfigured();
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to fetch chat messages: ${error.message}`);
+  }
+
+  // Reverse so UI can render oldest -> newest.
+  return (data || []).slice().reverse();
+};
+
+export const sendChatMessage = async (userName: string, content: string): Promise<ChatMessageRecord> => {
+  requireSupabaseConfigured();
+
+  const trimmedName = userName.trim();
+  const trimmedContent = content.trim();
+
+  if (!trimmedName) {
+    throw new Error('User name is required to send a chat message.');
+  }
+  if (!trimmedContent) {
+    throw new Error('Message cannot be empty.');
+  }
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert([{ user_name: trimmedName, content: trimmedContent }])
+    .select('*')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to send chat message: ${error.message}`);
+  }
+
+  return data;
+};
+
+export const subscribeChatMessages = (onInsert: (message: ChatMessageRecord) => void) => {
+  requireSupabaseConfigured();
+
+  const channel = supabase
+    .channel('chat-messages')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+      (payload) => {
+        const message = payload.new as ChatMessageRecord;
+        onInsert(message);
       }
     )
     .subscribe();

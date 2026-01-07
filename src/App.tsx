@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import Dashboard from './pages/Dashboard';
 import CaptureScreen from './pages/CaptureScreen';
 import HistoryPage from './pages/HistoryPage';
+import ChatWidget from './components/ChatWidget';
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
           <Route path="/history" element={<HistoryPage />} />
         </Routes>
       </AnimatePresence>
+
+      <ChatWidget />
     </Router>
   );
 }
