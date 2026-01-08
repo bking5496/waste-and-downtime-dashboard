@@ -10,6 +10,7 @@ type ChatMessageSentEvent = CustomEvent<ChatMessageRecord>;
 
 type LatestMessageBarProps = {
   label?: string;
+  onBarClick?: () => void;
 };
 
 const formatTime = (iso?: string) => {
@@ -19,8 +20,9 @@ const formatTime = (iso?: string) => {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const LatestMessageBar: React.FC<LatestMessageBarProps> = ({ label = 'Latest' }) => {
+const LatestMessageBar: React.FC<LatestMessageBarProps> = ({ label = 'Latest', onBarClick }) => {
   const [latest, setLatest] = useState<ChatMessageRecord | null>(null);
+  const [isNew, setIsNew] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,13 +42,20 @@ const LatestMessageBar: React.FC<LatestMessageBarProps> = ({ label = 'Latest' })
 
     const unsubscribe = isSupabaseConfigured
       ? subscribeChatMessages((message) => {
-          setLatest(message);
-        })
-      : () => {};
+        setLatest(message);
+        // Trigger animation for new message
+        setIsNew(true);
+        setTimeout(() => setIsNew(false), 500);
+      })
+      : () => { };
 
     const onLocalSend = (e: Event) => {
       const ev = e as ChatMessageSentEvent;
-      if (ev?.detail) setLatest(ev.detail);
+      if (ev?.detail) {
+        setLatest(ev.detail);
+        setIsNew(true);
+        setTimeout(() => setIsNew(false), 500);
+      }
     };
 
     window.addEventListener('chat_message_sent', onLocalSend);
@@ -64,12 +73,37 @@ const LatestMessageBar: React.FC<LatestMessageBarProps> = ({ label = 'Latest' })
     return `${latest.user_name}${t ? ` (${t})` : ''}: ${latest.content}`;
   }, [latest]);
 
+  const handleClick = () => {
+    if (onBarClick) {
+      onBarClick();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
-    <div className="latest-message-bar" role="status" aria-label="Latest chat message">
+    <div
+      className={`latest-message-bar ${isNew ? 'pulse' : ''}`}
+      role="status"
+      aria-label="Latest chat message"
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={onBarClick ? 0 : -1}
+      style={{ cursor: onBarClick ? 'pointer' : 'default' }}
+    >
+      <div className="latest-message-icon">💬</div>
       <div className="latest-message-label">{label}:</div>
       <div className="latest-message-text" title={text}>
         {text}
       </div>
+      {onBarClick && (
+        <div className="latest-message-action">Open Chat →</div>
+      )}
     </div>
   );
 };

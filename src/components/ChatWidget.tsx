@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   ChatMessageRecord,
   fetchRecentChatMessages,
@@ -14,6 +14,8 @@ type ChatWidgetProps = {
 
 const STORAGE_KEY = 'chat_user_name';
 const CLIENT_ID_KEY = 'chat_client_id';
+const MAX_MESSAGE_LENGTH = 500;
+const RATE_LIMIT_MS = 2000; // 2 seconds between messages
 
 const formatTime = (iso?: string) => {
   if (!iso) return '';
@@ -29,9 +31,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
   const [userName, setUserName] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [lastSentTime, setLastSentTime] = useState(0);
+  const [rateLimitWarning, setRateLimitWarning] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const presenceChannelRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Resolve a kiosk-friendly name: operatorName from form > localStorage > empty
   useEffect(() => {
@@ -152,15 +158,46 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [isOpen, messages]);
 
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Check rate limit
+  const canSend = useCallback(() => {
+    const now = Date.now();
+    const timeSinceLastSend = now - lastSentTime;
+    return timeSinceLastSend >= RATE_LIMIT_MS;
+  }, [lastSentTime]);
+
   const handleSend = async () => {
+    // Check rate limit
+    if (!canSend()) {
+      setRateLimitWarning(true);
+      setTimeout(() => setRateLimitWarning(false), 2000);
+      return;
+    }
+
     try {
       if (!isSupabaseConfigured) {
         setError('Chat is not configured. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY and redeploy.');
         return;
       }
 
+      const trimmedDraft = draft.trim();
+      if (!trimmedDraft) return;
+      if (trimmedDraft.length > MAX_MESSAGE_LENGTH) {
+        setError(`Message too long. Max ${MAX_MESSAGE_LENGTH} characters.`);
+        return;
+      }
+
       setError(null);
-      const sent = await sendChatMessage(userName, draft);
+      setIsSending(true);
+      setLastSentTime(Date.now());
+
+      const sent = await sendChatMessage(userName, trimmedDraft);
 
       // Optimistic UI: show the message immediately for the sender.
       // This also covers cases where Realtime is not enabled (subscription won't fire).
@@ -172,8 +209,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
       setDraft('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send message.');
+    } finally {
+      setIsSending(false);
     }
   };
+
+  const handleDraftChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow typing but enforce max length
+    if (value.length <= MAX_MESSAGE_LENGTH) {
+      setDraft(value);
+    }
+  };
+
+  const charsRemaining = MAX_MESSAGE_LENGTH - draft.length;
+  const showCharWarning = charsRemaining <= 50;
 
   return (
     <div className="chat-widget">
@@ -184,16 +234,19 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
         aria-expanded={isOpen}
         aria-label="Open chat"
       >
-        Chat{unreadCount ? ' •' : ''}
+        💬 Chat{unreadCount ? ' •' : ''}
       </button>
 
       {isOpen && (
         <div className="chat-panel" role="dialog" aria-label="Chat">
           <div className="chat-header">
             <div className="chat-title">Team Chat</div>
-            <div className="chat-online">Online: {onlineUsers.length}</div>
-            <button type="button" className="chat-close" onClick={() => setIsOpen(false)}>
-              Close
+            <div className="chat-online">
+              <span className="online-dot"></span>
+              {onlineUsers.length} online
+            </div>
+            <button type="button" className="chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
+              ✕
             </button>
           </div>
 
@@ -207,17 +260,23 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
 
           <div className="chat-name-row">
             <label className="chat-name-label">
-              Name
+              Your Name
               <input
                 className="chat-name-input"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="Operator"
+                placeholder="Enter your name"
+                maxLength={50}
               />
             </label>
           </div>
 
           <div className="chat-messages" aria-live="polite">
+            {messages.length === 0 && (
+              <div className="chat-empty-state">
+                No messages yet. Start the conversation!
+              </div>
+            )}
             {messages.map((m) => (
               <div key={m.id ?? `${m.user_name}-${m.created_at}-${m.content}`} className="chat-message">
                 <div className="chat-message-meta">
@@ -230,23 +289,44 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {error && <div className="chat-error">{error}</div>}
+          {error && <div className="chat-error" role="alert">{error}</div>}
+          {rateLimitWarning && (
+            <div className="chat-rate-limit" role="alert">
+              Please wait before sending another message.
+            </div>
+          )}
 
           <div className="chat-compose">
-            <input
-              className="chat-compose-input"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Type a message…"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-            />
-            <button type="button" className="chat-send" onClick={handleSend}>
-              Send
+            <div className="chat-compose-wrapper">
+              <input
+                ref={inputRef}
+                className="chat-compose-input"
+                value={draft}
+                onChange={handleDraftChange}
+                placeholder="Type a message…"
+                maxLength={MAX_MESSAGE_LENGTH}
+                disabled={isSending}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+              />
+              {draft.length > 0 && (
+                <span className={`chat-char-count ${showCharWarning ? 'warning' : ''}`}>
+                  {charsRemaining}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="chat-send"
+              onClick={handleSend}
+              disabled={isSending || !draft.trim() || !userName.trim()}
+              aria-label="Send message"
+            >
+              {isSending ? '...' : 'Send'}
             </button>
           </div>
         </div>
