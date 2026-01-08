@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,13 +23,19 @@ const MultiCaptureScreen: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Get machine names from navigation state
-    const machineNames = (location.state as { machineNames?: string[] })?.machineNames || [];
+    // Get machine names from navigation state - memoized to prevent re-renders
+    const machineNames = useMemo(() =>
+        (location.state as { machineNames?: string[] })?.machineNames || [],
+        [location.state]
+    );
     const parentGroup = (location.state as { parentGroup?: string })?.parentGroup || '';
     const isMultiMachine = (location.state as { isMultiMachine?: boolean })?.isMultiMachine || false;
 
     // Extract machine numbers for display (e.g., "1, 2" from "Canline - Machine 1, Canline - Machine 2")
-    const machineNumbers = machineNames.map(name => name.split(' - Machine ')[1] || '?').join(', ');
+    const machineNumbers = useMemo(() =>
+        machineNames.map(name => name.split(' - Machine ')[1] || '?').join(', '),
+        [machineNames]
+    );
 
     // Redirect if no machines selected
     useEffect(() => {
