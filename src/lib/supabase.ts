@@ -502,3 +502,116 @@ export const subscribeChatMessages = (onInsert: (message: ChatMessageRecord) => 
     supabase.removeChannel(channel);
   };
 };
+
+// ==========================================
+// ORDER DETAILS (Admin Console)
+// ==========================================
+
+export interface OrderDetailsRecord {
+  id?: number;
+  order_number: string;
+  product: string;
+  batch_number: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Fetch the currently active order details
+export const fetchActiveOrderDetails = async (): Promise<OrderDetailsRecord | null> => {
+  if (!isSupabaseConfigured) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from('order_details')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      // No active order found is not an error
+      if (error.code === 'PGRST116') return null;
+      console.error('Error fetching order details:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (e) {
+    console.error('Failed to fetch order details:', e);
+    return null;
+  }
+};
+
+// Save new order details (deactivates previous active order)
+export const saveOrderDetails = async (
+  orderNumber: string,
+  product: string,
+  batchNumber: string
+): Promise<OrderDetailsRecord | null> => {
+  requireSupabaseConfigured();
+
+  try {
+    // Deactivate all currently active orders
+    await supabase
+      .from('order_details')
+      .update({ is_active: false })
+      .eq('is_active', true);
+
+    // Insert new active order
+    const { data, error } = await supabase
+      .from('order_details')
+      .insert([{
+        order_number: orderNumber.trim(),
+        product: product.trim(),
+        batch_number: batchNumber.trim(),
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (e) {
+    console.error('Failed to save order details:', e);
+    throw e;
+  }
+};
+
+// Clear active order details
+export const clearActiveOrderDetails = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured) return false;
+
+  try {
+    const { error } = await supabase
+      .from('order_details')
+      .update({ is_active: false })
+      .eq('is_active', true);
+
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Failed to clear order details:', e);
+    return false;
+  }
+};
+
+// Fetch recent order details history
+export const fetchOrderHistory = async (limit = 10): Promise<OrderDetailsRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('order_details')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Failed to fetch order history:', e);
+    return [];
+  }
+};
