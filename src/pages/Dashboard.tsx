@@ -58,6 +58,31 @@ const Dashboard: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedMachineForSub, setSelectedMachineForSub] = useState<Machine | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
+  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const LONG_PRESS_DURATION = 500; // ms
+
+  // Helper function to detect active sub-machine sessions from localStorage
+  const getActiveSubMachines = useCallback((machineName: string, subMachineCount: number): Set<number> => {
+    const activeSet = new Set<number>();
+    const today = new Date().toISOString().split('T')[0];
+    const hours = new Date().getUTCHours() + 2;
+    const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+
+    for (let i = 1; i <= subMachineCount; i++) {
+      const fullName = `${machineName} - Machine ${i}`;
+      const sessionKey = `shift_session_${fullName}_${currentShift}_${today}`;
+      const session = localStorage.getItem(sessionKey);
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          if (parsed.locked) activeSet.add(i);
+        } catch { }
+      }
+    }
+    return activeSet;
+  }, []);
 
   const loadData = useCallback(() => {
     const machineData = getMachinesData();
@@ -128,15 +153,61 @@ const Dashboard: React.FC = () => {
 
   const handleSubMachineSelect = (machine: Machine, subMachineNumber: number) => {
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
-    navigate(`/capture/${machine.id}`, {
-      state: {
-        machineName: fullName,
-        parentMachine: machine.name,
-        subMachineNumber: subMachineNumber
-      }
-    });
+
+    if (multiSelectMode) {
+      // Toggle selection
+      setSelectedMachines(prev =>
+        prev.includes(fullName)
+          ? prev.filter(m => m !== fullName)
+          : [...prev, fullName]
+      );
+    } else {
+      // Direct navigation
+      navigate(`/capture/${machine.id}`, {
+        state: {
+          machineName: fullName,
+          parentMachine: machine.name,
+          subMachineNumber: subMachineNumber
+        }
+      });
+    }
     setSelectedMachineForSub(null);
   };
+
+  const handleStartMultiCapture = () => {
+    if (selectedMachines.length === 0) return;
+
+    navigate(`/capture/multi`, {
+      state: {
+        machineNames: selectedMachines,
+        isMultiMachine: true
+      }
+    });
+  };
+
+  // Long-press handlers for entering multi-select mode
+  const handleLongPressStart = (machine: Machine, subMachineNumber: number) => {
+    const fullName = `${machine.name} - Machine ${subMachineNumber}`;
+
+    longPressTimerRef.current = setTimeout(() => {
+      // Enter multi-select mode and select this machine
+      setMultiSelectMode(true);
+      setSelectedMachines([fullName]);
+    }, LONG_PRESS_DURATION);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const cancelMultiSelect = () => {
+    setMultiSelectMode(false);
+    setSelectedMachines([]);
+  };
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -354,31 +425,47 @@ const Dashboard: React.FC = () => {
         </aside>
 
         {/* Main Content - Machine Grid */}
-        <section className="machines-section">
+        <section className={`machines-section ${multiSelectMode ? 'multi-select-mode' : ''}`}>
           <div className="section-header">
-            <h2>Production Lines</h2>
-            <div className="view-toggle">
-              <button
-                className={selectedView === 'grid' ? 'active' : ''}
-                onClick={() => setSelectedView('grid')}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <rect x="3" y="3" width="7" height="7" rx="1" />
-                  <rect x="14" y="3" width="7" height="7" rx="1" />
-                  <rect x="3" y="14" width="7" height="7" rx="1" />
-                  <rect x="14" y="14" width="7" height="7" rx="1" />
-                </svg>
-              </button>
-              <button
-                className={selectedView === 'list' ? 'active' : ''}
-                onClick={() => setSelectedView('list')}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <rect x="3" y="4" width="18" height="4" rx="1" />
-                  <rect x="3" y="10" width="18" height="4" rx="1" />
-                  <rect x="3" y="16" width="18" height="4" rx="1" />
-                </svg>
-              </button>
+            <h2>
+              Production Lines
+              {multiSelectMode && <span className="multi-select-hint"> — Hold to select machines</span>}
+            </h2>
+            <div className="header-actions">
+              {multiSelectMode && (
+                <button
+                  className="cancel-select-btn"
+                  onClick={cancelMultiSelect}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                  Cancel
+                </button>
+              )}
+              <div className="view-toggle">
+                <button
+                  className={selectedView === 'grid' ? 'active' : ''}
+                  onClick={() => setSelectedView('grid')}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                </button>
+                <button
+                  className={selectedView === 'list' ? 'active' : ''}
+                  onClick={() => setSelectedView('list')}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <rect x="3" y="4" width="18" height="4" rx="1" />
+                    <rect x="3" y="10" width="18" height="4" rx="1" />
+                    <rect x="3" y="16" width="18" height="4" rx="1" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -394,6 +481,9 @@ const Dashboard: React.FC = () => {
                 {machines.map((machine, index) => {
                   const isInUse = !!machine.currentOperator;
                   const displayStatus = isInUse ? 'in-use' : machine.status;
+                  const activeSubMachines = machine.subMachineCount && machine.subMachineCount > 0
+                    ? getActiveSubMachines(machine.name, machine.subMachineCount)
+                    : new Set<number>();
 
                   return (
                     <motion.div
@@ -421,7 +511,11 @@ const Dashboard: React.FC = () => {
                         <div className="tile-status-text">
                           {isInUse ? 'In Use' : machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
                           {machine.subMachineCount && machine.subMachineCount > 0 && (
-                            <span className="sub-count-badge">{machine.subMachineCount} units</span>
+                            <span className="sub-count-badge">
+                              {activeSubMachines.size > 0
+                                ? `${activeSubMachines.size}/${machine.subMachineCount} active`
+                                : `${machine.subMachineCount} units`}
+                            </span>
                           )}
                         </div>
 
@@ -432,20 +526,34 @@ const Dashboard: React.FC = () => {
                         {/* Inline sub-machine selection */}
                         {machine.subMachineCount && machine.subMachineCount > 0 && machine.status !== 'maintenance' ? (
                           <div className="sub-machine-inline-grid">
-                            {Array.from({ length: machine.subMachineCount }, (_, i) => i + 1).map(num => (
-                              <motion.button
-                                key={num}
-                                className="sub-machine-inline-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSubMachineSelect(machine, num);
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                {num}
-                              </motion.button>
-                            ))}
+                            {Array.from({ length: machine.subMachineCount }, (_, i) => i + 1).map(num => {
+                              const fullName = `${machine.name} - Machine ${num}`;
+                              const isActive = activeSubMachines.has(num);
+                              const isSelected = selectedMachines.includes(fullName);
+
+                              return (
+                                <motion.button
+                                  key={num}
+                                  className={`sub-machine-inline-btn ${isActive ? 'busy' : ''} ${isSelected ? 'selected' : ''}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSubMachineSelect(machine, num);
+                                  }}
+                                  onMouseDown={() => handleLongPressStart(machine, num)}
+                                  onMouseUp={handleLongPressEnd}
+                                  onMouseLeave={handleLongPressEnd}
+                                  onTouchStart={() => handleLongPressStart(machine, num)}
+                                  onTouchEnd={handleLongPressEnd}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  title={isActive ? 'In Use' : (multiSelectMode ? 'Tap to select' : 'Hold to multi-select')}
+                                >
+                                  {num}
+                                  {isActive && <span className="status-dot busy" />}
+                                  {isSelected && <span className="check-mark">✓</span>}
+                                </motion.button>
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="tile-footer">
@@ -490,6 +598,40 @@ const Dashboard: React.FC = () => {
                     )}
                   </motion.div>
                 ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Multi-Select Floating Action Bar */}
+          <AnimatePresence>
+            {multiSelectMode && selectedMachines.length > 0 && (
+              <motion.div
+                className="multi-select-bar"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 50 }}
+              >
+                <div className="selection-info">
+                  <span className="selection-count">{selectedMachines.length}</span>
+                  <span className="selection-label">machine{selectedMachines.length > 1 ? 's' : ''} selected</span>
+                </div>
+                <div className="selection-list">
+                  {selectedMachines.slice(0, 3).map(name => (
+                    <span key={name} className="selection-chip">{name.split(' - ')[1] || name}</span>
+                  ))}
+                  {selectedMachines.length > 3 && (
+                    <span className="selection-chip more">+{selectedMachines.length - 3} more</span>
+                  )}
+                </div>
+                <button
+                  className="start-capture-btn"
+                  onClick={handleStartMultiCapture}
+                >
+                  Start Recording
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
