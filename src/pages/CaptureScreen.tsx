@@ -76,7 +76,7 @@ const CaptureScreen: React.FC = () => {
 
   // Submission window state
   const [isInSubmissionWindow, setIsInSubmissionWindow] = useState(false);
-  const [timeToWindow, setTimeToWindow] = useState('');
+  const [, setTimeToWindow] = useState(''); // Time display for submission window
 
   // Changeover dialog state (shown when submitting outside window)
   const [showChangeoverDialog, setShowChangeoverDialog] = useState(false);
@@ -489,10 +489,13 @@ const CaptureScreen: React.FC = () => {
     }
   };
 
-  const handleDeleteSpeedEntry = (id: string) => {
+  // Speed entry deletion (available for future UI enhancement)
+  const _handleDeleteSpeedEntry = (id: string) => {
     setSpeedEntries(speedEntries.filter(entry => entry.id !== id));
     showToast('Speed entry removed', 'success');
   };
+  // Suppress unused variable warning
+  void _handleDeleteSpeedEntry;
 
   // Handle Sachet Mass Entry
   const handleSachetMassSubmit = () => {
@@ -551,10 +554,17 @@ const CaptureScreen: React.FC = () => {
       return null;
     }
 
+    const casesCount = parseInt(cleaned.substring(9, 13), 10);
+
+    // Extra safety check for NaN (shouldn't happen given regex validation)
+    if (Number.isNaN(casesCount)) {
+      return null;
+    }
+
     return {
       batchNumber: cleaned.substring(0, 5),    // First 5 digits
       palletNumber: cleaned.substring(5, 9),   // Next 4 digits
-      casesCount: parseInt(cleaned.substring(9, 13), 10) // Last 4 digits
+      casesCount
     };
   };
 

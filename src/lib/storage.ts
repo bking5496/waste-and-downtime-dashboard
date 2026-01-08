@@ -313,6 +313,8 @@ export const exportToCSV = (data: ShiftData[], filename: string): void => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  // Clean up the object URL to prevent memory leak
+  URL.revokeObjectURL(url);
 };
 
 // Clear all history (for testing)

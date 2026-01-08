@@ -57,11 +57,20 @@ const Dashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'grid' | 'list'>('grid');
   const [showSettings, setShowSettings] = useState(false);
   const [selectedMachineForSub, setSelectedMachineForSub] = useState<Machine | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true); // Used only for setting, UI shows content after load
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const LONG_PRESS_DURATION = 500; // ms
+
+  // Cleanup long-press timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
 
   // Helper function to detect active sub-machine sessions from localStorage
   const getActiveSubMachines = useCallback((machineName: string, subMachineCount: number): Set<number> => {
@@ -78,7 +87,10 @@ const Dashboard: React.FC = () => {
         try {
           const parsed = JSON.parse(session);
           if (parsed.locked) activeSet.add(i);
-        } catch { }
+        } catch (e) {
+          // Invalid JSON in localStorage - ignore this session
+          console.warn(`Invalid session data for ${fullName}:`, e);
+        }
       }
     }
     return activeSet;
@@ -129,16 +141,22 @@ const Dashboard: React.FC = () => {
     };
   }, [loadData]);
 
+  // Update time every second - no dependencies to avoid infinite recreation
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      const now = new Date();
+      setCurrentTime(now);
+      // Update shift based on current time
+      const hours = now.getUTCHours() + 2;
+      setShift(hours >= 6 && hours < 18 ? 'Day' : 'Night');
     }, 1000);
 
-    const hours = currentTime.getUTCHours() + 2;
-    setShift(hours >= 6 && hours < 18 ? 'Day' : 'Night');
+    // Set initial shift
+    const initialHours = new Date().getUTCHours() + 2;
+    setShift(initialHours >= 6 && initialHours < 18 ? 'Day' : 'Night');
 
     return () => clearInterval(timer);
-  }, [currentTime]);
+  }, []);
 
   const handleMachineClick = (machine: Machine) => {
     if (machine.status === 'maintenance') return;

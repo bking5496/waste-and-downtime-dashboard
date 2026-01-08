@@ -8570,3 +8570,101 @@ body {
   background: rgba(239, 68, 68, 0.3);
   color: #f87171;
 }
+
+/* Error Boundary Styles */
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  padding: 24px;
+}
+
+.error-boundary-content {
+  max-width: 480px;
+  text-align: center;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 16px;
+  padding: 48px 32px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-boundary .error-icon {
+  color: #ef4444;
+  margin-bottom: 24px;
+}
+
+.error-boundary h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 12px 0;
+}
+
+.error-boundary .error-message {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+}
+
+.error-boundary .error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.error-boundary .error-btn {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.error-boundary .error-btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.error-boundary .error-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+}
+
+.error-boundary .error-btn.secondary {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.error-boundary .error-btn.secondary:hover {
+  background: rgba(100, 116, 139, 0.3);
+  color: #f1f5f9;
+}
+
+.error-boundary .error-details {
+  margin-top: 32px;
+  text-align: left;
+}
+
+.error-boundary .error-details summary {
+  cursor: pointer;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.error-boundary .error-details pre {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 11px;
+  color: #94a3b8;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+}

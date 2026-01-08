@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,39 @@ import { ShiftData } from '../types';
 import { getShiftHistory, exportToCSV } from '../lib/storage';
 import { getRecentSubmissions } from '../lib/supabase';
 
+// Type definitions for Supabase response
+interface WasteRecordResponse {
+  id: number;
+  waste_amount: number;
+  waste_type: string;
+  recorded_at?: string;
+  created_at?: string;
+}
+
+interface DowntimeRecordResponse {
+  id: number;
+  downtime_minutes: number;
+  downtime_reason: string;
+  recorded_at?: string;
+  created_at?: string;
+}
+
+interface SubmissionResponse {
+  id: number;
+  operator_name: string;
+  machine: string;
+  order_number: string;
+  product: string;
+  batch_number: string;
+  shift: string;
+  submission_date: string;
+  total_waste?: number;
+  total_downtime?: number;
+  created_at: string;
+  waste_records?: WasteRecordResponse[];
+  downtime_records?: DowntimeRecordResponse[];
+}
+
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<ShiftData[]>([]);
@@ -25,50 +58,48 @@ const HistoryPage: React.FC = () => {
   const [dataSource, setDataSource] = useState<'local' | 'database'>('database');
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange, dataSource]);
+  // Transform Supabase submission to ShiftData
+  const transformSubmission = useCallback((sub: SubmissionResponse): ShiftData => ({
+    id: sub.id.toString(),
+    operatorName: sub.operator_name,
+    machine: sub.machine,
+    orderNumber: sub.order_number,
+    product: sub.product,
+    batchNumber: sub.batch_number,
+    shift: sub.shift,
+    date: sub.submission_date,
+    wasteEntries: (sub.waste_records || []).map((w: WasteRecordResponse) => ({
+      id: w.id.toString(),
+      waste: w.waste_amount,
+      wasteType: w.waste_type,
+      timestamp: new Date(w.recorded_at || w.created_at || Date.now()),
+    })),
+    downtimeEntries: (sub.downtime_records || []).map((d: DowntimeRecordResponse) => ({
+      id: d.id.toString(),
+      downtime: d.downtime_minutes,
+      downtimeReason: d.downtime_reason,
+      timestamp: new Date(d.recorded_at || d.created_at || Date.now()),
+    })),
+    totalWaste: sub.total_waste || 0,
+    totalDowntime: sub.total_downtime || 0,
+    submittedAt: new Date(sub.created_at),
+  }), []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
-    
+
     try {
       let history: ShiftData[] = [];
-      
+
       if (dataSource === 'database') {
         // Fetch from Supabase
-        const submissions = await getRecentSubmissions(100);
-        history = submissions.map((sub: any) => ({
-          id: sub.id.toString(),
-          operatorName: sub.operator_name,
-          machine: sub.machine,
-          orderNumber: sub.order_number,
-          product: sub.product,
-          batchNumber: sub.batch_number,
-          shift: sub.shift,
-          date: sub.submission_date,
-          wasteEntries: (sub.waste_records || []).map((w: any) => ({
-            id: w.id.toString(),
-            waste: w.waste_amount,
-            wasteType: w.waste_type,
-            timestamp: new Date(w.recorded_at || w.created_at),
-          })),
-          downtimeEntries: (sub.downtime_records || []).map((d: any) => ({
-            id: d.id.toString(),
-            downtime: d.downtime_minutes,
-            downtimeReason: d.downtime_reason,
-            timestamp: new Date(d.recorded_at || d.created_at),
-          })),
-          totalWaste: sub.total_waste || 0,
-          totalDowntime: sub.total_downtime || 0,
-          submittedAt: new Date(sub.created_at),
-        }));
+        const submissions = await getRecentSubmissions(100) as SubmissionResponse[];
+        history = submissions.map(transformSubmission);
       } else {
         // Fetch from localStorage
         history = getShiftHistory();
       }
-      
+
       const now = new Date();
       switch (dateRange) {
         case 'today':
@@ -88,7 +119,7 @@ const HistoryPage: React.FC = () => {
           history = history.filter(item => new Date(item.submittedAt) >= monthAgo);
           break;
       }
-      
+
       setData(history);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -99,7 +130,11 @@ const HistoryPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dataSource, dateRange, transformSubmission]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const columns = useMemo<ColumnDef<ShiftData>[]>(() => [
     {

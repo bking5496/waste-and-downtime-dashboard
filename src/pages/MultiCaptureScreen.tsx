@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import ShiftInfo from '../components/ShiftInfo';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, ShiftSession, OPERATORS, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
+import { WasteEntry, DowntimeEntry, ShiftData, ShiftSession, OPERATORS, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData } from '../lib/supabase';
 import { saveShiftData } from '../lib/storage';
 

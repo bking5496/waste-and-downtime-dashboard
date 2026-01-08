@@ -11,25 +11,52 @@ interface QRScannerProps {
 
 const QRScanner: React.FC<QRScannerProps> = ({ isOpen, onClose, onScan, recentScans = [] }) => {
   const [error, setError] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [, setIsScanning] = useState(false); // Tracks scanning state for future UI enhancements
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isOpenRef = useRef(isOpen);
 
+  // Keep ref in sync with prop
   useEffect(() => {
-    if (isOpen && containerRef.current) {
-      startScanner();
-    }
-    
-    return () => {
-      stopScanner();
-    };
+    isOpenRef.current = isOpen;
   }, [isOpen]);
 
-  const startScanner = async () => {
+  // Initialize scanner when modal opens
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      // Delay to ensure DOM is ready
+      const timeoutId = setTimeout(() => {
+        startScannerInternal();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+    return () => {
+      stopScannerInternal();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const stopScannerInternal = async () => {
     if (scannerRef.current) {
-      await stopScanner();
+      try {
+        const state = scannerRef.current.getState();
+        if (state === Html5QrcodeScannerState.SCANNING) {
+          await scannerRef.current.stop();
+        }
+        scannerRef.current.clear();
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
+      }
+      scannerRef.current = null;
+    }
+    setIsScanning(false);
+  };
+
+  const startScannerInternal = async () => {
+    if (scannerRef.current) {
+      await stopScannerInternal();
     }
 
     try {
@@ -67,22 +94,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ isOpen, onClose, onScan, recentSc
     }
   };
 
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        const state = scannerRef.current.getState();
-        if (state === Html5QrcodeScannerState.SCANNING) {
-          await scannerRef.current.stop();
-        }
-        scannerRef.current.clear();
-      } catch (err) {
-        console.error('Error stopping scanner:', err);
-      }
-      scannerRef.current = null;
-    }
-    setIsScanning(false);
-  };
-
   const handleSuccessfulScan = async (qrData: string) => {
     // Prevent duplicate scans (same QR within 3 seconds)
     if (lastScanned === qrData) {
@@ -105,7 +116,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ isOpen, onClose, onScan, recentSc
     }
 
     // Stop scanning briefly to show success
-    await stopScanner();
+    await stopScannerInternal();
     
     // Call the parent callback
     onScan(qrData);
@@ -115,13 +126,13 @@ const QRScanner: React.FC<QRScannerProps> = ({ isOpen, onClose, onScan, recentSc
       setShowSuccess(false);
       setLastScanned(null);
       if (isOpen) {
-        startScanner();
+        startScannerInternal();
       }
     }, 1500);
   };
 
   const handleClose = () => {
-    stopScanner();
+    stopScannerInternal();
     onClose();
   };
 

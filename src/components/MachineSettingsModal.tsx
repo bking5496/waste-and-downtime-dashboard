@@ -17,13 +17,13 @@ const MachineSettingsModal: React.FC<MachineSettingsModalProps> = ({
 }) => {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [editingMachine, setEditingMachine] = useState<Machine | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [, setIsAddingNew] = useState(false); // Used in setIsAddingNew(false) after add
   const [newMachineName, setNewMachineName] = useState('');
   const [newMachineStatus, setNewMachineStatus] = useState<Machine['status']>('idle');
   const [newMachineSubCount, setNewMachineSubCount] = useState<number>(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [activeTab, setActiveTab] = useState<'machines' | 'add'>('machines');
-  const [isSaving, setIsSaving] = useState(false);
+  const [, setIsSaving] = useState(false); // Used for loading state
 
   useEffect(() => {
     if (isOpen) {
