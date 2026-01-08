@@ -12,7 +12,7 @@ import { submitShiftData } from '../lib/supabase';
 import { saveShiftData } from '../lib/storage';
 
 // Storage key for shift session
-const getSessionKey = (machineName: string, shift: string, date: string) => 
+const getSessionKey = (machineName: string, shift: string, date: string) =>
   `shift_session_${machineName}_${shift}_${date}`;
 
 const CaptureScreen: React.FC = () => {
@@ -20,6 +20,16 @@ const CaptureScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const machineName = (location.state as { machineName?: string })?.machineName || machineId || '';
+
+  // Track current machine for chat widget location context
+  useEffect(() => {
+    if (machineName) {
+      localStorage.setItem('chat_current_machine', machineName);
+    }
+    return () => {
+      localStorage.removeItem('chat_current_machine');
+    };
+  }, [machineName]);
 
   const [dateTime, setDateTime] = useState(new Date());
   const [shift, setShift] = useState('');
@@ -51,7 +61,7 @@ const CaptureScreen: React.FC = () => {
   const [sachetMassEntries, setSachetMassEntries] = useState<SachetMassEntry[]>([]);
   const [looseCasesEntries, setLooseCasesEntries] = useState<LooseCasesEntry[]>([]);
   const [palletScanEntries, setPalletScanEntries] = useState<PalletScanEntry[]>([]);
-  
+
   // Modal states for new entries
   const [showSpeedModal, setShowSpeedModal] = useState(false);
   const [showSachetModal, setShowSachetModal] = useState(false);
@@ -84,20 +94,20 @@ const CaptureScreen: React.FC = () => {
     const hours = currentDateTime.getUTCHours() + 2; // GMT+2
     const minutes = currentDateTime.getMinutes();
     const totalMinutes = hours * 60 + minutes;
-    
+
     // Day shift ends at 18:00 (1080 min), Night shift ends at 06:00 (360 min)
     const dayShiftEnd = 18 * 60; // 1080
     const nightShiftEnd = 6 * 60; // 360
-    
+
     // Check if within 15 minutes of shift end
     const dayWindowStart = dayShiftEnd - 15;
     const dayWindowEnd = dayShiftEnd + 15;
     const nightWindowStart = nightShiftEnd - 15;
     const nightWindowEnd = nightShiftEnd + 15;
-    
+
     let inWindow = false;
     let minutesToWindow = 0;
-    
+
     if (totalMinutes >= dayWindowStart && totalMinutes <= dayWindowEnd) {
       inWindow = true;
     } else if (totalMinutes >= nightWindowStart && totalMinutes <= nightWindowEnd) {
@@ -115,9 +125,9 @@ const CaptureScreen: React.FC = () => {
         minutesToWindow = (24 * 60 - 15) - totalMinutes;
       }
     }
-    
+
     setIsInSubmissionWindow(inWindow);
-    
+
     if (!inWindow && minutesToWindow > 0) {
       const hoursTo = Math.floor(minutesToWindow / 60);
       const minsTo = minutesToWindow % 60;
@@ -133,7 +143,7 @@ const CaptureScreen: React.FC = () => {
     const hours = new Date().getUTCHours() + 2;
     const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
-    
+
     const savedSession = localStorage.getItem(sessionKey);
     if (savedSession) {
       try {
@@ -144,7 +154,7 @@ const CaptureScreen: React.FC = () => {
           setProduct(session.product);
           setBatchNumber(session.batchNumber);
           setIsSessionLocked(true);
-          
+
           // Restore entry arrays
           if (session.wasteEntries) setWasteEntries(session.wasteEntries);
           if (session.downtimeEntries) setDowntimeEntries(session.downtimeEntries);
@@ -162,13 +172,13 @@ const CaptureScreen: React.FC = () => {
   // Save session data
   const saveSession = useCallback((showMessage = true) => {
     if (!operatorName || !orderNumber || !product || !batchNumber) return;
-    
+
     const currentDate = new Date().toISOString().split('T')[0];
     // Calculate shift consistently (don't rely on state which may not be set yet)
     const hours = new Date().getUTCHours() + 2;
     const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
-    
+
     const session: ShiftSession = {
       machineName,
       operatorName,
@@ -186,7 +196,7 @@ const CaptureScreen: React.FC = () => {
       looseCasesEntries,
       palletScanEntries,
     };
-    
+
     localStorage.setItem(sessionKey, JSON.stringify(session));
     if (!isSessionLocked) {
       setIsSessionLocked(true);
@@ -205,7 +215,7 @@ const CaptureScreen: React.FC = () => {
       const hours = new Date().getUTCHours() + 2;
       const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
       const sessionKey = getSessionKey(machineName, currentShift, currentDate);
-      
+
       const session: ShiftSession = {
         machineName,
         operatorName,
@@ -222,7 +232,7 @@ const CaptureScreen: React.FC = () => {
         looseCasesEntries,
         palletScanEntries,
       };
-      
+
       localStorage.setItem(sessionKey, JSON.stringify(session));
     }
   }, [wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked, machineName, operatorName, orderNumber, product, batchNumber]);
@@ -292,7 +302,7 @@ const CaptureScreen: React.FC = () => {
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    
+
     // Validation
     if (!operatorName || !orderNumber || !product || !batchNumber) {
       showToast('Please fill in all shift details', 'error');
@@ -380,11 +390,11 @@ const CaptureScreen: React.FC = () => {
       );
 
       showToast('Shift data submitted successfully', 'success');
-      
+
       // Reset form for new submission
       // Unlock shift details
       setIsSessionLocked(false);
-      
+
       // Clear all entries
       setWasteEntries([]);
       setDowntimeEntries([]);
@@ -392,19 +402,19 @@ const CaptureScreen: React.FC = () => {
       setSachetMassEntries([]);
       setLooseCasesEntries([]);
       setPalletScanEntries([]);
-      
+
       // Reset changeover state
       setWillChangeover(null);
       setWillMaintenance(false);
-      
+
       // Clear session storage so new details can be entered
       sessionStorage.removeItem(`session_${machineId}`);
-      
+
       // Keep operator name but clear order-specific fields for new order
       setOrderNumber('');
       setProduct('');
       setBatchNumber('');
-      
+
     } catch (error) {
       console.error('Submission error:', error);
       // Still saved locally, show partial success
@@ -419,10 +429,10 @@ const CaptureScreen: React.FC = () => {
 
   const handleBack = () => {
     // Only warn if session is NOT locked (entries won't be auto-saved)
-    const hasEntries = wasteEntries.length > 0 || downtimeEntries.length > 0 || 
-                       speedEntries.length > 0 || sachetMassEntries.length > 0 || 
-                       looseCasesEntries.length > 0 || palletScanEntries.length > 0;
-    
+    const hasEntries = wasteEntries.length > 0 || downtimeEntries.length > 0 ||
+      speedEntries.length > 0 || sachetMassEntries.length > 0 ||
+      looseCasesEntries.length > 0 || palletScanEntries.length > 0;
+
     if (hasEntries && !isSessionLocked) {
       if (window.confirm('You have entries that are not saved to a session. Are you sure you want to go back? Lock your shift details first to save entries.')) {
         navigate('/');
@@ -469,7 +479,7 @@ const CaptureScreen: React.FC = () => {
   };
 
   const handleToggleSachetIgnore = (id: string) => {
-    setSachetMassEntries(sachetMassEntries.map(entry => 
+    setSachetMassEntries(sachetMassEntries.map(entry =>
       entry.id === id ? { ...entry, ignored: !entry.ignored } : entry
     ));
   };
@@ -494,7 +504,7 @@ const CaptureScreen: React.FC = () => {
   };
 
   const handleToggleLooseCasesIgnore = (id: string) => {
-    setLooseCasesEntries(looseCasesEntries.map(entry => 
+    setLooseCasesEntries(looseCasesEntries.map(entry =>
       entry.id === id ? { ...entry, ignored: !entry.ignored } : entry
     ));
   };
@@ -504,12 +514,12 @@ const CaptureScreen: React.FC = () => {
   const parsePalletQRCode = (qrData: string): { batchNumber: string; palletNumber: string; casesCount: number } | null => {
     // Remove any whitespace
     const cleaned = qrData.trim();
-    
+
     // Check if it's exactly 13 digits
     if (!/^\d{13}$/.test(cleaned)) {
       return null;
     }
-    
+
     return {
       batchNumber: cleaned.substring(0, 5),    // First 5 digits
       palletNumber: cleaned.substring(5, 9),   // Next 4 digits
@@ -520,19 +530,19 @@ const CaptureScreen: React.FC = () => {
   // Handle QR Code Pallet Scan
   const handlePalletScan = (qrData: string) => {
     const parsed = parsePalletQRCode(qrData);
-    
+
     if (!parsed) {
       showToast('Invalid QR code format. Expected 13 digits: BBBBBPPPPCCCC', 'error');
       return;
     }
-    
+
     // Check for duplicate pallet scan (same QR code already scanned)
     const isDuplicate = palletScanEntries.some(entry => entry.qrCode === qrData);
     if (isDuplicate) {
       showToast(`Pallet ${parsed.palletNumber} has already been scanned!`, 'error');
       return;
     }
-    
+
     const newEntry: PalletScanEntry = {
       id: uuidv4(),
       qrCode: qrData,
@@ -546,7 +556,7 @@ const CaptureScreen: React.FC = () => {
   };
 
   const handleTogglePalletIgnore = (id: string) => {
-    setPalletScanEntries(palletScanEntries.map(entry => 
+    setPalletScanEntries(palletScanEntries.map(entry =>
       entry.id === id ? { ...entry, ignored: !entry.ignored } : entry
     ));
   };
@@ -562,7 +572,7 @@ const CaptureScreen: React.FC = () => {
   const totalDowntime = downtimeEntries.reduce((sum, e) => sum + e.downtime, 0);
 
   return (
-    <motion.div 
+    <motion.div
       className="capture-screen-v2"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
@@ -578,7 +588,7 @@ const CaptureScreen: React.FC = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <motion.div 
+        <motion.div
           className="toast-container-v2"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -595,7 +605,7 @@ const CaptureScreen: React.FC = () => {
       <header className="capture-header-v2">
         <button className="back-btn-v2" onClick={handleBack}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
+            <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Back
         </button>
@@ -620,27 +630,27 @@ const CaptureScreen: React.FC = () => {
             <div className="form-grid">
               <MainForm
                 operatorName={operatorName}
-                setOperatorName={isSessionLocked ? () => {} : setOperatorName}
+                setOperatorName={isSessionLocked ? () => { } : setOperatorName}
                 machine={machineName}
-                setMachine={() => {}}
+                setMachine={() => { }}
                 orderNumber={orderNumber}
-                setOrderNumber={isSessionLocked ? () => {} : setOrderNumber}
+                setOrderNumber={isSessionLocked ? () => { } : setOrderNumber}
                 product={product}
-                setProduct={isSessionLocked ? () => {} : setProduct}
+                setProduct={isSessionLocked ? () => { } : setProduct}
                 batchNumber={batchNumber}
-                setBatchNumber={isSessionLocked ? () => {} : setBatchNumber}
+                setBatchNumber={isSessionLocked ? () => { } : setBatchNumber}
                 hideMachine={true}
                 disabled={isSessionLocked}
               />
               <ShiftInfo dateTime={dateTime} shift={shift} />
             </div>
-            
+
             {/* Machine Speed in Shift Details */}
             <div className="speed-setting">
               <div className="speed-display">
                 <span className="speed-label">⚡ Machine Speed</span>
                 <span className="speed-value">
-                  {speedEntries.length > 0 
+                  {speedEntries.length > 0
                     ? `${speedEntries[speedEntries.length - 1].speed} PPM`
                     : 'Not Set'}
                 </span>
@@ -650,16 +660,16 @@ const CaptureScreen: React.FC = () => {
                   </span>
                 )}
               </div>
-              <button 
+              <button
                 className="speed-change-btn"
                 onClick={() => setShowSpeedModal(true)}
               >
                 {speedEntries.length > 0 ? 'Change' : 'Set Speed'}
               </button>
             </div>
-            
+
             {!isSessionLocked && operatorName && orderNumber && product && batchNumber && (
-              <button 
+              <button
                 className="lock-session-btn"
                 onClick={() => saveSession(true)}
               >
@@ -678,7 +688,7 @@ const CaptureScreen: React.FC = () => {
               )}
             </h2>
             <div className="capture-section-content">
-              <button 
+              <button
                 className="capture-add-btn waste-btn"
                 onClick={() => setShowWasteModal(true)}
               >
@@ -697,7 +707,7 @@ const CaptureScreen: React.FC = () => {
                       <span className="entry-time">
                         {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <button 
+                      <button
                         className="entry-delete-btn"
                         onClick={() => handleDeleteWasteEntry(entry.id)}
                         title="Delete this entry"
@@ -727,7 +737,7 @@ const CaptureScreen: React.FC = () => {
               )}
             </h2>
             <div className="capture-section-content">
-              <button 
+              <button
                 className="capture-add-btn downtime-btn"
                 onClick={() => setShowDowntimeModal(true)}
               >
@@ -746,7 +756,7 @@ const CaptureScreen: React.FC = () => {
                       <span className="entry-time">
                         {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <button 
+                      <button
                         className="entry-delete-btn"
                         onClick={() => handleDeleteDowntimeEntry(entry.id)}
                         title="Delete this entry"
@@ -773,7 +783,7 @@ const CaptureScreen: React.FC = () => {
               Sachet Mass
             </h2>
             <div className="capture-section-content">
-              <button 
+              <button
                 className="capture-add-btn"
                 onClick={() => setShowSachetModal(true)}
               >
@@ -791,7 +801,7 @@ const CaptureScreen: React.FC = () => {
                       <span className="entry-time">
                         {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <button 
+                      <button
                         className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
                         onClick={() => handleToggleSachetIgnore(entry.id)}
                         title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
@@ -812,22 +822,22 @@ const CaptureScreen: React.FC = () => {
               Product Confirmation
               {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
                 <span className="entry-count-badge">
-                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
-                   looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)} cases
+                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
+                    looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)} cases
                 </span>
               )}
             </h2>
-            
+
             {/* Action Buttons */}
             <div className="product-action-buttons">
-              <button 
+              <button
                 className="capture-add-btn scan-btn"
                 onClick={() => setShowQRScanner(true)}
               >
                 <span className="btn-icon">📷</span>
                 Scan Pallet
               </button>
-              <button 
+              <button
                 className="capture-add-btn loose-cases-btn"
                 onClick={() => setShowLooseCasesModal(true)}
               >
@@ -853,7 +863,7 @@ const CaptureScreen: React.FC = () => {
                       <span className="entry-time">
                         {formatScanTime(entry.timestamp)}
                       </span>
-                      <button 
+                      <button
                         className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
                         onClick={() => handleTogglePalletIgnore(entry.id)}
                         title={entry.ignored ? 'Include this pallet' : 'Ignore this pallet'}
@@ -883,7 +893,7 @@ const CaptureScreen: React.FC = () => {
                       <span className="entry-time">
                         {formatScanTime(entry.timestamp)}
                       </span>
-                      <button 
+                      <button
                         className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
                         onClick={() => handleToggleLooseCasesIgnore(entry.id)}
                         title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
@@ -906,8 +916,8 @@ const CaptureScreen: React.FC = () => {
                 <div className="summary-item">
                   <span className="summary-label">Total Cases:</span>
                   <span className="summary-value">
-                    {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
-                     looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
+                    {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
+                      looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
                   </span>
                 </div>
               </div>
@@ -931,8 +941,8 @@ const CaptureScreen: React.FC = () => {
               </div>
               <div className="stat-box cases">
                 <span className="stat-number">
-                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) + 
-                   looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
+                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
+                    looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
                 </span>
                 <span className="stat-unit">cases</span>
               </div>
@@ -951,7 +961,7 @@ const CaptureScreen: React.FC = () => {
 
           {/* Submission Preview */}
           {(wasteEntries.length > 0 || downtimeEntries.length > 0) && (
-            <motion.div 
+            <motion.div
               className="submission-card"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -979,7 +989,7 @@ const CaptureScreen: React.FC = () => {
                   <strong>{Math.floor(totalDowntime / 60)}h {totalDowntime % 60}m</strong>
                 </div>
               </div>
-              <button 
+              <button
                 className={`submit-btn-v2 ${!isInSubmissionWindow ? 'early-submit' : ''}`}
                 onClick={handleSubmitClick}
                 disabled={isSubmitting || !operatorName || !orderNumber || !product || !batchNumber}
@@ -1018,13 +1028,13 @@ const CaptureScreen: React.FC = () => {
       {/* Changeover Dialog (shown when submitting outside window) */}
       <AnimatePresence>
         {showChangeoverDialog && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal changeover-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1038,19 +1048,19 @@ const CaptureScreen: React.FC = () => {
               <p className="changeover-intro">
                 You are submitting before the end of shift window. Please answer the following:
               </p>
-              
+
               <div className="changeover-question">
                 <label className="question-label">
                   Will there be a changeover to a new product and order?
                 </label>
                 <div className="question-options">
-                  <button 
+                  <button
                     className={`option-btn ${willChangeover === true ? 'selected yes' : ''}`}
                     onClick={() => setWillChangeover(true)}
                   >
                     ✓ Yes
                   </button>
-                  <button 
+                  <button
                     className={`option-btn ${willChangeover === false ? 'selected no' : ''}`}
                     onClick={() => setWillChangeover(false)}
                   >
@@ -1064,13 +1074,13 @@ const CaptureScreen: React.FC = () => {
                   Will there be maintenance or cleaning before next production start?
                 </label>
                 <div className="question-options">
-                  <button 
+                  <button
                     className={`option-btn ${willMaintenance === true ? 'selected yes' : ''}`}
                     onClick={() => setWillMaintenance(true)}
                   >
                     ✓ Yes
                   </button>
-                  <button 
+                  <button
                     className={`option-btn ${willMaintenance === false ? 'selected no' : ''}`}
                     onClick={() => setWillMaintenance(false)}
                   >
@@ -1080,13 +1090,13 @@ const CaptureScreen: React.FC = () => {
               </div>
 
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
                   onClick={() => setShowChangeoverDialog(false)}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm"
                   onClick={handleChangeoverConfirm}
                   disabled={willChangeover === null || willMaintenance === null}
@@ -1102,14 +1112,14 @@ const CaptureScreen: React.FC = () => {
       {/* Machine Speed Modal */}
       <AnimatePresence>
         {showSpeedModal && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowSpeedModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1132,13 +1142,13 @@ const CaptureScreen: React.FC = () => {
                 />
               </div>
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
                   onClick={() => { setShowSpeedModal(false); setSpeedInput(''); }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm"
                   onClick={handleSpeedSubmit}
                   disabled={!speedInput || speedInput <= 0}
@@ -1154,14 +1164,14 @@ const CaptureScreen: React.FC = () => {
       {/* Sachet Mass Modal */}
       <AnimatePresence>
         {showSachetModal && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowSachetModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1185,13 +1195,13 @@ const CaptureScreen: React.FC = () => {
                 />
               </div>
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
                   onClick={() => { setShowSachetModal(false); setSachetMassInput(''); }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm"
                   onClick={handleSachetMassSubmit}
                   disabled={!sachetMassInput || sachetMassInput <= 0}
@@ -1207,14 +1217,14 @@ const CaptureScreen: React.FC = () => {
       {/* Waste Modal */}
       <AnimatePresence>
         {showWasteModal && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowWasteModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal waste-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1253,17 +1263,17 @@ const CaptureScreen: React.FC = () => {
                 </div>
               </div>
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
-                  onClick={() => { 
-                    setShowWasteModal(false); 
+                  onClick={() => {
+                    setShowWasteModal(false);
                     setWaste('');
                     setWasteType('');
                   }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm waste-confirm"
                   onClick={handleWasteSubmit}
                   disabled={!waste || waste <= 0 || !wasteType}
@@ -1279,14 +1289,14 @@ const CaptureScreen: React.FC = () => {
       {/* Downtime Modal */}
       <AnimatePresence>
         {showDowntimeModal && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowDowntimeModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal downtime-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1324,17 +1334,17 @@ const CaptureScreen: React.FC = () => {
                 </div>
               </div>
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
-                  onClick={() => { 
-                    setShowDowntimeModal(false); 
+                  onClick={() => {
+                    setShowDowntimeModal(false);
                     setDowntime('');
                     setDowntimeReason('');
                   }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm downtime-confirm"
                   onClick={handleDowntimeSubmit}
                   disabled={!downtime || downtime <= 0 || !downtimeReason}
@@ -1350,14 +1360,14 @@ const CaptureScreen: React.FC = () => {
       {/* Loose Cases Modal */}
       <AnimatePresence>
         {showLooseCasesModal && (
-          <motion.div 
+          <motion.div
             className="capture-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowLooseCasesModal(false)}
           >
-            <motion.div 
+            <motion.div
               className="capture-modal loose-cases-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1400,17 +1410,17 @@ const CaptureScreen: React.FC = () => {
                 </div>
               </div>
               <div className="modal-actions">
-                <button 
+                <button
                   className="modal-btn cancel"
-                  onClick={() => { 
-                    setShowLooseCasesModal(false); 
+                  onClick={() => {
+                    setShowLooseCasesModal(false);
                     setLooseCasesBatchInput('');
                     setLooseCasesQuantityInput('');
                   }}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="modal-btn confirm"
                   onClick={handleLooseCasesSubmit}
                   disabled={looseCasesBatchInput.length !== 5 || !looseCasesQuantityInput || looseCasesQuantityInput <= 0}

@@ -38,6 +38,17 @@ const MultiCaptureScreen: React.FC = () => {
         }
     }, [isMultiMachine, machineNames, navigate]);
 
+    // Track current machine(s) for chat widget location context
+    useEffect(() => {
+        if (parentGroup && machineNumbers) {
+            localStorage.setItem('chat_current_machine', `${parentGroup} - Machine ${machineNumbers}`);
+        }
+        return () => {
+            localStorage.removeItem('chat_current_machine');
+        };
+    }, [parentGroup, machineNumbers]);
+
+
     const [dateTime, setDateTime] = useState(new Date());
     const [shift, setShift] = useState('');
 

@@ -10,10 +10,12 @@ import {
 
 type ChatWidgetProps = {
   operatorName?: string;
+  machineName?: string; // Current machine location (e.g., "Canline - Machine 1")
 };
 
 const STORAGE_KEY = 'chat_user_name';
 const CLIENT_ID_KEY = 'chat_client_id';
+const CURRENT_MACHINE_KEY = 'chat_current_machine'; // Tracks what machine user is currently on
 const MAX_MESSAGE_LENGTH = 500;
 const RATE_LIMIT_MS = 2000; // 2 seconds between messages
 
@@ -24,7 +26,7 @@ const formatTime = (iso?: string) => {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
+const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName, machineName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessageRecord[]>([]);
   const [draft, setDraft] = useState('');
@@ -49,6 +51,22 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, userName);
   }, [userName]);
+
+  // Format display name with machine location for sending
+  const getDisplayNameForSending = useCallback(() => {
+    const baseName = userName.trim() || 'Operator';
+    // Use prop first, then fall back to localStorage
+    const currentMachine = machineName || localStorage.getItem(CURRENT_MACHINE_KEY) || '';
+    if (currentMachine) {
+      // Extract just the machine identity for brevity (e.g., "Canline M1" from "Canline - Machine 1")
+      const parts = currentMachine.split(' - ');
+      const shortMachine = parts.length > 1
+        ? `${parts[0]} M${parts[1].replace('Machine ', '')}`
+        : currentMachine;
+      return `${baseName} @ ${shortMachine}`;
+    }
+    return baseName;
+  }, [userName, machineName]);
 
   // Presence: who is online right now.
   useEffect(() => {
@@ -197,7 +215,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ operatorName }) => {
       setIsSending(true);
       setLastSentTime(Date.now());
 
-      const sent = await sendChatMessage(userName, trimmedDraft);
+      const sent = await sendChatMessage(getDisplayNameForSending(), trimmedDraft);
 
       // Optimistic UI: show the message immediately for the sender.
       // This also covers cases where Realtime is not enabled (subscription won't fire).
