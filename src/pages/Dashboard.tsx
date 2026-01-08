@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { 
+import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip,
   PieChart, Pie, Cell
 } from 'recharts';
@@ -12,17 +12,17 @@ import MachineSettingsModal from '../components/MachineSettingsModal';
 import SubMachineModal from '../components/SubMachineModal';
 
 // Animated number component
-const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: string }> = ({ 
-  value, decimals = 0, suffix = '' 
+const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: string }> = ({
+  value, decimals = 0, suffix = ''
 }) => {
   const [displayValue, setDisplayValue] = useState(0);
-  
+
   useEffect(() => {
     const duration = 1000;
     const steps = 30;
     const increment = value / steps;
     let current = 0;
-    
+
     const timer = setInterval(() => {
       current += increment;
       if (current >= value) {
@@ -32,10 +32,10 @@ const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: stri
         setDisplayValue(current);
       }
     }, duration / steps);
-    
+
     return () => clearInterval(timer);
   }, [value]);
-  
+
   return <>{displayValue.toFixed(decimals)}{suffix}</>;
 };
 
@@ -62,10 +62,10 @@ const Dashboard: React.FC = () => {
   const loadData = useCallback(() => {
     const machineData = getMachinesData();
     setMachines(machineData);
-    
+
     const stats = getTodayStats();
     setTodayStats(stats);
-    
+
     const history = getShiftHistory().slice(0, 7);
     setRecentHistory(history);
   }, []);
@@ -77,10 +77,10 @@ const Dashboard: React.FC = () => {
       try {
         const machineData = await initializeMachines();
         setMachines(machineData);
-        
+
         const stats = getTodayStats();
         setTodayStats(stats);
-        
+
         const history = getShiftHistory().slice(0, 7);
         setRecentHistory(history);
       } catch (error) {
@@ -90,15 +90,15 @@ const Dashboard: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     init();
-    
+
     // Subscribe to real-time machine updates
     const unsubscribe = subscribeToMachineUpdates((updatedMachines) => {
       console.log('Real-time update received:', updatedMachines.length, 'machines');
       setMachines(updatedMachines);
     });
-    
+
     return () => {
       unsubscribe();
     };
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
 
   const handleMachineClick = (machine: Machine) => {
     if (machine.status === 'maintenance') return;
-    
+
     // If machine has sub-machines, show the selection modal
     if (machine.subMachineCount && machine.subMachineCount > 0) {
       setSelectedMachineForSub(machine);
@@ -128,12 +128,12 @@ const Dashboard: React.FC = () => {
 
   const handleSubMachineSelect = (machine: Machine, subMachineNumber: number) => {
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
-    navigate(`/capture/${machine.id}`, { 
-      state: { 
+    navigate(`/capture/${machine.id}`, {
+      state: {
         machineName: fullName,
         parentMachine: machine.name,
         subMachineNumber: subMachineNumber
-      } 
+      }
     });
     setSelectedMachineForSub(null);
   };
@@ -189,7 +189,7 @@ const Dashboard: React.FC = () => {
         <div className="nav-brand">
           <div className="brand-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
           <div className="brand-text">
@@ -197,7 +197,7 @@ const Dashboard: React.FC = () => {
             <span className="brand-subtitle">Waste & Downtime Tracking</span>
           </div>
         </div>
-        
+
         <div className="nav-center">
           <div className="live-clock">
             <PulseIndicator color="#10b981" />
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
             <span className="clock-date">{format(currentTime, 'dd MMM yyyy')}</span>
           </div>
         </div>
-        
+
         <div className="nav-actions">
           <div className={`shift-indicator ${shift.toLowerCase()}`}>
             <span className="shift-icon">{shift === 'Day' ? '◐' : '◑'}</span>
@@ -216,8 +216,8 @@ const Dashboard: React.FC = () => {
           </button>
           <button className="nav-btn settings-btn" onClick={() => setShowSettings(true)}>
             <svg className="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
             </svg>
             <span className="settings-text">Settings</span>
           </button>
@@ -225,8 +225,8 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Machine Settings Modal */}
-      <MachineSettingsModal 
-        isOpen={showSettings} 
+      <MachineSettingsModal
+        isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onMachinesUpdated={loadData}
       />
@@ -247,8 +247,8 @@ const Dashboard: React.FC = () => {
             <div className="efficiency-ring">
               <svg viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r="50" className="ring-bg" />
-                <circle 
-                  cx="60" cy="60" r="50" 
+                <circle
+                  cx="60" cy="60" r="50"
                   className="ring-progress"
                   strokeDasharray={`${efficiency * 3.14} 314`}
                   style={{ stroke: efficiency > 70 ? '#10b981' : efficiency > 40 ? '#f59e0b' : '#ef4444' }}
@@ -332,16 +332,16 @@ const Dashboard: React.FC = () => {
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="wasteGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3}/>
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0}/>
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <YAxis hide />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#1e293b', 
-                      border: 'none', 
+                  <Tooltip
+                    contentStyle={{
+                      background: '#1e293b',
+                      border: 'none',
                       borderRadius: '8px',
                       fontSize: '12px'
                     }}
@@ -358,25 +358,25 @@ const Dashboard: React.FC = () => {
           <div className="section-header">
             <h2>Production Lines</h2>
             <div className="view-toggle">
-              <button 
-                className={selectedView === 'grid' ? 'active' : ''} 
+              <button
+                className={selectedView === 'grid' ? 'active' : ''}
                 onClick={() => setSelectedView('grid')}
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <rect x="3" y="3" width="7" height="7" rx="1"/>
-                  <rect x="14" y="3" width="7" height="7" rx="1"/>
-                  <rect x="3" y="14" width="7" height="7" rx="1"/>
-                  <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
                 </svg>
               </button>
-              <button 
-                className={selectedView === 'list' ? 'active' : ''} 
+              <button
+                className={selectedView === 'list' ? 'active' : ''}
                 onClick={() => setSelectedView('list')}
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <rect x="3" y="4" width="18" height="4" rx="1"/>
-                  <rect x="3" y="10" width="18" height="4" rx="1"/>
-                  <rect x="3" y="16" width="18" height="4" rx="1"/>
+                  <rect x="3" y="4" width="18" height="4" rx="1" />
+                  <rect x="3" y="10" width="18" height="4" rx="1" />
+                  <rect x="3" y="16" width="18" height="4" rx="1" />
                 </svg>
               </button>
             </div>
@@ -384,61 +384,84 @@ const Dashboard: React.FC = () => {
 
           <AnimatePresence mode="wait">
             {selectedView === 'grid' ? (
-              <motion.div 
+              <motion.div
                 key="grid"
                 className="machines-grid-v2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {machines.map((machine, index) => (
-                  <motion.div
-                    key={machine.id}
-                    className={`machine-tile ${machine.status} ${machine.status === 'maintenance' ? 'disabled' : ''}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => handleMachineClick(machine)}
-                    whileHover={machine.status !== 'maintenance' ? { scale: 1.02, y: -4 } : {}}
-                    whileTap={machine.status !== 'maintenance' ? { scale: 0.98 } : {}}
-                  >
-                    <div 
-                      className="tile-glow" 
-                      style={{ background: getStatusGradient(machine.status) }}
-                    />
-                    <div className="tile-content">
-                      <div className="tile-header">
-                        <span className="tile-name">{machine.name}</span>
-                        <div className="tile-status">
-                          <PulseIndicator color={getStatusColor(machine.status)} />
+                {machines.map((machine, index) => {
+                  const isInUse = !!machine.currentOperator;
+                  const displayStatus = isInUse ? 'in-use' : machine.status;
+
+                  return (
+                    <motion.div
+                      key={machine.id}
+                      className={`machine-tile ${displayStatus} ${machine.status === 'maintenance' ? 'disabled' : ''} ${machine.subMachineCount && machine.subMachineCount > 0 ? 'has-sub-machines' : ''}`}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => !(machine.subMachineCount && machine.subMachineCount > 0) && handleMachineClick(machine)}
+                      whileHover={machine.status !== 'maintenance' && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 1.02, y: -4 } : {}}
+                      whileTap={machine.status !== 'maintenance' && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 0.98 } : {}}
+                    >
+                      <div
+                        className="tile-glow"
+                        style={{ background: isInUse ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' : getStatusGradient(machine.status) }}
+                      />
+                      <div className="tile-content">
+                        <div className="tile-header">
+                          <span className="tile-name">{machine.name}</span>
+                          <div className="tile-status">
+                            <PulseIndicator color={isInUse ? '#3b82f6' : getStatusColor(machine.status)} />
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="tile-status-text">
-                        {machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
-                        {machine.subMachineCount && machine.subMachineCount > 0 && (
-                          <span className="sub-count-badge">{machine.subMachineCount} units</span>
+
+                        <div className="tile-status-text">
+                          {isInUse ? 'In Use' : machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
+                          {machine.subMachineCount && machine.subMachineCount > 0 && (
+                            <span className="sub-count-badge">{machine.subMachineCount} units</span>
+                          )}
+                        </div>
+
+                        {machine.currentOperator && (
+                          <div className="tile-operator">{machine.currentOperator}</div>
+                        )}
+
+                        {/* Inline sub-machine selection */}
+                        {machine.subMachineCount && machine.subMachineCount > 0 && machine.status !== 'maintenance' ? (
+                          <div className="sub-machine-inline-grid">
+                            {Array.from({ length: machine.subMachineCount }, (_, i) => i + 1).map(num => (
+                              <motion.button
+                                key={num}
+                                className="sub-machine-inline-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSubMachineSelect(machine, num);
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                {num}
+                              </motion.button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="tile-footer">
+                            <span className="tile-time">{machine.lastSubmission || 'No entries'}</span>
+                            {machine.status !== 'maintenance' && (
+                              <span className="tile-action">Record →</span>
+                            )}
+                          </div>
                         )}
                       </div>
-                      
-                      {machine.currentOperator && (
-                        <div className="tile-operator">{machine.currentOperator}</div>
-                      )}
-                      
-                      <div className="tile-footer">
-                        <span className="tile-time">{machine.lastSubmission || 'No entries'}</span>
-                        {machine.status !== 'maintenance' && (
-                          <span className="tile-action">
-                            {machine.subMachineCount && machine.subMachineCount > 0 ? 'Select →' : 'Record →'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="list"
                 className="machines-list"
                 initial={{ opacity: 0 }}
@@ -491,10 +514,10 @@ const Dashboard: React.FC = () => {
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    background: '#1e293b', 
-                    border: 'none', 
+                <Tooltip
+                  contentStyle={{
+                    background: '#1e293b',
+                    border: 'none',
                     borderRadius: '8px',
                     fontSize: '12px'
                   }}
@@ -517,7 +540,7 @@ const Dashboard: React.FC = () => {
             <h3 className="section-title">Recent Submissions</h3>
             <div className="activity-list">
               {recentHistory.slice(0, 5).map((item, index) => (
-                <motion.div 
+                <motion.div
                   key={item.id || index}
                   className="activity-item"
                   initial={{ opacity: 0, y: 10 }}

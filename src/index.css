@@ -177,7 +177,7 @@ h4 {
   vertical-align: middle;
 }
 
-.table-striped > tbody > tr:nth-of-type(odd) > * {
+.table-striped>tbody>tr:nth-of-type(odd)>* {
   background-color: rgba(241, 245, 249, 0.5);
 }
 
@@ -264,6 +264,7 @@ hr {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -276,15 +277,15 @@ hr {
     max-width: 100% !important;
     padding: 16px !important;
   }
-  
+
   .card-body {
     padding: 24px !important;
   }
-  
+
   .row {
     margin: 0 -8px;
   }
-  
+
   .col-md-6 {
     padding: 0 8px;
   }
@@ -302,7 +303,7 @@ hr {
   .card-header h1 {
     font-size: 24px;
   }
-  
+
   h3 {
     font-size: 20px;
   }
@@ -658,16 +659,16 @@ hr {
   .summary-row {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .machine-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .header-right {
     width: 100%;
     justify-content: space-between;
@@ -678,7 +679,7 @@ hr {
   .machine-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .summary-row {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1022,11 +1023,11 @@ hr {
   .history-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .history-filters {
     flex-direction: column;
   }
-  
+
   .search-input {
     min-width: 100%;
   }
@@ -1036,24 +1037,24 @@ hr {
   .history-header {
     flex-direction: column;
   }
-  
+
   .header-actions {
     width: 100%;
   }
-  
+
   .header-actions .btn {
     flex: 1;
   }
-  
+
   .btn-group {
     flex-wrap: wrap;
   }
-  
+
   .table-pagination {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .today-metrics {
     grid-template-columns: 1fr;
   }
@@ -1275,6 +1276,7 @@ hr {
     transform: scale(1);
     opacity: 1;
   }
+
   100% {
     transform: scale(2);
     opacity: 0;
@@ -1693,6 +1695,74 @@ hr {
   color: #3b82f6;
 }
 
+/* Sub-machine count badge */
+.sub-count-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* In Use status styling for machine tiles */
+.machine-tile.in-use {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.machine-tile.in-use:hover:not(.disabled) {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+/* Inline sub-machine selection grid */
+.sub-machine-inline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  margin-top: 12px;
+}
+
+.sub-machine-inline-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  color: #60a5fa;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-machine-inline-btn:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.sub-machine-inline-btn:active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%);
+}
+
+/* Machines with sub-machines don't need whole-tile hover effect */
+.machine-tile.has-sub-machines {
+  cursor: default;
+}
+
+.machine-tile.has-sub-machines:hover:not(.disabled) {
+  transform: none;
+}
+
 /* Machine List View */
 .machines-list {
   display: flex;
@@ -1900,7 +1970,7 @@ hr {
   .dashboard-main {
     grid-template-columns: 260px 1fr;
   }
-  
+
   .overview-panel {
     display: none;
   }
@@ -1911,69 +1981,70 @@ hr {
     grid-template-columns: 1fr;
     padding: 16px;
   }
-  
+
   /* Hide entire stats panel on iPad */
   .stats-panel {
     display: none;
   }
-  
+
   /* Hide History and Settings buttons on iPad */
   .nav-actions .nav-btn {
     display: none !important;
   }
-  
+
   .nav-actions .nav-btn.settings-btn {
     display: none !important;
   }
-  
+
   /* Keep shift indicator visible */
   .nav-actions .shift-indicator {
     display: flex !important;
   }
-  
+
   .nav-center {
     position: static;
     transform: none;
   }
-  
+
   .top-nav {
     flex-wrap: wrap;
     gap: 12px;
   }
-  
+
   .brand-subtitle {
     display: none;
   }
 }
 
 @media (max-width: 768px) {
+
   /* Stats panel already hidden from 1024px breakpoint */
   .stats-panel {
     display: none;
   }
-  
+
   /* History and Settings buttons hidden from 1024px breakpoint */
   .nav-actions .nav-btn {
     display: none !important;
   }
-  
+
   .nav-actions .nav-btn.settings-btn {
     display: none !important;
   }
-  
+
   .machines-grid-v2 {
     grid-template-columns: 1fr;
   }
-  
+
   .machine-row {
     grid-template-columns: 6px 1fr auto;
   }
-  
+
   .row-operator,
   .row-time {
     display: none;
   }
-  
+
   .clock-date {
     display: none;
   }
@@ -2109,11 +2180,12 @@ hr {
   width: 100%;
 }
 
-.capture-screen-v2 .col-md-6 > h3 {
-  display: none; /* Hide the redundant headers since we have section-heading */
+.capture-screen-v2 .col-md-6>h3 {
+  display: none;
+  /* Hide the redundant headers since we have section-heading */
 }
 
-.capture-screen-v2 .col-md-6 > h4 {
+.capture-screen-v2 .col-md-6>h4 {
   font-size: 14px;
   font-weight: 600;
   color: #94a3b8;
@@ -2145,7 +2217,7 @@ hr {
 .capture-screen-v2 .section-card .form-control:focus,
 .capture-screen-v2 .section-card .form-select:focus {
   border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), inset 0 1px 2px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
   background: rgba(15, 23, 42, 0.95) !important;
 }
 
@@ -2206,7 +2278,7 @@ hr {
   vertical-align: middle;
 }
 
-.capture-screen-v2 .table-striped > tbody > tr:nth-of-type(odd) > * {
+.capture-screen-v2 .table-striped>tbody>tr:nth-of-type(odd)>* {
   background-color: rgba(30, 41, 59, 0.4) !important;
 }
 
@@ -2248,7 +2320,7 @@ hr {
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .shift-info-card {
     grid-column: span 2;
   }
@@ -2258,7 +2330,7 @@ hr {
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .shift-info-card {
     grid-column: span 1;
     grid-template-columns: 1fr;
@@ -2689,7 +2761,9 @@ hr {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast V2 */
@@ -2816,37 +2890,38 @@ hr {
     overflow-y: auto;
     max-height: calc(100vh - 55px);
   }
-  
+
   .capture-form-column {
-    display: contents; /* Allow children to participate in parent grid */
+    display: contents;
+    /* Allow children to participate in parent grid */
   }
 
   /* Shift Details - left column row 1 */
-  .capture-form-column > section:nth-child(1) {
+  .capture-form-column>section:nth-child(1) {
     grid-column: 1;
     grid-row: 1;
   }
 
   /* Record Waste - left column row 2 */
-  .capture-form-column > section:nth-child(2) {
+  .capture-form-column>section:nth-child(2) {
     grid-column: 1;
     grid-row: 2;
   }
 
   /* Record Downtime - right column row 1 */
-  .capture-form-column > section:nth-child(3) {
+  .capture-form-column>section:nth-child(3) {
     grid-column: 2;
     grid-row: 1;
   }
 
   /* Sachet Mass - left column row 3 */
-  .capture-form-column > section:nth-child(4) {
+  .capture-form-column>section:nth-child(4) {
     grid-column: 1;
     grid-row: 3;
   }
 
   /* Cases/Hour - right column row 2 */
-  .capture-form-column > section:nth-child(5) {
+  .capture-form-column>section:nth-child(5) {
     grid-column: 2;
     grid-row: 2;
   }
@@ -2856,7 +2931,7 @@ hr {
   }
 
   /* Submission card at the bottom spanning both columns */
-  .capture-summary-column > .submission-card {
+  .capture-summary-column>.submission-card {
     grid-column: 1 / -1;
     grid-row: 3;
   }
@@ -2866,12 +2941,12 @@ hr {
   .charts-card {
     display: none;
   }
-  
+
   /* Hide date/time shift info card on iPad */
   .shift-info-card {
     display: none;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -2926,7 +3001,8 @@ hr {
 
   /* ShiftInfo compact */
   .shift-info-card {
-    display: none; /* Hide on iPad - shift is shown in header */
+    display: none;
+    /* Hide on iPad - shift is shown in header */
   }
 
   /* Compact capture sections (Speed, Sachet, Cases) */
@@ -3188,17 +3264,17 @@ hr {
     gap: 8px;
     padding: 8px 12px;
   }
-  
+
   .capture-title-v2 h1 {
     font-size: 18px;
   }
-  
+
   .capture-main {
     grid-template-columns: 1fr;
     padding: 10px;
     gap: 10px;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -3206,15 +3282,15 @@ hr {
   .main-form-fields {
     grid-template-columns: 1fr;
   }
-  
+
   .form-section {
     padding: 12px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   /* Keep these hidden on mobile too */
   .live-stats-card,
   .charts-card,
@@ -4387,12 +4463,12 @@ hr {
   .history-stats-v2 {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .history-filters-v2 {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-group {
     max-width: none;
   }
@@ -4403,38 +4479,38 @@ hr {
     flex-wrap: wrap;
     gap: 12px;
   }
-  
+
   .header-left-v2 {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .header-actions-v2 {
     width: 100%;
   }
-  
+
   .export-btn-v2 {
     width: 100%;
     justify-content: center;
   }
-  
+
   .history-main {
     padding: 16px;
   }
-  
+
   .history-stats-v2 {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  
+
   .stat-card-v2 {
     padding: 16px;
   }
-  
+
   .stat-value-v2 {
     font-size: 22px;
   }
-  
+
   .table-pagination-v2 {
     flex-direction: column;
     gap: 12px;
@@ -4473,7 +4549,7 @@ hr {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 25px 60px -12px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(148, 163, 184, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -4762,8 +4838,17 @@ hr {
 }
 
 @keyframes statusPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.8); opacity: 0; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
 }
 
 .machine-name-info {
@@ -5249,22 +5334,22 @@ hr {
   .settings-modal-container {
     max-width: 480px;
   }
-  
+
   .settings-tab {
     padding: 14px 12px;
     min-height: 48px;
   }
-  
+
   .card-action-btn {
     width: 44px;
     height: 44px;
   }
-  
+
   .quick-btn {
     padding: 12px 8px;
     min-height: 44px;
   }
-  
+
   .edit-input,
   .edit-select,
   .form-input,
@@ -5273,7 +5358,7 @@ hr {
     min-height: 48px;
     font-size: 16px;
   }
-  
+
   .status-select-btn,
   .status-picker-btn {
     min-height: 48px;
@@ -5285,38 +5370,38 @@ hr {
     padding: 0;
     align-items: flex-end;
   }
-  
+
   .settings-modal-container {
     max-width: 100%;
     max-height: 92vh;
     border-radius: 24px 24px 0 0;
   }
-  
+
   .settings-modal-header {
     padding: 18px 20px;
   }
-  
+
   .settings-tabs {
     padding: 10px 16px;
   }
-  
+
   .machine-list-v2 {
     padding: 12px;
   }
-  
+
   .machine-card {
     padding: 14px;
   }
-  
+
   .machine-quick-status {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .quick-status-label {
     display: none;
   }
-  
+
   .add-machine-form-v2 {
     padding: 20px 16px;
   }
@@ -5341,8 +5426,13 @@ hr {
 }
 
 @keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .machine-settings-modal {
@@ -5353,7 +5443,7 @@ hr {
   max-width: 500px;
   max-height: 85vh;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(148, 163, 184, 0.1);
   animation: modalSlideIn 0.3s ease;
@@ -5364,6 +5454,7 @@ hr {
     opacity: 0;
     transform: translateY(-20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -5813,55 +5904,55 @@ hr {
     padding: 12px;
     align-items: flex-end;
   }
-  
+
   .machine-settings-modal {
     max-width: 100%;
     max-height: 90vh;
     border-radius: 20px 20px 0 0;
     margin-bottom: 0;
   }
-  
+
   .modal-header-v2 {
     padding: 18px 20px;
   }
-  
+
   .modal-header-v2 h2 {
     font-size: 16px;
   }
-  
+
   .machine-item {
     padding: 14px 20px;
   }
-  
+
   .status-buttons {
     flex-wrap: wrap;
   }
-  
+
   .status-btn {
     flex: none;
     width: calc(33.333% - 6px);
     padding: 12px 8px;
     font-size: 11px;
   }
-  
+
   .add-machine-section {
     padding: 16px 20px;
   }
-  
+
   .add-machine-row {
     flex-direction: column;
   }
-  
+
   .add-machine-btn {
     justify-content: center;
   }
-  
+
   .modal-footer-v2 {
     padding: 14px 20px;
     flex-direction: column-reverse;
     gap: 10px;
   }
-  
+
   .reset-machines-btn,
   .modal-done-btn {
     width: 100%;
@@ -5876,6 +5967,7 @@ hr {
 
 /* iPad Portrait & Landscape (768px - 1366px) */
 @media (min-width: 768px) and (max-width: 1366px) {
+
   /* Ensure minimum 44px touch targets */
   button,
   .btn,
@@ -5885,7 +5977,7 @@ hr {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Form controls - Apple recommends 44pt minimum */
   .form-control,
   .form-select,
@@ -5893,20 +5985,21 @@ hr {
   input[type="number"],
   select {
     min-height: 48px !important;
-    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    font-size: 16px !important;
+    /* Prevents iOS zoom on focus */
   }
-  
+
   /* Increase spacing between tappable elements */
   .machine-card {
     margin-bottom: 16px;
   }
-  
+
   /* Better grid layout for iPad */
   .machines-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-  
+
   /* Ensure Record links are easily tappable */
   .machine-record-link {
     padding: 12px 16px;
@@ -5914,43 +6007,43 @@ hr {
     display: inline-flex;
     align-items: center;
   }
-  
+
   /* Stats cards - larger touch targets */
   .stat-box {
     padding: 20px 16px;
     min-height: 80px;
   }
-  
+
   /* Navigation buttons */
   .nav-btn {
     padding: 12px 20px;
     min-height: 44px;
   }
-  
+
   /* Back button */
   .back-btn-v2 {
     padding: 12px 20px;
     min-height: 44px;
   }
-  
+
   /* Delete buttons in lists */
   .btn-outline-danger,
   .machine-delete-btn {
     min-width: 44px;
     min-height: 44px;
   }
-  
+
   /* Dropdown menus */
   .form-select option {
     padding: 14px 16px;
     min-height: 44px;
   }
-  
+
   /* Table rows - if used */
   .history-table-v2 td {
     padding: 18px 20px;
   }
-  
+
   /* Pagination buttons */
   .page-btn {
     min-width: 44px;
@@ -5965,18 +6058,18 @@ hr {
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
-  
+
   .form-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
   }
-  
+
   .capture-main {
     grid-template-columns: 1fr 420px;
     gap: 28px;
     padding: 28px;
   }
-  
+
   .charts-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -5989,29 +6082,29 @@ hr {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-  
+
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-  
+
   .capture-main {
     grid-template-columns: 1fr;
     gap: 20px;
     padding: 20px;
   }
-  
+
   .capture-summary-column {
     position: static;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-  
+
   .submission-card {
     grid-column: 1 / -1;
   }
-  
+
   .charts-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -6023,25 +6116,25 @@ hr {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-  
+
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
-  
+
   .machine-card {
     padding: 16px;
   }
-  
+
   .capture-main {
     grid-template-columns: 1fr;
     padding: 16px;
   }
-  
+
   .capture-summary-column {
     position: static;
   }
-  
+
   .nav-btn {
     padding: 10px 16px;
     font-size: 14px;
@@ -6050,6 +6143,7 @@ hr {
 
 /* Safe area insets for newer iPads with rounded corners */
 @supports (padding: max(0px)) {
+
   .dashboard-v2,
   .capture-screen-v2,
   .history-page-v2 {
@@ -6057,7 +6151,7 @@ hr {
     padding-right: max(16px, env(safe-area-inset-right));
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
-  
+
   .dashboard-header,
   .capture-header-v2,
   .history-header-v2 {
@@ -6116,7 +6210,7 @@ html {
   width: 100%;
   max-width: 520px;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(148, 163, 184, 0.1);
 }
@@ -6364,7 +6458,7 @@ html {
     grid-template-columns: 1fr;
     max-height: 50vh;
   }
-  
+
   .sub-machine-modal {
     max-width: 100%;
     margin: 0 12px;
@@ -6547,9 +6641,17 @@ html {
 }
 
 @keyframes checkmark-pop {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .scan-success-overlay p {
@@ -6898,16 +7000,16 @@ html {
   .product-action-buttons {
     flex-direction: column;
   }
-  
+
   .product-action-buttons .capture-add-btn {
     width: 100%;
   }
-  
+
   .product-summary {
     flex-direction: row;
     padding: 12px;
   }
-  
+
   .summary-value {
     font-size: 20px;
   }
@@ -7172,9 +7274,17 @@ html {
 }
 
 @keyframes barPulse {
-  0% { background-color: var(--card-background); }
-  50% { background-color: rgba(37, 99, 235, 0.1); }
-  100% { background-color: var(--card-background); }
+  0% {
+    background-color: var(--card-background);
+  }
+
+  50% {
+    background-color: rgba(37, 99, 235, 0.1);
+  }
+
+  100% {
+    background-color: var(--card-background);
+  }
 }
 
 .latest-message-icon {
@@ -7273,6 +7383,7 @@ body {
     opacity: 0;
     transform: translateY(10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -7315,8 +7426,17 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .chat-close {
@@ -7424,6 +7544,7 @@ body {
     opacity: 0;
     transform: translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -7652,4 +7773,3 @@ body {
     height: 480px;
   }
 }
-
