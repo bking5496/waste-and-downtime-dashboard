@@ -166,6 +166,19 @@ const CaptureScreen: React.FC = () => {
       } catch (e) {
         console.error('Failed to load session:', e);
       }
+    } else {
+      // No session - try to load admin order details
+      const adminOrderDetails = localStorage.getItem('admin_order_details');
+      if (adminOrderDetails) {
+        try {
+          const details = JSON.parse(adminOrderDetails);
+          if (details.orderNumber) setOrderNumber(details.orderNumber);
+          if (details.product) setProduct(details.product);
+          if (details.batchNumber) setBatchNumber(details.batchNumber);
+        } catch (e) {
+          console.error('Failed to load admin order details:', e);
+        }
+      }
     }
   }, [machineName]);
 
