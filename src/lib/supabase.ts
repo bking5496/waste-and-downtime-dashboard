@@ -449,6 +449,7 @@ export const fetchRecentChatMessages = async (limit = 100): Promise<ChatMessageR
 export const sendChatMessage = async (userName: string, content: string): Promise<ChatMessageRecord> => {
   requireSupabaseConfigured();
 
+  const MAX_MESSAGE_LENGTH = 500;
   const trimmedName = userName.trim();
   const trimmedContent = content.trim();
 
@@ -457,6 +458,9 @@ export const sendChatMessage = async (userName: string, content: string): Promis
   }
   if (!trimmedContent) {
     throw new Error('Message cannot be empty.');
+  }
+  if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
+    throw new Error(`Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`);
   }
 
   const { data, error } = await supabase
