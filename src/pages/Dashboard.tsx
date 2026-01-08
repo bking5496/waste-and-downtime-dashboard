@@ -154,10 +154,7 @@ const Dashboard: React.FC = () => {
   const handleSubMachineSelect = (machine: Machine, subMachineNumber: number, isActive: boolean) => {
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
 
-    // Block if machine is in use
-    if (isActive) {
-      return; // Cannot select in-use machines
-    }
+    // Note: isActive is for visual display only - machine is still clickable to continue session
 
     if (multiSelectMode) {
       // Only allow selection from the same parent group
@@ -205,9 +202,7 @@ const Dashboard: React.FC = () => {
 
   // Long-press handlers for entering multi-select mode
   const handleLongPressStart = (machine: Machine, subMachineNumber: number, isActive: boolean) => {
-    // Don't allow long-press on in-use machines
-    if (isActive) return;
-
+    // isActive is kept for future use but doesn't block interaction
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
 
     longPressTimerRef.current = setTimeout(() => {
@@ -558,7 +553,8 @@ const Dashboard: React.FC = () => {
                               const isActive = activeSubMachines.has(num);
                               const isSelected = selectedMachines.includes(fullName);
                               const isOtherGroup = Boolean(multiSelectMode && selectedParentGroup && selectedParentGroup !== machine.name);
-                              const isDisabled = Boolean(isActive || isOtherGroup);
+                              // Only disable for other-group, NOT for isActive (reserved machines are still clickable)
+                              const isDisabled = isOtherGroup;
 
                               return (
                                 <motion.button
@@ -575,7 +571,7 @@ const Dashboard: React.FC = () => {
                                   onTouchEnd={handleLongPressEnd}
                                   whileHover={!isDisabled ? { scale: 1.1 } : {}}
                                   whileTap={!isDisabled ? { scale: 0.95 } : {}}
-                                  title={isActive ? 'In Use - Cannot Select' : (isOtherGroup ? 'Different group' : (multiSelectMode ? 'Tap to select' : 'Hold to multi-select'))}
+                                  title={isActive ? 'In Use - Click to continue' : (isOtherGroup ? 'Different group' : (multiSelectMode ? 'Tap to select' : 'Hold to multi-select'))}
                                   disabled={isDisabled}
                                 >
                                   {num}

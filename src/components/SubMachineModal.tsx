@@ -68,7 +68,7 @@ const SubMachineModal: React.FC<SubMachineModalProps> = ({
                     onClick={() => onSelectSubMachine(machine, num, isActive)}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    disabled={isActive}
+                    title={isActive ? 'In Use - Click to continue' : 'Available'}
                   >
                     <div className="sub-machine-icon">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="32" height="32">
