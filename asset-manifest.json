@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/waste-and-downtime-dashboard/static/css/main.a5b4bbe0.css",
-    "main.js": "/waste-and-downtime-dashboard/static/js/main.58d45914.js",
+    "main.css": "/waste-and-downtime-dashboard/static/css/main.afba7d06.css",
+    "main.js": "/waste-and-downtime-dashboard/static/js/main.cef60ea0.js",
     "static/js/453.ab7060e2.chunk.js": "/waste-and-downtime-dashboard/static/js/453.ab7060e2.chunk.js",
     "index.html": "/waste-and-downtime-dashboard/index.html",
-    "main.a5b4bbe0.css.map": "/waste-and-downtime-dashboard/static/css/main.a5b4bbe0.css.map",
-    "main.58d45914.js.map": "/waste-and-downtime-dashboard/static/js/main.58d45914.js.map",
+    "main.afba7d06.css.map": "/waste-and-downtime-dashboard/static/css/main.afba7d06.css.map",
+    "main.cef60ea0.js.map": "/waste-and-downtime-dashboard/static/js/main.cef60ea0.js.map",
     "453.ab7060e2.chunk.js.map": "/waste-and-downtime-dashboard/static/js/453.ab7060e2.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.a5b4bbe0.css",
-    "static/js/main.58d45914.js"
+    "static/css/main.afba7d06.css",
+    "static/js/main.cef60ea0.js"
   ]
 }
