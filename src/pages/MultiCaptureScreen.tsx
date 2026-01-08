@@ -25,7 +25,11 @@ const MultiCaptureScreen: React.FC = () => {
 
     // Get machine names from navigation state
     const machineNames = (location.state as { machineNames?: string[] })?.machineNames || [];
+    const parentGroup = (location.state as { parentGroup?: string })?.parentGroup || '';
     const isMultiMachine = (location.state as { isMultiMachine?: boolean })?.isMultiMachine || false;
+
+    // Extract machine numbers for display (e.g., "1, 2" from "Canline - Machine 1, Canline - Machine 2")
+    const machineNumbers = machineNames.map(name => name.split(' - Machine ')[1] || '?').join(', ');
 
     // Redirect if no machines selected
     useEffect(() => {
@@ -317,8 +321,8 @@ const MultiCaptureScreen: React.FC = () => {
                     Back
                 </button>
                 <div className="capture-title-v2">
-                    <h1>Multi-Machine Recording</h1>
-                    <span className="capture-subtitle">{machineDataList.length} machines selected</span>
+                    <h1>{parentGroup} — Machine {machineNumbers}</h1>
+                    <span className="capture-subtitle">Recording for {machineDataList.length} machines</span>
                 </div>
                 <div className={`shift-badge-v2 ${shift.toLowerCase()}`}>
                     <span className="shift-icon">{shift === 'Day' ? '◐' : '◑'}</span>

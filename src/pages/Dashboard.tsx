@@ -151,10 +151,24 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSubMachineSelect = (machine: Machine, subMachineNumber: number) => {
+  const handleSubMachineSelect = (machine: Machine, subMachineNumber: number, isActive: boolean) => {
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
 
+    // Block if machine is in use
+    if (isActive) {
+      return; // Cannot select in-use machines
+    }
+
     if (multiSelectMode) {
+      // Only allow selection from the same parent group
+      if (selectedMachines.length > 0) {
+        const firstSelectedParent = selectedMachines[0].split(' - ')[0];
+        if (machine.name !== firstSelectedParent) {
+          // Different group - don't allow
+          return;
+        }
+      }
+
       // Toggle selection
       setSelectedMachines(prev =>
         prev.includes(fullName)
@@ -177,16 +191,23 @@ const Dashboard: React.FC = () => {
   const handleStartMultiCapture = () => {
     if (selectedMachines.length === 0) return;
 
+    // Extract parent group from first selected machine
+    const parentGroup = selectedMachines[0].split(' - ')[0];
+
     navigate(`/capture/multi`, {
       state: {
         machineNames: selectedMachines,
+        parentGroup: parentGroup,
         isMultiMachine: true
       }
     });
   };
 
   // Long-press handlers for entering multi-select mode
-  const handleLongPressStart = (machine: Machine, subMachineNumber: number) => {
+  const handleLongPressStart = (machine: Machine, subMachineNumber: number, isActive: boolean) => {
+    // Don't allow long-press on in-use machines
+    if (isActive) return;
+
     const fullName = `${machine.name} - Machine ${subMachineNumber}`;
 
     longPressTimerRef.current = setTimeout(() => {
@@ -207,6 +228,11 @@ const Dashboard: React.FC = () => {
     setMultiSelectMode(false);
     setSelectedMachines([]);
   };
+
+  // Get the parent group of currently selected machines (for highlighting)
+  const selectedParentGroup = selectedMachines.length > 0
+    ? selectedMachines[0].split(' - ')[0]
+    : null;
 
 
   const getStatusColor = (status: string) => {
@@ -530,23 +556,26 @@ const Dashboard: React.FC = () => {
                               const fullName = `${machine.name} - Machine ${num}`;
                               const isActive = activeSubMachines.has(num);
                               const isSelected = selectedMachines.includes(fullName);
+                              const isOtherGroup = Boolean(multiSelectMode && selectedParentGroup && selectedParentGroup !== machine.name);
+                              const isDisabled = Boolean(isActive || isOtherGroup);
 
                               return (
                                 <motion.button
                                   key={num}
-                                  className={`sub-machine-inline-btn ${isActive ? 'busy' : ''} ${isSelected ? 'selected' : ''}`}
+                                  className={`sub-machine-inline-btn ${isActive ? 'busy' : ''} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSubMachineSelect(machine, num);
+                                    handleSubMachineSelect(machine, num, isActive);
                                   }}
-                                  onMouseDown={() => handleLongPressStart(machine, num)}
+                                  onMouseDown={() => handleLongPressStart(machine, num, isActive)}
                                   onMouseUp={handleLongPressEnd}
                                   onMouseLeave={handleLongPressEnd}
-                                  onTouchStart={() => handleLongPressStart(machine, num)}
+                                  onTouchStart={() => handleLongPressStart(machine, num, isActive)}
                                   onTouchEnd={handleLongPressEnd}
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  title={isActive ? 'In Use' : (multiSelectMode ? 'Tap to select' : 'Hold to multi-select')}
+                                  whileHover={!isDisabled ? { scale: 1.1 } : {}}
+                                  whileTap={!isDisabled ? { scale: 0.95 } : {}}
+                                  title={isActive ? 'In Use - Cannot Select' : (isOtherGroup ? 'Different group' : (multiSelectMode ? 'Tap to select' : 'Hold to multi-select'))}
+                                  disabled={isDisabled}
                                 >
                                   {num}
                                   {isActive && <span className="status-dot busy" />}
@@ -612,22 +641,17 @@ const Dashboard: React.FC = () => {
                 exit={{ opacity: 0, y: 50 }}
               >
                 <div className="selection-info">
-                  <span className="selection-count">{selectedMachines.length}</span>
-                  <span className="selection-label">machine{selectedMachines.length > 1 ? 's' : ''} selected</span>
-                </div>
-                <div className="selection-list">
-                  {selectedMachines.slice(0, 3).map(name => (
-                    <span key={name} className="selection-chip">{name.split(' - ')[1] || name}</span>
-                  ))}
-                  {selectedMachines.length > 3 && (
-                    <span className="selection-chip more">+{selectedMachines.length - 3} more</span>
-                  )}
+                  <span className="selection-parent-group">{selectedParentGroup}</span>
+                  <span className="selection-divider">—</span>
+                  <span className="selection-machines">
+                    {selectedMachines.map(m => m.split(' - Machine ')[1]).join(', ')}
+                  </span>
                 </div>
                 <button
                   className="start-capture-btn"
                   onClick={handleStartMultiCapture}
                 >
-                  Start Recording
+                  Start Recording ({selectedMachines.length})
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>

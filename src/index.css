@@ -1781,6 +1781,17 @@ hr {
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 }
 
+.sub-machine-inline-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sub-machine-inline-btn.busy.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .sub-machine-inline-btn .status-dot {
   position: absolute;
   top: 4px;
@@ -1893,6 +1904,27 @@ hr {
 .selection-label {
   font-size: 14px;
   color: #94a3b8;
+}
+
+.selection-parent-group {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.selection-divider {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0 4px;
+}
+
+.selection-machines {
+  font-size: 18px;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+  padding: 4px 12px;
+  border-radius: 8px;
 }
 
 .selection-list {
