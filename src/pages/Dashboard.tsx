@@ -334,6 +334,7 @@ const Dashboard: React.FC = () => {
         machine={selectedMachineForSub}
         onClose={() => setSelectedMachineForSub(null)}
         onSelectSubMachine={handleSubMachineSelect}
+        activeSubMachines={selectedMachineForSub ? getActiveSubMachines(selectedMachineForSub.name, selectedMachineForSub.subMachineCount || 0) : new Set()}
       />
 
       <main className="dashboard-main">
