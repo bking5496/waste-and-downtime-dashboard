@@ -164,6 +164,46 @@ CREATE TABLE IF NOT EXISTS machines (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_machines_name_unique ON machines(name);
 
 -- ==========================================
+-- ORDER DETAILS (global)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS order_details (
+  id BIGSERIAL PRIMARY KEY,
+  order_number TEXT NOT NULL,
+  product TEXT NOT NULL,
+  batch_number TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_details_active ON order_details(is_active);
+
+-- ==========================================
+-- MACHINE ORDER QUEUE (orders per machine with priority)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS machine_order_queue (
+  id BIGSERIAL PRIMARY KEY,
+  machine_id TEXT NOT NULL,
+  order_number TEXT NOT NULL,
+  product TEXT NOT NULL,
+  batch_number TEXT NOT NULL,
+  priority INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_machine_order_queue_machine ON machine_order_queue(machine_id);
+CREATE INDEX IF NOT EXISTS idx_machine_order_queue_priority ON machine_order_queue(machine_id, priority);
+CREATE INDEX IF NOT EXISTS idx_machine_order_queue_active ON machine_order_queue(is_active);
+
+-- Ensure unique priority per machine (no two orders have same priority on same machine)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_machine_order_queue_unique_priority
+  ON machine_order_queue(machine_id, priority) WHERE is_active = TRUE;
+
+-- ==========================================
 -- REALTIME (optional)
 -- ==========================================
 -- ALTER PUBLICATION supabase_realtime ADD TABLE machines;
@@ -172,3 +212,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_machines_name_unique ON machines(name);
 -- ALTER PUBLICATION supabase_realtime ADD TABLE downtime_records;
 -- ALTER PUBLICATION supabase_realtime ADD TABLE loose_cases_records;
 -- ALTER PUBLICATION supabase_realtime ADD TABLE pallet_scan_records;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE machine_order_queue;

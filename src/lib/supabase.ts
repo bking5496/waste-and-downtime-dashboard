@@ -615,3 +615,163 @@ export const fetchOrderHistory = async (limit = 10): Promise<OrderDetailsRecord[
     return [];
   }
 };
+
+// ==========================================
+// MACHINE ORDER QUEUE (Orders per machine with priority)
+// ==========================================
+
+export interface MachineOrderQueueRecord {
+  id?: number;
+  machine_id: string;
+  order_number: string;
+  product: string;
+  batch_number: string;
+  priority: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Fetch all orders for a specific machine (sorted by priority)
+export const fetchMachineOrders = async (machineId: string): Promise<MachineOrderQueueRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('machine_order_queue')
+      .select('*')
+      .eq('machine_id', machineId)
+      .eq('is_active', true)
+      .order('priority', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Failed to fetch machine orders:', e);
+    return [];
+  }
+};
+
+// Fetch all active orders for all machines
+export const fetchAllMachineOrders = async (): Promise<MachineOrderQueueRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('machine_order_queue')
+      .select('*')
+      .eq('is_active', true)
+      .order('machine_id', { ascending: true })
+      .order('priority', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.error('Failed to fetch all machine orders:', e);
+    return [];
+  }
+};
+
+// Add an order to a machine's queue
+export const addMachineOrder = async (
+  machineId: string,
+  orderNumber: string,
+  product: string,
+  batchNumber: string
+): Promise<MachineOrderQueueRecord | null> => {
+  requireSupabaseConfigured();
+
+  try {
+    // Get the next priority number for this machine
+    const { data: existing } = await supabase
+      .from('machine_order_queue')
+      .select('priority')
+      .eq('machine_id', machineId)
+      .eq('is_active', true)
+      .order('priority', { ascending: false })
+      .limit(1);
+
+    const nextPriority = existing && existing.length > 0 ? existing[0].priority + 1 : 0;
+
+    const { data, error } = await supabase
+      .from('machine_order_queue')
+      .insert([{
+        machine_id: machineId,
+        order_number: orderNumber.trim(),
+        product: product.trim(),
+        batch_number: batchNumber.trim(),
+        priority: nextPriority,
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (e) {
+    console.error('Failed to add machine order:', e);
+    throw e;
+  }
+};
+
+// Remove an order from a machine's queue
+export const removeMachineOrder = async (orderId: number): Promise<boolean> => {
+  requireSupabaseConfigured();
+
+  try {
+    const { error } = await supabase
+      .from('machine_order_queue')
+      .update({ is_active: false })
+      .eq('id', orderId);
+
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Failed to remove machine order:', e);
+    return false;
+  }
+};
+
+// Update priorities for a machine's orders (for reordering)
+export const updateMachineOrderPriorities = async (
+  machineId: string,
+  orderIds: number[]
+): Promise<boolean> => {
+  requireSupabaseConfigured();
+
+  try {
+    // Update each order with its new priority (index in array)
+    const updates = orderIds.map((id, index) =>
+      supabase
+        .from('machine_order_queue')
+        .update({ priority: index, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('machine_id', machineId)
+    );
+
+    await Promise.all(updates);
+    return true;
+  } catch (e) {
+    console.error('Failed to update order priorities:', e);
+    return false;
+  }
+};
+
+// Clear all orders for a machine
+export const clearMachineOrders = async (machineId: string): Promise<boolean> => {
+  requireSupabaseConfigured();
+
+  try {
+    const { error } = await supabase
+      .from('machine_order_queue')
+      .update({ is_active: false })
+      .eq('machine_id', machineId)
+      .eq('is_active', true);
+
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Failed to clear machine orders:', e);
+    return false;
+  }
+};
