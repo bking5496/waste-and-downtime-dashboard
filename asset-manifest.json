@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/waste-and-downtime-dashboard/static/css/main.b23bfb6b.css",
-    "main.js": "/waste-and-downtime-dashboard/static/js/main.8225cb55.js",
+    "main.js": "/waste-and-downtime-dashboard/static/js/main.c7585349.js",
     "static/js/453.ab7060e2.chunk.js": "/waste-and-downtime-dashboard/static/js/453.ab7060e2.chunk.js",
     "index.html": "/waste-and-downtime-dashboard/index.html",
     "main.b23bfb6b.css.map": "/waste-and-downtime-dashboard/static/css/main.b23bfb6b.css.map",
-    "main.8225cb55.js.map": "/waste-and-downtime-dashboard/static/js/main.8225cb55.js.map",
+    "main.c7585349.js.map": "/waste-and-downtime-dashboard/static/js/main.c7585349.js.map",
     "453.ab7060e2.chunk.js.map": "/waste-and-downtime-dashboard/static/js/453.ab7060e2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b23bfb6b.css",
-    "static/js/main.8225cb55.js"
+    "static/js/main.c7585349.js"
   ]
 }
