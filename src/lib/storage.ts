@@ -500,22 +500,38 @@ export const exportToCSV = (data: ShiftData[], filename: string): void => {
     'Product',
     'Batch Number',
     'Total Waste (kg)',
+    'Waste Types',
     'Total Downtime (min)',
+    'Downtime Reasons',
     'Submitted At',
   ];
   
-  const rows = data.map(item => [
-    item.date,
-    item.shift,
-    item.operatorName,
-    item.machine,
-    item.orderNumber,
-    item.product,
-    item.batchNumber,
-    item.totalWaste.toFixed(2),
-    item.totalDowntime.toString(),
-    new Date(item.submittedAt).toLocaleString(),
-  ]);
+  const rows = data.map(item => {
+    // Get unique waste types joined by semicolon
+    const wasteTypes = item.wasteEntries && item.wasteEntries.length > 0
+      ? [...new Set(item.wasteEntries.map(w => w.wasteType))].join('; ')
+      : '';
+    
+    // Get unique downtime reasons joined by semicolon
+    const downtimeReasons = item.downtimeEntries && item.downtimeEntries.length > 0
+      ? [...new Set(item.downtimeEntries.map(d => d.downtimeReason))].join('; ')
+      : '';
+
+    return [
+      item.date,
+      item.shift,
+      item.operatorName,
+      item.machine,
+      item.orderNumber,
+      item.product,
+      item.batchNumber,
+      item.totalWaste.toFixed(2),
+      wasteTypes,
+      item.totalDowntime.toString(),
+      downtimeReasons,
+      new Date(item.submittedAt).toLocaleString(),
+    ];
+  });
   
   const csvContent = [
     headers.join(','),
