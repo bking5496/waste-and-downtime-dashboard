@@ -102,6 +102,8 @@ export interface Machine {
   name: string;
   status: 'running' | 'idle' | 'maintenance';
   currentOperator?: string;
+  currentOrder?: string;
+  currentShift?: string;
   lastSubmission?: string;
   todayWaste?: number;
   todayDowntime?: number;

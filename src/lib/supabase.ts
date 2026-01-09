@@ -142,6 +142,14 @@ export interface FullShiftSubmission {
   palletScanEntries?: { qrCode: string; batchNumber: string; palletNumber: string; casesCount: number; timestamp: Date }[];
 }
 
+// Result type for submission with warnings
+export interface SubmitShiftResult {
+  success: boolean;
+  shiftSubmission: ShiftSubmission | null;
+  warnings: string[];
+  errors: string[];
+}
+
 // Database operations
 export const submitShiftData = async (
   shiftData: Omit<ShiftSubmission, 'id' | 'created_at'>,
@@ -151,13 +159,17 @@ export const submitShiftData = async (
   sachetMassEntries?: { mass: number; timestamp: Date }[],
   looseCasesEntries?: { batchNumber: string; cases: number; timestamp: Date }[],
   palletScanEntries?: { qrCode: string; batchNumber: string; palletNumber: string; casesCount: number; timestamp: Date }[]
-) => {
+): Promise<SubmitShiftResult> => {
   requireSupabaseConfigured();
+
+  const warnings: string[] = [];
+  const errors: string[] = [];
+
   // Calculate totals
   const totalWaste = wasteEntries.reduce((sum, e) => sum + e.waste, 0);
   const totalDowntime = downtimeEntries.reduce((sum, e) => sum + e.downtime, 0);
 
-  // Insert shift submission
+  // Insert shift submission (critical - must succeed)
   const { data: shiftSubmission, error: shiftError } = await supabase
     .from('shift_submissions')
     .insert([{
@@ -174,7 +186,7 @@ export const submitShiftData = async (
 
   const shiftId = shiftSubmission.id;
 
-  // Insert waste records
+  // Insert waste records (critical - must succeed)
   if (wasteEntries.length > 0) {
     const wasteRecords = wasteEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -192,7 +204,7 @@ export const submitShiftData = async (
     }
   }
 
-  // Insert downtime records
+  // Insert downtime records (critical - must succeed)
   if (downtimeEntries.length > 0) {
     const downtimeRecords = downtimeEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -210,7 +222,7 @@ export const submitShiftData = async (
     }
   }
 
-  // Insert speed records
+  // Insert speed records (non-critical - warn on failure)
   if (speedEntries && speedEntries.length > 0) {
     const speedRecords = speedEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -223,11 +235,13 @@ export const submitShiftData = async (
       .insert(speedRecords);
 
     if (speedError) {
-      console.error('Failed to submit speed records:', speedError.message);
+      const msg = `Speed records failed: ${speedError.message}`;
+      console.error(msg);
+      warnings.push(msg);
     }
   }
 
-  // Insert sachet mass records
+  // Insert sachet mass records (non-critical - warn on failure)
   if (sachetMassEntries && sachetMassEntries.length > 0) {
     const sachetRecords = sachetMassEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -240,11 +254,13 @@ export const submitShiftData = async (
       .insert(sachetRecords);
 
     if (sachetError) {
-      console.error('Failed to submit sachet mass records:', sachetError.message);
+      const msg = `Sachet mass records failed: ${sachetError.message}`;
+      console.error(msg);
+      warnings.push(msg);
     }
   }
 
-  // Insert loose cases records
+  // Insert loose cases records (non-critical - warn on failure)
   if (looseCasesEntries && looseCasesEntries.length > 0) {
     const looseCasesRecords = looseCasesEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -258,11 +274,13 @@ export const submitShiftData = async (
       .insert(looseCasesRecords);
 
     if (looseCasesError) {
-      console.error('Failed to submit loose cases records:', looseCasesError.message);
+      const msg = `Loose cases records failed: ${looseCasesError.message}`;
+      console.error(msg);
+      warnings.push(msg);
     }
   }
 
-  // Insert pallet scan records
+  // Insert pallet scan records (non-critical - warn on failure)
   if (palletScanEntries && palletScanEntries.length > 0) {
     const palletRecords = palletScanEntries.map(entry => ({
       shift_submission_id: shiftId,
@@ -278,11 +296,18 @@ export const submitShiftData = async (
       .insert(palletRecords);
 
     if (palletError) {
-      console.error('Failed to submit pallet scan records:', palletError.message);
+      const msg = `Pallet scan records failed: ${palletError.message}`;
+      console.error(msg);
+      warnings.push(msg);
     }
   }
 
-  return shiftSubmission;
+  return {
+    success: true,
+    shiftSubmission,
+    warnings,
+    errors,
+  };
 };
 
 // Fetch recent submissions
@@ -314,6 +339,8 @@ export interface MachineRecord {
   name: string;
   status: 'running' | 'idle' | 'maintenance';
   current_operator?: string;
+  current_order?: string;
+  current_shift?: string;
   last_submission?: string;
   today_waste?: number;
   today_downtime?: number;
@@ -381,6 +408,50 @@ export const removeMachine = async (machineId: string): Promise<boolean> => {
   return true;
 };
 
+// Update machine status (running/idle/maintenance)
+export const updateMachineStatus = async (
+  machineId: string,
+  status: 'running' | 'idle' | 'maintenance',
+  operatorName?: string,
+  orderNumber?: string,
+  shift?: string
+): Promise<boolean> => {
+  if (!isSupabaseConfigured) return false;
+
+  try {
+    const updateData: Record<string, unknown> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Set or clear operator/order based on status
+    if (status === 'running') {
+      if (operatorName) updateData.current_operator = operatorName;
+      if (orderNumber) updateData.current_order = orderNumber;
+      if (shift) updateData.current_shift = shift;
+    } else if (status === 'idle') {
+      updateData.current_operator = null;
+      updateData.current_order = null;
+      updateData.current_shift = null;
+    }
+
+    const { error } = await supabase
+      .from('machines')
+      .update(updateData)
+      .eq('id', machineId);
+
+    if (error) {
+      console.error('Failed to update machine status:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    console.error('Failed to update machine status:', e);
+    return false;
+  }
+};
+
 // Sync local machines to Supabase (bulk upsert)
 export const syncMachinesToSupabase = async (machines: MachineRecord[]): Promise<boolean> => {
   requireSupabaseConfigured();
@@ -409,18 +480,49 @@ export const syncMachinesToSupabase = async (machines: MachineRecord[]): Promise
   return true;
 };
 
-// Subscribe to real-time machine updates
-export const subscribeMachineChanges = (callback: (machines: MachineRecord[]) => void) => {
+// Subscribe to real-time machine updates - OPTIMIZED
+// Now processes specific changes instead of refetching all machines
+export const subscribeMachineChanges = (
+  callback: (machines: MachineRecord[]) => void,
+  getCurrentMachines: () => MachineRecord[]
+) => {
   requireSupabaseConfigured();
+
   const channel = supabase
     .channel('machines-changes')
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'machines' },
-      async () => {
-        // Fetch all machines when any change occurs
-        const machines = await fetchMachines();
-        callback(machines);
+      { event: 'INSERT', schema: 'public', table: 'machines' },
+      (payload) => {
+        // Add new machine to current list
+        const newMachine = payload.new as MachineRecord;
+        const currentMachines = getCurrentMachines();
+        const updatedMachines = [...currentMachines, newMachine];
+        callback(updatedMachines);
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'machines' },
+      (payload) => {
+        // Update specific machine in current list
+        const updatedMachine = payload.new as MachineRecord;
+        const currentMachines = getCurrentMachines();
+        const updatedMachines = currentMachines.map(m =>
+          m.id === updatedMachine.id ? updatedMachine : m
+        );
+        callback(updatedMachines);
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'machines' },
+      (payload) => {
+        // Remove deleted machine from current list
+        const deletedMachine = payload.old as MachineRecord;
+        const currentMachines = getCurrentMachines();
+        const updatedMachines = currentMachines.filter(m => m.id !== deletedMachine.id);
+        callback(updatedMachines);
       }
     )
     .subscribe();
@@ -732,7 +834,7 @@ export const removeMachineOrder = async (orderId: number): Promise<boolean> => {
   }
 };
 
-// Update priorities for a machine's orders (for reordering)
+// Update priorities for a machine's orders (for reordering) - ATOMIC version
 export const updateMachineOrderPriorities = async (
   machineId: string,
   orderIds: number[]
@@ -740,20 +842,46 @@ export const updateMachineOrderPriorities = async (
   requireSupabaseConfigured();
 
   try {
-    // Update each order with its new priority (index in array)
-    const updates = orderIds.map((id, index) =>
-      supabase
+    // Use a single RPC call or sequential updates with rollback tracking
+    const errors: string[] = [];
+    const successfulUpdates: { id: number; oldPriority?: number }[] = [];
+
+    // First, fetch current priorities for potential rollback
+    const { data: currentOrders } = await supabase
+      .from('machine_order_queue')
+      .select('id, priority')
+      .eq('machine_id', machineId)
+      .in('id', orderIds);
+
+    const priorityMap = new Map(currentOrders?.map(o => [o.id, o.priority]) || []);
+
+    // Update each order sequentially to maintain consistency
+    for (let index = 0; index < orderIds.length; index++) {
+      const id = orderIds[index];
+      const { error } = await supabase
         .from('machine_order_queue')
         .update({ priority: index, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .eq('machine_id', machineId)
-    );
+        .eq('machine_id', machineId);
 
-    await Promise.all(updates);
+      if (error) {
+        errors.push(`Order ${id}: ${error.message}`);
+        // Rollback successful updates
+        for (const update of successfulUpdates) {
+          await supabase
+            .from('machine_order_queue')
+            .update({ priority: priorityMap.get(update.id) ?? update.oldPriority })
+            .eq('id', update.id);
+        }
+        throw new Error(`Priority update failed, rolled back. Errors: ${errors.join('; ')}`);
+      }
+      successfulUpdates.push({ id, oldPriority: priorityMap.get(id) });
+    }
+
     return true;
   } catch (e) {
     console.error('Failed to update order priorities:', e);
-    return false;
+    throw e; // Re-throw so caller knows it failed
   }
 };
 

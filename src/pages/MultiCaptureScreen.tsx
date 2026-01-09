@@ -371,18 +371,15 @@ const MultiCaptureScreen: React.FC = () => {
 
                                     <div className="machine-card-fields">
                                         <div className="form-field">
-                                            <label className="form-label">Operator</label>
-                                            <select
-                                                className="form-select"
+                                            <label className="form-label">Operator Number</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
                                                 value={machineData.operatorName}
                                                 onChange={e => updateMachineData(index, 'operatorName', e.target.value)}
+                                                placeholder="Enter operator number"
                                                 disabled={isSessionLocked}
-                                            >
-                                                <option value="">Select Operator</option>
-                                                {OPERATORS.map(op => (
-                                                    <option key={op} value={op}>{op}</option>
-                                                ))}
-                                            </select>
+                                            />
                                         </div>
 
                                         <div className="form-field">

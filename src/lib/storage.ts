@@ -1,16 +1,221 @@
 import { ShiftData, Machine, MACHINES } from '../types';
-import { 
-  fetchMachines, 
-  upsertMachine, 
-  removeMachine, 
+import {
+  fetchMachines,
+  upsertMachine,
+  removeMachine,
   syncMachinesToSupabase,
   subscribeMachineChanges,
-  MachineRecord 
+  MachineRecord,
+  submitShiftData,
+  isSupabaseConfigured
 } from './supabase';
 
 const STORAGE_KEY = 'waste_downtime_history';
 const MACHINES_KEY = 'machines_data';
 const MACHINES_SYNC_KEY = 'machines_last_sync';
+const FAILED_SUBMISSIONS_KEY = 'failed_submissions_queue';
+const HISTORY_MAX_DAYS = 90; // Keep history for 90 days
+const HISTORY_MAX_ENTRIES = 1000; // Maximum entries to keep
+
+// ==========================================
+// FAILED SUBMISSIONS RETRY QUEUE
+// ==========================================
+
+interface FailedSubmission {
+  id: string;
+  timestamp: string;
+  retryCount: number;
+  maxRetries: number;
+  data: {
+    shiftData: any;
+    wasteEntries: any[];
+    downtimeEntries: any[];
+    speedEntries?: any[];
+    sachetMassEntries?: any[];
+    looseCasesEntries?: any[];
+    palletScanEntries?: any[];
+  };
+  error: string;
+}
+
+// Get failed submissions queue
+export const getFailedSubmissions = (): FailedSubmission[] => {
+  const stored = localStorage.getItem(FAILED_SUBMISSIONS_KEY);
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+};
+
+// Add a failed submission to the retry queue
+export const addFailedSubmission = (
+  data: FailedSubmission['data'],
+  error: string
+): void => {
+  const queue = getFailedSubmissions();
+  const newEntry: FailedSubmission = {
+    id: `failed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: new Date().toISOString(),
+    retryCount: 0,
+    maxRetries: 3,
+    data,
+    error,
+  };
+  queue.push(newEntry);
+  localStorage.setItem(FAILED_SUBMISSIONS_KEY, JSON.stringify(queue));
+};
+
+// Remove a submission from the failed queue
+export const removeFailedSubmission = (id: string): void => {
+  const queue = getFailedSubmissions();
+  const filtered = queue.filter(s => s.id !== id);
+  localStorage.setItem(FAILED_SUBMISSIONS_KEY, JSON.stringify(filtered));
+};
+
+// Retry all failed submissions
+export const retryFailedSubmissions = async (): Promise<{
+  succeeded: number;
+  failed: number;
+  remaining: number;
+}> => {
+  if (!isSupabaseConfigured) {
+    return { succeeded: 0, failed: 0, remaining: getFailedSubmissions().length };
+  }
+
+  const queue = getFailedSubmissions();
+  let succeeded = 0;
+  let failed = 0;
+
+  for (const submission of queue) {
+    if (submission.retryCount >= submission.maxRetries) {
+      // Max retries reached, keep in queue but don't retry
+      failed++;
+      continue;
+    }
+
+    try {
+      await submitShiftData(
+        submission.data.shiftData,
+        submission.data.wasteEntries,
+        submission.data.downtimeEntries,
+        submission.data.speedEntries,
+        submission.data.sachetMassEntries,
+        submission.data.looseCasesEntries,
+        submission.data.palletScanEntries
+      );
+      removeFailedSubmission(submission.id);
+      succeeded++;
+    } catch (e) {
+      // Update retry count
+      const updatedQueue = getFailedSubmissions().map(s =>
+        s.id === submission.id
+          ? { ...s, retryCount: s.retryCount + 1, error: String(e) }
+          : s
+      );
+      localStorage.setItem(FAILED_SUBMISSIONS_KEY, JSON.stringify(updatedQueue));
+      failed++;
+    }
+  }
+
+  return {
+    succeeded,
+    failed,
+    remaining: getFailedSubmissions().length,
+  };
+};
+
+// Clear all failed submissions (manual clear)
+export const clearFailedSubmissions = (): void => {
+  localStorage.removeItem(FAILED_SUBMISSIONS_KEY);
+};
+
+// ==========================================
+// LOCALSTORAGE CLEANUP
+// ==========================================
+
+// Clean up old history entries
+export const cleanupOldHistory = (): { removed: number; remaining: number } => {
+  const history = getShiftHistory();
+  const now = new Date();
+  const cutoffDate = new Date(now.getTime() - HISTORY_MAX_DAYS * 24 * 60 * 60 * 1000);
+
+  // Filter out entries older than cutoff date
+  let cleaned = history.filter(item => {
+    const itemDate = new Date(item.date);
+    return itemDate >= cutoffDate;
+  });
+
+  // Also limit to max entries (keep most recent)
+  if (cleaned.length > HISTORY_MAX_ENTRIES) {
+    cleaned = cleaned.slice(0, HISTORY_MAX_ENTRIES);
+  }
+
+  const removed = history.length - cleaned.length;
+
+  if (removed > 0) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    console.log(`Cleaned up ${removed} old history entries`);
+  }
+
+  return { removed, remaining: cleaned.length };
+};
+
+// Get localStorage usage stats
+export const getStorageStats = (): {
+  historyCount: number;
+  failedCount: number;
+  totalSizeKB: number;
+  oldestEntry: string | null;
+} => {
+  const history = getShiftHistory();
+  const failed = getFailedSubmissions();
+
+  // Estimate total localStorage size
+  let totalSize = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key) {
+      const value = localStorage.getItem(key) || '';
+      totalSize += key.length + value.length;
+    }
+  }
+
+  const oldestEntry = history.length > 0
+    ? history[history.length - 1].date
+    : null;
+
+  return {
+    historyCount: history.length,
+    failedCount: failed.length,
+    totalSizeKB: Math.round(totalSize / 1024),
+    oldestEntry,
+  };
+};
+
+// Run cleanup on app startup (debounced to run once per day)
+export const maybeRunCleanup = (): void => {
+  const lastCleanupKey = 'last_storage_cleanup';
+  const lastCleanup = localStorage.getItem(lastCleanupKey);
+  const now = new Date();
+
+  if (lastCleanup) {
+    const lastDate = new Date(lastCleanup);
+    const hoursSinceCleanup = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
+    if (hoursSinceCleanup < 24) {
+      return; // Already cleaned up today
+    }
+  }
+
+  // Run cleanup
+  const result = cleanupOldHistory();
+  localStorage.setItem(lastCleanupKey, now.toISOString());
+
+  if (result.removed > 0) {
+    console.log(`Storage cleanup: removed ${result.removed} entries, ${result.remaining} remaining`);
+  }
+};
 
 // Flag to track if we're using Supabase
 let useSupabase = true;
@@ -23,6 +228,8 @@ const toLocalMachine = (record: MachineRecord): Machine => ({
   name: record.name,
   status: record.status,
   currentOperator: record.current_operator,
+  currentOrder: record.current_order,
+  currentShift: record.current_shift,
   lastSubmission: record.last_submission,
   todayWaste: record.today_waste,
   todayDowntime: record.today_downtime,
@@ -35,6 +242,8 @@ const toSupabaseRecord = (machine: Machine): MachineRecord => ({
   name: machine.name,
   status: machine.status,
   current_operator: machine.currentOperator,
+  current_order: machine.currentOrder,
+  current_shift: machine.currentShift,
   last_submission: machine.lastSubmission,
   today_waste: machine.todayWaste,
   today_downtime: machine.todayDowntime,
@@ -68,19 +277,28 @@ export const initializeMachines = async (): Promise<Machine[]> => {
   }
 };
 
-// Subscribe to real-time machine updates
+// Subscribe to real-time machine updates - OPTIMIZED
 export const subscribeToMachineUpdates = (callback: (machines: Machine[]) => void) => {
   machinesListeners.push(callback);
-  
-  // Set up Supabase real-time subscription
-  const unsubscribe = subscribeMachineChanges((records) => {
-    machinesCache = records.map(toLocalMachine);
-    localStorage.setItem(MACHINES_KEY, JSON.stringify(machinesCache));
-    
-    // Notify all listeners
-    machinesListeners.forEach(listener => listener(machinesCache!));
-  });
-  
+
+  // Provide current machines getter for optimized real-time updates
+  const getCurrentMachines = (): MachineRecord[] => {
+    const current = machinesCache || getMachinesDataLocal();
+    return current.map(toSupabaseRecord);
+  };
+
+  // Set up Supabase real-time subscription with optimized handler
+  const unsubscribe = subscribeMachineChanges(
+    (records) => {
+      machinesCache = records.map(toLocalMachine);
+      localStorage.setItem(MACHINES_KEY, JSON.stringify(machinesCache));
+
+      // Notify all listeners
+      machinesListeners.forEach(listener => listener(machinesCache!));
+    },
+    getCurrentMachines
+  );
+
   // Return cleanup function
   return () => {
     machinesListeners = machinesListeners.filter(l => l !== callback);

@@ -8,8 +8,8 @@ import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
-import { submitShiftData } from '../lib/supabase';
-import { saveShiftData } from '../lib/storage';
+import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
+import { saveShiftData, addFailedSubmission } from '../lib/storage';
 
 // Storage key for shift session
 const getSessionKey = (machineName: string, shift: string, date: string) =>
@@ -78,6 +78,15 @@ const CaptureScreen: React.FC = () => {
   const [isInSubmissionWindow, setIsInSubmissionWindow] = useState(false);
   const [, setTimeToWindow] = useState(''); // Time display for submission window
 
+  // Order queue state
+  const [availableOrders, setAvailableOrders] = useState<MachineOrderQueueRecord[]>([]);
+  const [showOrderSelect, setShowOrderSelect] = useState(false);
+
+  // Shift change detection
+  const [lastKnownShift, setLastKnownShift] = useState<string | null>(null);
+  const [showShiftChangeModal, setShowShiftChangeModal] = useState(false);
+  const [newOperatorName, setNewOperatorName] = useState('');
+
   // Changeover dialog state (shown when submitting outside window)
   const [showChangeoverDialog, setShowChangeoverDialog] = useState(false);
   const [willChangeover, setWillChangeover] = useState<boolean | null>(null);
@@ -87,6 +96,15 @@ const CaptureScreen: React.FC = () => {
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Handle order selection from queue
+  const handleOrderSelect = (order: MachineOrderQueueRecord) => {
+    setOrderNumber(order.order_number);
+    setProduct(order.product);
+    setBatchNumber(order.batch_number);
+    setShowOrderSelect(false);
+    showToast(`Selected order: ${order.order_number}`, 'success');
   };
 
   // Check if within submission window (15 min before/after shift end)
@@ -231,13 +249,31 @@ const CaptureScreen: React.FC = () => {
     localStorage.setItem(sessionKey, JSON.stringify(session));
     if (!isSessionLocked) {
       setIsSessionLocked(true);
+      // Update machine status to 'running' in Supabase
+      if (machineId) {
+        updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift);
+      }
       if (showMessage) showToast('Shift details locked for this session', 'success');
     }
-  }, [machineName, operatorName, orderNumber, product, batchNumber, wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked]);
+  }, [machineName, operatorName, orderNumber, product, batchNumber, wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked, machineId]);
 
   useEffect(() => {
     loadSession();
   }, [loadSession]);
+
+  // Load available orders from machine queue
+  useEffect(() => {
+    const loadMachineOrders = async () => {
+      if (!machineId) return;
+      try {
+        const orders = await fetchMachineOrders(machineId);
+        setAvailableOrders(orders);
+      } catch (e) {
+        console.error('Failed to load machine orders:', e);
+      }
+    };
+    loadMachineOrders();
+  }, [machineId]);
 
   // Auto-save entries when they change (if session is locked)
   useEffect(() => {
@@ -277,14 +313,19 @@ const CaptureScreen: React.FC = () => {
 
     // Set the shift
     const hours = dateTime.getUTCHours() + 2; // GMT+2
-    if (hours >= 6 && hours < 18) {
-      setShift('Day');
-    } else {
-      setShift('Night');
+    const newShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+
+    // Detect shift change
+    if (lastKnownShift !== null && lastKnownShift !== newShift && isSessionLocked) {
+      // Shift has changed while session is active - prompt for new operator
+      setShowShiftChangeModal(true);
     }
 
+    setShift(newShift);
+    setLastKnownShift(newShift);
+
     return () => clearInterval(timer);
-  }, [dateTime, checkSubmissionWindow]);
+  }, [dateTime, checkSubmissionWindow, lastKnownShift, isSessionLocked]);
 
   // Handle Waste Entry from Modal
   const handleWasteSubmit = () => {
@@ -365,6 +406,48 @@ const CaptureScreen: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
+  // Handle shift change confirmation - update operator for new shift
+  const handleShiftChangeConfirm = () => {
+    if (!newOperatorName.trim()) {
+      showToast('Please enter the new operator name/number', 'error');
+      return;
+    }
+
+    // Update the operator name for the new shift
+    setOperatorName(newOperatorName.trim());
+    setShowShiftChangeModal(false);
+    setNewOperatorName('');
+
+    // Update machine status with new operator
+    if (machineId) {
+      updateMachineStatus(machineId, 'running', newOperatorName.trim(), orderNumber, shift);
+    }
+
+    // Update the session with new operator
+    const currentDate = new Date().toISOString().split('T')[0];
+    const sessionKey = getSessionKey(machineName, shift, currentDate);
+
+    const session: ShiftSession = {
+      machineName,
+      operatorName: newOperatorName.trim(),
+      orderNumber,
+      product,
+      batchNumber,
+      shift,
+      date: currentDate,
+      locked: true,
+      wasteEntries,
+      downtimeEntries,
+      speedEntries,
+      sachetMassEntries,
+      looseCasesEntries,
+      palletScanEntries,
+    };
+
+    localStorage.setItem(sessionKey, JSON.stringify(session));
+    showToast(`Operator changed to ${newOperatorName.trim()} for ${shift} shift`, 'success');
+  };
+
   const handleConfirmedSubmit = async () => {
     setShowConfirmDialog(false);
     setIsSubmitting(true);
@@ -394,37 +477,58 @@ const CaptureScreen: React.FC = () => {
       submittedAt: new Date()
     };
 
+    // Prepare submission data for potential retry queue
+    const submissionPayload = {
+      shiftData: {
+        operator_name: operatorName,
+        machine: machineName,
+        order_number: orderNumber,
+        product,
+        batch_number: batchNumber,
+        shift,
+        submission_date: dateTime.toISOString().split('T')[0],
+        is_early_submission: !isInSubmissionWindow,
+        will_changeover: willChangeover ?? undefined,
+        will_maintenance_cleaning: willMaintenance ?? undefined,
+      },
+      wasteEntries: wasteEntries.map(e => ({ waste: e.waste, wasteType: e.wasteType, timestamp: e.timestamp })),
+      downtimeEntries: downtimeEntries.map(e => ({ downtime: e.downtime, downtimeReason: e.downtimeReason, timestamp: e.timestamp })),
+      speedEntries: speedEntries.map(e => ({ speed: e.speed, timestamp: e.timestamp })),
+      sachetMassEntries: sachetMassEntries.map(e => ({ mass: e.mass, timestamp: e.timestamp })),
+      looseCasesEntries: looseCasesEntries.map(e => ({ batchNumber: e.batchNumber, cases: e.cases, timestamp: e.timestamp })),
+      palletScanEntries: palletScanEntries.map(e => ({ qrCode: e.qrCode, batchNumber: e.batchNumber, palletNumber: e.palletNumber, casesCount: e.casesCount, timestamp: e.timestamp })),
+    };
+
     try {
       // Save to local storage first
       saveShiftData(shiftData);
 
       // Try to submit to Supabase with all data including changeover info
-      await submitShiftData(
-        {
-          operator_name: operatorName,
-          machine: machineName,
-          order_number: orderNumber,
-          product,
-          batch_number: batchNumber,
-          shift,
-          submission_date: dateTime.toISOString().split('T')[0],
-          is_early_submission: !isInSubmissionWindow,
-          will_changeover: willChangeover ?? undefined,
-          will_maintenance_cleaning: willMaintenance ?? undefined,
-        },
-        wasteEntries.map(e => ({ waste: e.waste, wasteType: e.wasteType, timestamp: e.timestamp })),
-        downtimeEntries.map(e => ({ downtime: e.downtime, downtimeReason: e.downtimeReason, timestamp: e.timestamp })),
-        speedEntries.map(e => ({ speed: e.speed, timestamp: e.timestamp })),
-        sachetMassEntries.map(e => ({ mass: e.mass, timestamp: e.timestamp })),
-        looseCasesEntries.map(e => ({ batchNumber: e.batchNumber, cases: e.cases, timestamp: e.timestamp })),
-        palletScanEntries.map(e => ({ qrCode: e.qrCode, batchNumber: e.batchNumber, palletNumber: e.palletNumber, casesCount: e.casesCount, timestamp: e.timestamp }))
+      const result = await submitShiftData(
+        submissionPayload.shiftData,
+        submissionPayload.wasteEntries,
+        submissionPayload.downtimeEntries,
+        submissionPayload.speedEntries,
+        submissionPayload.sachetMassEntries,
+        submissionPayload.looseCasesEntries,
+        submissionPayload.palletScanEntries
       );
 
-      showToast('Shift data submitted successfully', 'success');
+      // Show success with any warnings
+      if (result.warnings.length > 0) {
+        showToast(`Submitted with warnings: ${result.warnings.join(', ')}`, 'success');
+      } else {
+        showToast('Shift data submitted successfully', 'success');
+      }
 
       // Reset form for new submission
       // Unlock shift details
       setIsSessionLocked(false);
+
+      // Update machine status to 'idle' since order is complete
+      if (machineId) {
+        updateMachineStatus(machineId, 'idle');
+      }
 
       // Clear all entries
       setWasteEntries([]);
@@ -441,6 +545,11 @@ const CaptureScreen: React.FC = () => {
       // Clear session storage so new details can be entered
       sessionStorage.removeItem(`session_${machineId}`);
 
+      // Clear the localStorage session key as well
+      const currentDate = new Date().toISOString().split('T')[0];
+      const sessionKey = getSessionKey(machineName, shift, currentDate);
+      localStorage.removeItem(sessionKey);
+
       // Keep operator name but clear order-specific fields for new order
       setOrderNumber('');
       setProduct('');
@@ -448,11 +557,37 @@ const CaptureScreen: React.FC = () => {
 
     } catch (error) {
       console.error('Submission error:', error);
-      // Still saved locally, show partial success
-      showToast('Saved locally. Database sync failed.', 'error');
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+
+      // Add to failed submissions queue for retry
+      addFailedSubmission(submissionPayload, String(error));
+
+      // Still saved locally, show partial success with retry info
+      showToast('Saved locally. Will retry sync automatically.', 'error');
+
+      // Clear form since data is saved locally
+      setIsSessionLocked(false);
+
+      // Update machine status to 'idle' since order is "complete" (saved locally)
+      if (machineId) {
+        updateMachineStatus(machineId, 'idle');
+      }
+
+      // Clear the localStorage session key
+      const currentDate = new Date().toISOString().split('T')[0];
+      const sessionKey = getSessionKey(machineName, shift, currentDate);
+      localStorage.removeItem(sessionKey);
+
+      setWasteEntries([]);
+      setDowntimeEntries([]);
+      setSpeedEntries([]);
+      setSachetMassEntries([]);
+      setLooseCasesEntries([]);
+      setPalletScanEntries([]);
+      setWillChangeover(null);
+      setWillMaintenance(false);
+      setOrderNumber('');
+      setProduct('');
+      setBatchNumber('');
     } finally {
       setIsSubmitting(false);
     }
@@ -668,6 +803,25 @@ const CaptureScreen: React.FC = () => {
               Shift Details
               {isSessionLocked && <span className="locked-badge">🔒 Locked</span>}
             </h2>
+
+            {/* Order Queue Selection */}
+            {!isSessionLocked && availableOrders.length > 0 && (
+              <div className="order-queue-select">
+                <button
+                  className="select-order-btn"
+                  onClick={() => setShowOrderSelect(true)}
+                >
+                  <span className="btn-icon">📋</span>
+                  Select from Order Queue ({availableOrders.length} available)
+                </button>
+                {orderNumber && (
+                  <span className="current-order-badge">
+                    Current: {orderNumber}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="form-grid">
               <MainForm
                 operatorName={operatorName}
@@ -1150,6 +1304,59 @@ const CaptureScreen: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Shift Change Modal */}
+      <AnimatePresence>
+        {showShiftChangeModal && (
+          <motion.div
+            className="capture-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="capture-modal shift-change-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="modal-title">
+                <span className="modal-icon">🔄</span>
+                Shift Change Detected
+              </h3>
+              <p className="modal-description">
+                The shift has changed to <strong>{shift}</strong> shift.
+                Please enter the new operator's name or number.
+              </p>
+              <div className="modal-form">
+                <label className="modal-label">New Operator Name/Number</label>
+                <input
+                  type="text"
+                  className="modal-input"
+                  placeholder="Enter operator name or number..."
+                  value={newOperatorName}
+                  onChange={e => setNewOperatorName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="shift-change-info">
+                <p><strong>Current Order:</strong> {orderNumber}</p>
+                <p><strong>Previous Operator:</strong> {operatorName}</p>
+              </div>
+              <div className="modal-actions">
+                <button
+                  className="modal-btn confirm"
+                  onClick={handleShiftChangeConfirm}
+                  disabled={!newOperatorName.trim()}
+                >
+                  Confirm Operator Change
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Machine Speed Modal */}
       <AnimatePresence>
         {showSpeedModal && (
@@ -1481,6 +1688,62 @@ const CaptureScreen: React.FC = () => {
         onScan={handlePalletScan}
         recentScans={palletScanEntries.map(e => e.qrCode)}
       />
+
+      {/* Order Queue Selection Modal */}
+      <AnimatePresence>
+        {showOrderSelect && (
+          <motion.div
+            className="capture-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowOrderSelect(false)}
+          >
+            <motion.div
+              className="capture-modal order-select-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="modal-title">
+                <span className="modal-icon">📋</span>
+                Select Order
+              </h3>
+              <p className="modal-description">
+                Choose an order from the queue (sorted by priority)
+              </p>
+              <div className="order-queue-list">
+                {availableOrders.map((order, index) => (
+                  <button
+                    key={order.id}
+                    className={`order-queue-item ${orderNumber === order.order_number ? 'selected' : ''}`}
+                    onClick={() => handleOrderSelect(order)}
+                  >
+                    <span className="order-priority">#{index + 1}</span>
+                    <div className="order-details">
+                      <span className="order-number">{order.order_number}</span>
+                      <span className="order-product">{order.product}</span>
+                      <span className="order-batch">Batch: {order.batch_number}</span>
+                    </div>
+                    {orderNumber === order.order_number && (
+                      <span className="order-selected-badge">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button
+                  className="modal-btn cancel"
+                  onClick={() => setShowOrderSelect(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

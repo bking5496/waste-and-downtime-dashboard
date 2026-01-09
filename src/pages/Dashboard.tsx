@@ -6,7 +6,7 @@ import {
   AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip,
   PieChart, Pie, Cell
 } from 'recharts';
-import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates } from '../lib/storage';
+import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
 import { Machine, ShiftData } from '../types';
 import MachineSettingsModal from '../components/MachineSettingsModal';
 import SubMachineModal from '../components/SubMachineModal';
@@ -112,6 +112,9 @@ const Dashboard: React.FC = () => {
     const init = async () => {
       setIsLoading(true);
       try {
+        // Run daily cleanup if needed
+        maybeRunCleanup();
+
         const machineData = await initializeMachines();
         setMachines(machineData);
 
@@ -120,6 +123,20 @@ const Dashboard: React.FC = () => {
 
         const history = getShiftHistory().slice(0, 7);
         setRecentHistory(history);
+
+        // Retry any failed submissions in background
+        const failedCount = getFailedSubmissions().length;
+        if (failedCount > 0) {
+          console.log(`Retrying ${failedCount} failed submissions...`);
+          retryFailedSubmissions().then(result => {
+            if (result.succeeded > 0) {
+              console.log(`Successfully synced ${result.succeeded} previously failed submissions`);
+            }
+            if (result.remaining > 0) {
+              console.warn(`${result.remaining} submissions still pending retry`);
+            }
+          });
+        }
       } catch (error) {
         console.error('Failed to initialize:', error);
         loadData(); // Fallback to localStorage
@@ -525,37 +542,48 @@ const Dashboard: React.FC = () => {
                 exit={{ opacity: 0 }}
               >
                 {machines.map((machine, index) => {
-                  const isInUse = !!machine.currentOperator;
-                  const displayStatus = isInUse ? 'in-use' : machine.status;
+                  // Machine is running if status is 'running' OR has a current order
+                  const isRunning = machine.status === 'running' || !!machine.currentOrder;
+                  const isBlocked = isRunning || machine.status === 'maintenance';
+                  const displayStatus = isRunning ? 'running' : machine.status;
                   const activeSubMachines = machine.subMachineCount && machine.subMachineCount > 0
                     ? getActiveSubMachines(machine.name, machine.subMachineCount)
                     : new Set<number>();
 
+                  const handleTileClick = () => {
+                    if (machine.subMachineCount && machine.subMachineCount > 0) return;
+                    if (isRunning) {
+                      alert(`${machine.name} is currently running order ${machine.currentOrder || 'in progress'}.\nOperator: ${machine.currentOperator || 'Unknown'}`);
+                      return;
+                    }
+                    handleMachineClick(machine);
+                  };
+
                   return (
                     <motion.div
                       key={machine.id}
-                      className={`machine-tile ${displayStatus} ${machine.status === 'maintenance' ? 'disabled' : ''} ${machine.subMachineCount && machine.subMachineCount > 0 ? 'has-sub-machines' : ''}`}
+                      className={`machine-tile ${displayStatus} ${isBlocked ? 'disabled' : ''} ${machine.subMachineCount && machine.subMachineCount > 0 ? 'has-sub-machines' : ''}`}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.05 }}
-                      onClick={() => !(machine.subMachineCount && machine.subMachineCount > 0) && handleMachineClick(machine)}
-                      whileHover={machine.status !== 'maintenance' && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 1.02, y: -4 } : {}}
-                      whileTap={machine.status !== 'maintenance' && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 0.98 } : {}}
+                      onClick={handleTileClick}
+                      whileHover={!isBlocked && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 1.02, y: -4 } : {}}
+                      whileTap={!isBlocked && !(machine.subMachineCount && machine.subMachineCount > 0) ? { scale: 0.98 } : {}}
                     >
                       <div
                         className="tile-glow"
-                        style={{ background: isInUse ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' : getStatusGradient(machine.status) }}
+                        style={{ background: getStatusGradient(displayStatus) }}
                       />
                       <div className="tile-content">
                         <div className="tile-header">
                           <span className="tile-name">{machine.name}</span>
                           <div className="tile-status">
-                            <PulseIndicator color={isInUse ? '#3b82f6' : getStatusColor(machine.status)} />
+                            <PulseIndicator color={getStatusColor(displayStatus)} />
                           </div>
                         </div>
 
                         <div className="tile-status-text">
-                          {isInUse ? 'In Use' : machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
+                          {isRunning ? 'Running' : machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
                           {machine.subMachineCount && machine.subMachineCount > 0 && (
                             <span className="sub-count-badge">
                               {activeSubMachines.size > 0
@@ -564,6 +592,11 @@ const Dashboard: React.FC = () => {
                             </span>
                           )}
                         </div>
+
+                        {/* Show current order if running */}
+                        {isRunning && machine.currentOrder && (
+                          <div className="tile-order">Order: {machine.currentOrder}</div>
+                        )}
 
                         {machine.currentOperator && (
                           <div className="tile-operator">{machine.currentOperator}</div>
