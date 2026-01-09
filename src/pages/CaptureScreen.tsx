@@ -10,6 +10,7 @@ import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission } from '../lib/storage';
+import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
 
 // Storage key for shift session
 const getSessionKey = (machineName: string, shift: string, date: string) =>
@@ -259,6 +260,19 @@ const CaptureScreen: React.FC = () => {
     };
 
     localStorage.setItem(sessionKey, JSON.stringify(session));
+
+    // Sync to Supabase for cross-browser visibility
+    upsertLiveSession({
+      machineName,
+      operatorName,
+      orderNumber,
+      product,
+      batchNumber,
+      shift: currentShift,
+      date: currentDate,
+      locked: true,
+    });
+
     if (!isSessionLocked) {
       setIsSessionLocked(true);
       // Update machine status to 'running' in Supabase
@@ -653,6 +667,9 @@ const CaptureScreen: React.FC = () => {
       const sessionKey = getSessionKey(machineName, shift, currentDate);
       localStorage.removeItem(sessionKey);
 
+      // Delete from Supabase live_sessions so other browsers see it as available
+      deleteLiveSession(machineName, shift, currentDate);
+
       // Keep operator name but clear order-specific fields for new order
       setOrderNumber('');
       setProduct('');
@@ -679,6 +696,9 @@ const CaptureScreen: React.FC = () => {
       const currentDate = new Date().toISOString().split('T')[0];
       const sessionKey = getSessionKey(machineName, shift, currentDate);
       localStorage.removeItem(sessionKey);
+
+      // Also delete from Supabase live_sessions
+      deleteLiveSession(machineName, shift, currentDate);
 
       setWasteEntries([]);
       setDowntimeEntries([]);

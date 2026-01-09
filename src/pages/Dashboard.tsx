@@ -7,6 +7,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
+import { fetchActiveSessions, subscribeToSessionChanges, LiveSession } from '../lib/liveSession';
 import { Machine, ShiftData } from '../types';
 import MachineSettingsModal from '../components/MachineSettingsModal';
 import SubMachineModal from '../components/SubMachineModal';
@@ -60,6 +61,7 @@ const Dashboard: React.FC = () => {
   const [, setIsLoading] = useState(true); // Used only for setting, UI shows content after load
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
+  const [activeSessions, setActiveSessions] = useState<LiveSession[]>([]);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const LONG_PRESS_DURATION = 500; // ms
 
@@ -72,29 +74,42 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Helper function to detect active sub-machine sessions from localStorage
+  // Helper function to detect active sub-machine sessions from Supabase (with localStorage fallback)
   const getActiveSubMachines = useCallback((machineName: string, subMachineCount: number): Set<number> => {
     const activeSet = new Set<number>();
-    const today = new Date().toISOString().split('T')[0];
-    const hours = new Date().getUTCHours() + 2;
-    const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
 
+    // Check Supabase sessions first
     for (let i = 1; i <= subMachineCount; i++) {
       const fullName = `${machineName} - Machine ${i}`;
-      const sessionKey = `shift_session_${fullName}_${currentShift}_${today}`;
-      const session = localStorage.getItem(sessionKey);
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          if (parsed.locked) activeSet.add(i);
-        } catch (e) {
-          // Invalid JSON in localStorage - ignore this session
-          console.warn(`Invalid session data for ${fullName}:`, e);
+      const isActive = activeSessions.some(s => s.machine_name === fullName && s.is_locked);
+      if (isActive) {
+        activeSet.add(i);
+      }
+    }
+
+    // If no Supabase sessions, fallback to localStorage (offline mode)
+    if (activeSet.size === 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const hours = new Date().getUTCHours() + 2;
+      const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+
+      for (let i = 1; i <= subMachineCount; i++) {
+        const fullName = `${machineName} - Machine ${i}`;
+        const sessionKey = `shift_session_${fullName}_${currentShift}_${today}`;
+        const session = localStorage.getItem(sessionKey);
+        if (session) {
+          try {
+            const parsed = JSON.parse(session);
+            if (parsed.locked) activeSet.add(i);
+          } catch (e) {
+            console.warn(`Invalid session data for ${fullName}:`, e);
+          }
         }
       }
     }
+
     return activeSet;
-  }, []);
+  }, [activeSessions]);
 
   const loadData = useCallback(() => {
     const machineData = getMachinesData();
@@ -124,6 +139,10 @@ const Dashboard: React.FC = () => {
         const history = getShiftHistory().slice(0, 7);
         setRecentHistory(history);
 
+        // Fetch active sessions from Supabase for cross-browser sync
+        const sessions = await fetchActiveSessions();
+        setActiveSessions(sessions);
+
         // Retry any failed submissions in background
         const failedCount = getFailedSubmissions().length;
         if (failedCount > 0) {
@@ -148,13 +167,20 @@ const Dashboard: React.FC = () => {
     init();
 
     // Subscribe to real-time machine updates
-    const unsubscribe = subscribeToMachineUpdates((updatedMachines) => {
+    const unsubscribeMachines = subscribeToMachineUpdates((updatedMachines) => {
       console.log('Real-time update received:', updatedMachines.length, 'machines');
       setMachines(updatedMachines);
     });
 
+    // Subscribe to real-time session updates for cross-browser sync
+    const unsubscribeSessions = subscribeToSessionChanges((sessions) => {
+      console.log('Session update received:', sessions.length, 'active sessions');
+      setActiveSessions(sessions);
+    });
+
     return () => {
-      unsubscribe();
+      unsubscribeMachines();
+      unsubscribeSessions();
     };
   }, [loadData]);
 
