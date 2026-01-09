@@ -81,6 +81,7 @@ export const upsertLiveSession = async (session: {
                 console.error('Failed to upsert live session:', error.message);
                 return false;
             }
+            console.log('✅ Live session synced to Supabase:', sessionId);
             return true;
         } catch (e) {
             console.error('Failed to upsert live session:', e);
@@ -160,6 +161,7 @@ export const fetchActiveSessions = async (): Promise<LiveSession[]> => {
             });
             lastFetchTime = now;
 
+            console.log('📋 Fetched active sessions from Supabase:', (data || []).length, data?.map(s => s.machine_name));
             return data || [];
         } catch (e) {
             console.error('Failed to fetch live sessions:', e);
@@ -218,13 +220,16 @@ export const subscribeToSessionChanges = (
         .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'live_sessions' },
-            async () => {
+            async (payload) => {
+                console.log('🔄 Real-time session update received:', payload.eventType);
                 // Refetch all sessions on any change
                 const sessions = await fetchActiveSessions();
                 onUpdate(sessions);
             }
         )
-        .subscribe();
+        .subscribe((status) => {
+            console.log('📡 Session subscription status:', status);
+        });
 
     return () => {
         supabase.removeChannel(channel);
