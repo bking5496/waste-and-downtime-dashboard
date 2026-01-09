@@ -552,10 +552,7 @@ const Dashboard: React.FC = () => {
 
                   const handleTileClick = () => {
                     if (machine.subMachineCount && machine.subMachineCount > 0) return;
-                    if (isRunning) {
-                      alert(`${machine.name} is currently running order ${machine.currentOrder || 'in progress'}.\nOperator: ${machine.currentOperator || 'Unknown'}`);
-                      return;
-                    }
+                    // Allow access to running machines (to continue session)
                     handleMachineClick(machine);
                   };
 

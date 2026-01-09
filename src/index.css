@@ -4037,6 +4037,39 @@ hr {
   color: #fbbf24;
 }
 
+/* Continue Modal Select Styling */
+.continue-modal .modal-select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid rgba(20, 184, 166, 0.3);
+  border-radius: 10px;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2314b8a6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 44px;
+}
+
+.continue-modal .modal-select:focus {
+  outline: none;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+}
+
+.continue-modal .modal-select option {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 12px;
+}
+
 .continue-modal .continue-confirm {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   border: none !important;
