@@ -499,25 +499,18 @@ export const exportToCSV = (data: ShiftData[], filename: string): void => {
     'Order Number',
     'Product',
     'Batch Number',
-    'Total Waste (kg)',
-    'Waste Types',
-    'Total Downtime (min)',
-    'Downtime Reasons',
+    'Entry Type',
+    'Waste Type',
+    'Waste (kg)',
+    'Downtime Reason',
+    'Downtime (min)',
     'Submitted At',
   ];
 
-  const rows = data.map(item => {
-    // Get unique waste types joined by semicolon
-    const wasteTypes = item.wasteEntries && item.wasteEntries.length > 0
-      ? Array.from(new Set(item.wasteEntries.map(w => w.wasteType))).join('; ')
-      : '';
+  const rows: string[][] = [];
 
-    // Get unique downtime reasons joined by semicolon
-    const downtimeReasons = item.downtimeEntries && item.downtimeEntries.length > 0
-      ? Array.from(new Set(item.downtimeEntries.map(d => d.downtimeReason))).join('; ')
-      : '';
-
-    return [
+  data.forEach(item => {
+    const baseRow = [
       item.date,
       item.shift,
       item.operatorName,
@@ -525,12 +518,52 @@ export const exportToCSV = (data: ShiftData[], filename: string): void => {
       item.orderNumber,
       item.product,
       item.batchNumber,
-      item.totalWaste.toFixed(2),
-      wasteTypes,
-      item.totalDowntime.toString(),
-      downtimeReasons,
-      new Date(item.submittedAt).toLocaleString(),
     ];
+    const submittedAt = new Date(item.submittedAt).toLocaleString();
+
+    // Add a row for each waste entry
+    if (item.wasteEntries && item.wasteEntries.length > 0) {
+      item.wasteEntries.forEach(w => {
+        rows.push([
+          ...baseRow,
+          'Waste',
+          w.wasteType,
+          w.waste.toFixed(2),
+          '',
+          '',
+          submittedAt,
+        ]);
+      });
+    }
+
+    // Add a row for each downtime entry
+    if (item.downtimeEntries && item.downtimeEntries.length > 0) {
+      item.downtimeEntries.forEach(d => {
+        rows.push([
+          ...baseRow,
+          'Downtime',
+          '',
+          '',
+          d.downtimeReason,
+          d.downtime.toString(),
+          submittedAt,
+        ]);
+      });
+    }
+
+    // If no entries at all, still add one summary row
+    if ((!item.wasteEntries || item.wasteEntries.length === 0) &&
+      (!item.downtimeEntries || item.downtimeEntries.length === 0)) {
+      rows.push([
+        ...baseRow,
+        'Summary',
+        '',
+        item.totalWaste.toFixed(2),
+        '',
+        item.totalDowntime.toString(),
+        submittedAt,
+      ]);
+    }
   });
 
   const csvContent = [
