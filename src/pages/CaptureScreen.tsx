@@ -7,7 +7,7 @@ import MainForm from '../components/MainForm';
 import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
-import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
+import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission } from '../lib/storage';
 
@@ -91,6 +91,18 @@ const CaptureScreen: React.FC = () => {
   const [showChangeoverDialog, setShowChangeoverDialog] = useState(false);
   const [willChangeover, setWillChangeover] = useState<boolean | null>(null);
   const [willMaintenance, setWillMaintenance] = useState<boolean | null>(null);
+
+  // Production Timer state
+  const [productionState, setProductionState] = useState<ProductionState>({
+    isRunning: false,
+    startTime: null,
+    pausedAt: null,
+    totalRunTimeMs: 0,
+    lastResumedAt: null,
+  });
+  const [displayRunTime, setDisplayRunTime] = useState<string>('00:00:00');
+  const [showContinueModal, setShowContinueModal] = useState(false);
+  const [pauseDowntimeReason, setPauseDowntimeReason] = useState('');
 
   // Show toast notification
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -326,6 +338,97 @@ const CaptureScreen: React.FC = () => {
 
     return () => clearInterval(timer);
   }, [dateTime, checkSubmissionWindow, lastKnownShift, isSessionLocked]);
+
+  // Production Timer - Update display every second when running
+  useEffect(() => {
+    if (!productionState.isRunning || !productionState.lastResumedAt) return;
+
+    const timerInterval = setInterval(() => {
+      const now = Date.now();
+      const currentSessionMs = now - productionState.lastResumedAt!.getTime();
+      const totalMs = productionState.totalRunTimeMs + currentSessionMs;
+
+      // Format as HH:MM:SS
+      const totalSeconds = Math.floor(totalMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setDisplayRunTime(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, [productionState.isRunning, productionState.lastResumedAt, productionState.totalRunTimeMs]);
+
+  // Start production timer (called when session is locked)
+  const handleStartProduction = useCallback(() => {
+    const now = new Date();
+    setProductionState({
+      isRunning: true,
+      startTime: now,
+      pausedAt: null,
+      totalRunTimeMs: 0,
+      lastResumedAt: now,
+    });
+    setDisplayRunTime('00:00:00');
+  }, []);
+
+  // Pause production - record pause start time
+  const handlePauseProduction = useCallback(() => {
+    if (!productionState.isRunning) return;
+
+    const now = new Date();
+    // Calculate run time accumulated so far
+    const currentSessionMs = productionState.lastResumedAt
+      ? now.getTime() - productionState.lastResumedAt.getTime()
+      : 0;
+
+    setProductionState(prev => ({
+      ...prev,
+      isRunning: false,
+      pausedAt: now,
+      totalRunTimeMs: prev.totalRunTimeMs + currentSessionMs,
+    }));
+    showToast('Production paused - timer stopped', 'success');
+  }, [productionState.isRunning, productionState.lastResumedAt, showToast]);
+
+  // Continue production - show modal to get reason, then record downtime
+  const handleContinueProduction = useCallback(() => {
+    if (!pauseDowntimeReason) {
+      showToast('Please select a downtime reason', 'error');
+      return;
+    }
+
+    if (!productionState.pausedAt) return;
+
+    const now = new Date();
+    const pauseDurationMs = now.getTime() - productionState.pausedAt.getTime();
+    const pauseDurationMinutes = Math.ceil(pauseDurationMs / 60000); // Round up to nearest minute
+
+    // Create downtime entry automatically
+    const newDowntimeEntry: DowntimeEntry = {
+      id: uuidv4(),
+      downtime: pauseDurationMinutes,
+      downtimeReason: pauseDowntimeReason,
+      notes: 'Auto-recorded from production pause',
+      timestamp: productionState.pausedAt,
+    };
+    setDowntimeEntries(prev => [...prev, newDowntimeEntry]);
+
+    // Resume production
+    setProductionState(prev => ({
+      ...prev,
+      isRunning: true,
+      pausedAt: null,
+      lastResumedAt: now,
+    }));
+
+    // Reset modal state
+    setShowContinueModal(false);
+    setPauseDowntimeReason('');
+    showToast(`Production resumed. ${pauseDurationMinutes} min downtime recorded.`, 'success');
+  }, [pauseDowntimeReason, productionState.pausedAt, showToast]);
 
   // Handle Waste Entry from Modal
   const handleWasteSubmit = () => {
@@ -866,12 +969,75 @@ const CaptureScreen: React.FC = () => {
             {!isSessionLocked && operatorName && orderNumber && product && batchNumber && (
               <button
                 className="lock-session-btn"
-                onClick={() => saveSession(true)}
+                onClick={() => {
+                  saveSession(true);
+                  handleStartProduction();
+                }}
               >
-                🔒 Lock Shift Details for Session
+                🔒 Lock Shift Details & Start Production
               </button>
             )}
           </section>
+
+          {/* Machine Details Section - Production Timer */}
+          {isSessionLocked && (
+            <section className="form-section machine-details-section">
+              <h2 className="section-heading">
+                <span className="section-icon">⚙️</span>
+                Machine Details
+                <span className={`production-status-badge ${productionState.isRunning ? 'running' : 'paused'}`}>
+                  {productionState.isRunning ? '● Running' : '◉ Paused'}
+                </span>
+              </h2>
+
+              <div className="machine-details-grid">
+                {/* Production Start Time */}
+                <div className="detail-card">
+                  <span className="detail-label">Production Started</span>
+                  <span className="detail-value">
+                    {productionState.startTime
+                      ? productionState.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : '--:--'}
+                  </span>
+                </div>
+
+                {/* Run Time Timer */}
+                <div className="detail-card timer-card">
+                  <span className="detail-label">Run Time</span>
+                  <span className="detail-value timer-value">{displayRunTime}</span>
+                </div>
+
+                {/* Pause/Continue Button */}
+                <div className="detail-card action-card">
+                  {productionState.isRunning ? (
+                    <button
+                      className="pause-continue-btn pause"
+                      onClick={handlePauseProduction}
+                    >
+                      <span className="btn-icon">⏸</span>
+                      Pause Production
+                    </button>
+                  ) : (
+                    <button
+                      className="pause-continue-btn continue"
+                      onClick={() => setShowContinueModal(true)}
+                    >
+                      <span className="btn-icon">▶</span>
+                      Continue Production
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Pause Duration Display */}
+              {productionState.pausedAt && (
+                <div className="pause-duration-display">
+                  <span className="pause-icon">⏱️</span>
+                  Paused since {productionState.pausedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Waste Section - Button Based */}
           <section className="form-section capture-section compact-capture waste-section">
@@ -1598,6 +1764,74 @@ const CaptureScreen: React.FC = () => {
                   disabled={!downtime || downtime <= 0 || !downtimeReason}
                 >
                   Add Downtime Entry
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Continue Production Modal */}
+      <AnimatePresence>
+        {showContinueModal && (
+          <motion.div
+            className="capture-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowContinueModal(false)}
+          >
+            <motion.div
+              className="capture-modal continue-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="modal-title">
+                <span className="modal-icon">▶</span>
+                Continue Production
+              </h3>
+              <div className="modal-form">
+                <div className="pause-info">
+                  <span className="pause-duration-label">Paused Duration:</span>
+                  <span className="pause-duration-value">
+                    {productionState.pausedAt
+                      ? `${Math.ceil((Date.now() - productionState.pausedAt.getTime()) / 60000)} minutes`
+                      : '0 minutes'}
+                  </span>
+                </div>
+                <div className="form-row">
+                  <label className="modal-label">What was the reason for this downtime?</label>
+                  <select
+                    className="modal-select"
+                    value={pauseDowntimeReason}
+                    onChange={e => setPauseDowntimeReason(e.target.value)}
+                    autoFocus
+                  >
+                    <option value="">Select reason...</option>
+                    {DOWNTIME_REASONS.map(reason => (
+                      <option key={reason} value={reason}>{reason}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button
+                  className="modal-btn cancel"
+                  onClick={() => {
+                    setShowContinueModal(false);
+                    setPauseDowntimeReason('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-btn confirm continue-confirm"
+                  onClick={handleContinueProduction}
+                  disabled={!pauseDowntimeReason}
+                >
+                  Record & Continue
                 </button>
               </div>
             </motion.div>

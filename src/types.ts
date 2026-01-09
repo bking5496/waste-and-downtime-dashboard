@@ -13,6 +13,15 @@ export interface DowntimeEntry {
   timestamp: Date;
 }
 
+// Production timer state for tracking run time and pauses
+export interface ProductionState {
+  isRunning: boolean;
+  startTime: Date | null;       // When production started
+  pausedAt: Date | null;        // When current pause began
+  totalRunTimeMs: number;       // Accumulated run time in milliseconds
+  lastResumedAt: Date | null;   // When last resumed from pause
+}
+
 export interface SpeedEntry {
   id: string;
   speed: number;
