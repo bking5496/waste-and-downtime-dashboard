@@ -1,0 +1,489 @@
+/**
+ * Mobile-first responsive styles
+ * Production-ready breakpoints and touch optimizations
+ */
+
+/* ===================================
+   CSS Variables for Responsive Design
+   =================================== */
+:root {
+  --mobile-padding: 12px;
+  --tablet-padding: 20px;
+  --desktop-padding: 28px;
+  --touch-target-min: 44px;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+/* ===================================
+   Base Mobile Styles (< 768px)
+   =================================== */
+@media (max-width: 767px) {
+  /* Typography */
+  html {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Dashboard Layout */
+  .dashboard-v2 {
+    padding: var(--mobile-padding);
+    padding-top: calc(var(--mobile-padding) + var(--safe-area-inset-top));
+    padding-bottom: calc(var(--mobile-padding) + var(--safe-area-inset-bottom));
+  }
+
+  .dashboard-main {
+    flex-direction: column;
+    gap: var(--mobile-padding);
+  }
+
+  .stats-panel,
+  .overview-panel {
+    width: 100%;
+    order: 2;
+  }
+
+  .machines-section {
+    order: 1;
+  }
+
+  /* Hide non-essential panels on mobile */
+  .overview-panel {
+    display: none;
+  }
+
+  /* Machine Grid */
+  .machines-grid-v2 {
+    grid-template-columns: 1fr;
+    gap: var(--mobile-padding);
+  }
+
+  .machine-tile {
+    min-height: 100px;
+    padding: var(--mobile-padding);
+  }
+
+  /* Navigation */
+  .top-nav {
+    flex-wrap: wrap;
+    padding: var(--mobile-padding);
+    gap: 8px;
+  }
+
+  .nav-brand {
+    order: 1;
+    flex: 1;
+  }
+
+  .nav-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-actions {
+    order: 2;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  .settings-text {
+    display: none;
+  }
+
+  /* Capture Screen */
+  .capture-screen-v2 {
+    padding: var(--mobile-padding);
+  }
+
+  .capture-main {
+    flex-direction: column;
+    gap: var(--mobile-padding);
+  }
+
+  .capture-form-column,
+  .capture-summary-column {
+    width: 100%;
+  }
+
+  .capture-summary-column {
+    display: none; /* Hide on mobile, essential info in main column */
+  }
+
+  .capture-header-v2 {
+    flex-wrap: wrap;
+    padding: var(--mobile-padding);
+    gap: 8px;
+  }
+
+  .capture-title-v2 h1 {
+    font-size: 1.1rem;
+  }
+
+  /* Form Sections */
+  .form-section {
+    padding: var(--mobile-padding);
+    margin-bottom: var(--mobile-padding);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--mobile-padding);
+  }
+
+  /* Modal Styles */
+  .capture-modal-overlay {
+    padding: var(--mobile-padding);
+    align-items: flex-end;
+  }
+
+  .capture-modal {
+    max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: none;
+    margin-bottom: var(--safe-area-inset-bottom);
+  }
+
+  /* Entry Lists */
+  .capture-entries-list {
+    max-height: 200px;
+  }
+
+  .capture-entry-item {
+    padding: 10px;
+    font-size: 0.875rem;
+  }
+
+  /* Buttons */
+  .capture-add-btn {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .submit-btn-v2 {
+    position: fixed;
+    bottom: calc(var(--mobile-padding) + var(--safe-area-inset-bottom));
+    left: var(--mobile-padding);
+    right: var(--mobile-padding);
+    z-index: 100;
+  }
+
+  /* Stats Cards */
+  .quick-stats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .stat-item {
+    flex: 1;
+    min-width: calc(50% - 4px);
+  }
+
+  /* Charts */
+  .trend-chart {
+    height: 100px;
+  }
+
+  /* Admin Console */
+  .admin-console {
+    padding: var(--mobile-padding);
+  }
+
+  .admin-tabs {
+    flex-wrap: wrap;
+  }
+
+  .admin-tab {
+    flex: 1;
+    min-width: calc(50% - 4px);
+  }
+
+  /* History Page */
+  .history-page {
+    padding: var(--mobile-padding);
+  }
+
+  .history-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Chat Widget */
+  .chat-widget {
+    bottom: calc(70px + var(--safe-area-inset-bottom));
+    right: var(--mobile-padding);
+  }
+
+  .chat-window {
+    width: calc(100vw - var(--mobile-padding) * 2);
+    max-width: none;
+    height: 60vh;
+    right: calc(-1 * var(--mobile-padding));
+  }
+
+  /* Multi-select bar */
+  .multi-select-bar {
+    flex-direction: column;
+    gap: 8px;
+    padding: var(--mobile-padding);
+    bottom: var(--safe-area-inset-bottom);
+  }
+
+  .selection-info {
+    font-size: 0.875rem;
+  }
+
+  .start-capture-btn {
+    width: 100%;
+  }
+}
+
+/* ===================================
+   Tablet Styles (768px - 1023px)
+   =================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-v2 {
+    padding: var(--tablet-padding);
+  }
+
+  .dashboard-main {
+    gap: var(--tablet-padding);
+  }
+
+  .stats-panel {
+    width: 240px;
+  }
+
+  .overview-panel {
+    width: 260px;
+  }
+
+  .machines-grid-v2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .capture-main {
+    gap: var(--tablet-padding);
+  }
+
+  .capture-form-column {
+    flex: 2;
+  }
+
+  .capture-summary-column {
+    flex: 1;
+  }
+}
+
+/* ===================================
+   Touch-specific Optimizations
+   =================================== */
+@media (pointer: coarse) {
+  /* Increase touch targets */
+  button,
+  .btn,
+  a,
+  input,
+  select,
+  .clickable {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+
+  /* Disable hover effects on touch devices */
+  .machine-tile:hover {
+    transform: none;
+  }
+
+  /* Better tap feedback */
+  .machine-tile:active,
+  button:active,
+  .btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+
+  /* Prevent text selection on buttons */
+  button,
+  .btn {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Larger scrollbar for touch */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* ===================================
+   Landscape Mobile
+   =================================== */
+@media (max-width: 767px) and (orientation: landscape) {
+  .dashboard-main {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .stats-panel {
+    width: 200px;
+    flex-shrink: 0;
+  }
+
+  .machines-section {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .machines-grid-v2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .capture-modal {
+    max-height: 90vh;
+    border-radius: 16px;
+    margin: auto;
+    max-width: 500px;
+  }
+}
+
+/* ===================================
+   High DPI / Retina Displays
+   =================================== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders on retina */
+  .card,
+  .form-control,
+  .btn {
+    border-width: 0.5px;
+  }
+}
+
+/* ===================================
+   Reduced Motion
+   =================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .skeleton {
+    animation: none;
+    background: #1e293b;
+  }
+}
+
+/* ===================================
+   Dark Mode Support
+   =================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #0f172a;
+    --card-background: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+  }
+}
+
+/* ===================================
+   Print Styles
+   =================================== */
+@media print {
+  .nav-actions,
+  .chat-widget,
+  .multi-select-bar,
+  .submit-btn-v2 {
+    display: none !important;
+  }
+
+  .dashboard-v2,
+  .capture-screen-v2 {
+    background: white;
+    color: black;
+  }
+
+  .machine-tile {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* ===================================
+   Accessibility Focus Styles
+   =================================== */
+*:focus-visible {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Skip link styles */
+.skip-link:focus {
+  position: fixed !important;
+  left: 10px !important;
+  top: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  z-index: 10000 !important;
+  padding: 12px 24px !important;
+  background: var(--primary-color, #3b82f6) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===================================
+   Safe Area Insets (Notch Devices)
+   =================================== */
+@supports (padding: max(0px)) {
+  .dashboard-v2,
+  .capture-screen-v2 {
+    padding-left: max(var(--mobile-padding), var(--safe-area-inset-left));
+    padding-right: max(var(--mobile-padding), var(--safe-area-inset-right));
+  }
+
+  .capture-modal {
+    padding-bottom: max(20px, var(--safe-area-inset-bottom));
+  }
+}
