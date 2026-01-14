@@ -752,6 +752,61 @@ export const fetchMachineOrders = async (machineId: string): Promise<MachineOrde
   }
 };
 
+// Fetch orders by machine name (supports sub-machine names like "A - Machine 1")
+export const fetchMachineOrdersByName = async (machineName: string): Promise<MachineOrderQueueRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    // First try exact match on machine_id (for compatibility)
+    let { data, error } = await supabase
+      .from('machine_order_queue')
+      .select('*')
+      .eq('machine_id', machineName)
+      .eq('is_active', true)
+      .order('priority', { ascending: true });
+
+    if (error) throw error;
+    if (data && data.length > 0) return data;
+
+    // If no results, try matching via machines table name lookup
+    // (This handles cases where machine_id is the UUID but we have the name)
+    const { data: machines } = await supabase
+      .from('machines')
+      .select('id, name, sub_machine_count')
+      .order('name');
+
+    if (machines) {
+      // Check for exact match first
+      let matchingMachine = machines.find(m => m.name === machineName);
+
+      // If no exact match, check if this is a sub-machine name (e.g., "A - Machine 1")
+      if (!matchingMachine) {
+        // Try to find parent machine - sub-machine names are "ParentName - Machine N"
+        const parentMatch = machineName.match(/^(.+?) - Machine \d+$/);
+        if (parentMatch) {
+          const parentName = parentMatch[1];
+          matchingMachine = machines.find(m => m.name === parentName);
+        }
+      }
+
+      if (matchingMachine) {
+        const { data: orders } = await supabase
+          .from('machine_order_queue')
+          .select('*')
+          .eq('machine_id', matchingMachine.id)
+          .eq('is_active', true)
+          .order('priority', { ascending: true });
+        return orders || [];
+      }
+    }
+
+    return [];
+  } catch (e) {
+    console.error('Failed to fetch machine orders by name:', e);
+    return [];
+  }
+};
+
 // Fetch all active orders for all machines
 export const fetchAllMachineOrders = async (): Promise<MachineOrderQueueRecord[]> => {
   if (!isSupabaseConfigured) return [];
