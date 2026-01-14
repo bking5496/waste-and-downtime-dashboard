@@ -168,18 +168,13 @@ const CaptureScreen: React.FC = () => {
     }
   }, []);
 
-<<<<<<< HEAD
-  // Load saved session data (check localStorage first, then Supabase for cross-browser sync)
-=======
   // Load saved session data
->>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
   const loadSession = useCallback(async () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const hours = new Date().getUTCHours() + 2;
     const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
 
-    // First check localStorage (same browser)
     const savedSession = localStorage.getItem(sessionKey);
     if (savedSession) {
       try {
@@ -198,47 +193,13 @@ const CaptureScreen: React.FC = () => {
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
           if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
-<<<<<<< HEAD
-          return; // Found local session, done
-=======
           return; // Session loaded from localStorage
->>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
         }
       } catch (e) {
         console.error('Failed to load session:', e);
       }
     }
 
-<<<<<<< HEAD
-    // Check Supabase live_sessions for cross-browser sync
-    try {
-      const { fetchActiveSessions } = await import('../lib/liveSession');
-      const sessions = await fetchActiveSessions();
-      const supabaseSession = sessions.find(s =>
-        s.machine_name === machineName &&
-        s.shift === currentShift &&
-        s.session_date === currentDate &&
-        s.is_locked
-      );
-
-      if (supabaseSession) {
-        console.log('📥 Found locked session in Supabase for', machineName);
-        setOperatorName(supabaseSession.operator_name);
-        setOrderNumber(supabaseSession.order_number);
-        setProduct(supabaseSession.product);
-        setBatchNumber(supabaseSession.batch_number);
-        setIsSessionLocked(true);
-
-        // Save to localStorage for future local access
-        const session: ShiftSession = {
-          machineName,
-          operatorName: supabaseSession.operator_name,
-          orderNumber: supabaseSession.order_number,
-          product: supabaseSession.product,
-          batchNumber: supabaseSession.batch_number,
-          shift: currentShift,
-          date: currentDate,
-=======
     // No localStorage session - try to restore from Supabase live_sessions
     try {
       const { fetchLiveSessionByMachine } = await import('../lib/liveSession');
@@ -260,7 +221,6 @@ const CaptureScreen: React.FC = () => {
           batchNumber: liveSession.batch_number,
           shift: liveSession.shift,
           date: liveSession.session_date,
->>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
           locked: true,
           wasteEntries: [],
           downtimeEntries: [],
@@ -269,16 +229,6 @@ const CaptureScreen: React.FC = () => {
           looseCasesEntries: [],
           palletScanEntries: [],
         };
-<<<<<<< HEAD
-        localStorage.setItem(sessionKey, JSON.stringify(session));
-        return; // Found Supabase session, done
-      }
-    } catch (e) {
-      console.warn('Could not check Supabase for session:', e);
-    }
-
-    // No locked session found - try to load admin order defaults
-=======
         localStorage.setItem(sessionKey, JSON.stringify(localSession));
         console.log('📋 Session restored from Supabase:', machineName);
         return;
@@ -288,7 +238,6 @@ const CaptureScreen: React.FC = () => {
     }
 
     // No session anywhere - try to load admin order details from database
->>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
     try {
       const { fetchActiveOrderDetails } = await import('../lib/supabase');
       const activeOrder = await fetchActiveOrderDetails();
@@ -302,11 +251,7 @@ const CaptureScreen: React.FC = () => {
       console.error('Failed to load from database:', e);
     }
 
-<<<<<<< HEAD
-    // Fall back to localStorage admin order details
-=======
     // Fall back to localStorage admin details
->>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
     const adminOrderDetails = localStorage.getItem('admin_order_details');
     if (adminOrderDetails) {
       try {
@@ -360,25 +305,13 @@ const CaptureScreen: React.FC = () => {
       shift: currentShift,
       date: currentDate,
       locked: true,
-    }).then(success => {
-      if (success) {
-        console.log('✅ Session synced to Supabase:', machineName);
-      } else {
-        console.warn('⚠️ Failed to sync session to Supabase - check if live_sessions table exists');
-      }
     });
 
     if (!isSessionLocked) {
       setIsSessionLocked(true);
       // Update machine status to 'running' in Supabase
       if (machineId) {
-        updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift).then(success => {
-          if (success) {
-            console.log('✅ Machine status updated in Supabase:', machineId);
-          } else {
-            console.warn('⚠️ Failed to update machine status - check Supabase configuration');
-          }
-        });
+        updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift);
       }
       if (showMessage) showToast('Shift details locked for this session', 'success');
     }
