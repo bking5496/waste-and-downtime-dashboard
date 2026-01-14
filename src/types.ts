@@ -119,80 +119,18 @@ export interface Machine {
   subMachineCount?: number; // Number of sub-machines (e.g., 4 for "Universal 2")
 }
 
-export const OPERATORS = [
-  'John Doe',
-  'Jane Smith',
-  'Mike Johnson',
-  'Sarah Williams',
-  'David Brown',
-];
+// ==============================================
+// NO DEFAULT DATA - Everything comes from the database
+// Add data via Settings in the app or directly in Supabase
+// ==============================================
 
-export const MACHINES: Machine[] = [
-  { id: 'machine-a', name: 'Machine A', status: 'running', currentOperator: 'John Doe' },
-  { id: 'machine-b', name: 'Machine B', status: 'idle' },
-  { id: 'machine-c', name: 'Machine C', status: 'running', currentOperator: 'Jane Smith' },
-  { id: 'machine-d', name: 'Machine D', status: 'maintenance' },
-  { id: 'machine-e', name: 'Machine E', status: 'running', currentOperator: 'Mike Johnson' },
-  { id: 'machine-f', name: 'Machine F', status: 'idle' },
-];
+export const OPERATORS: string[] = [];
+export const MACHINES: Machine[] = [];
+export const WASTE_TYPES: string[] = [];
+export const PLANNED_DOWNTIME_REASONS: string[] = [];
+export const UNPLANNED_DOWNTIME_REASONS: string[] = [];
+export const DOWNTIME_REASONS: string[] = [];
+export const ORDER_NUMBERS: string[] = [];
+export const PRODUCTS: string[] = [];
+export const BATCH_NUMBERS: string[] = [];
 
-export const WASTE_TYPES = [
-  'Powder',
-  'Corro',
-  'Reel',
-  'Label',
-  'Display',
-  'Tray',
-];
-
-export const PLANNED_DOWNTIME_REASONS = [
-  'PPM',
-  'Training',
-  'Meeting',
-  'ChangeOver',
-  'Cleaning/CIP',
-  'Lunch/Tea Break',
-  'SetUp',
-];
-
-export const UNPLANNED_DOWNTIME_REASONS = [
-  'Absenteeism',
-  'Compressed Air',
-  'Electrical',
-  'Mechanical',
-  'Packaging Material',
-  'Power',
-  'Quality Control',
-  'Raw Material',
-  'Room Condition',
-  'Set-Up',
-  'Steam',
-  'Stock Count',
-  'Strike',
-  'Water',
-];
-
-// Combined for backwards compatibility
-export const DOWNTIME_REASONS = [...PLANNED_DOWNTIME_REASONS, ...UNPLANNED_DOWNTIME_REASONS];
-
-export const ORDER_NUMBERS = [
-  'ORD-001',
-  'ORD-002',
-  'ORD-003',
-  'ORD-004',
-  'ORD-005',
-];
-
-export const PRODUCTS = [
-  'Product X',
-  'Product Y',
-  'Product Z',
-  'Product W',
-];
-
-export const BATCH_NUMBERS = [
-  'BATCH-100',
-  'BATCH-101',
-  'BATCH-102',
-  'BATCH-103',
-];
