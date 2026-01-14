@@ -630,11 +630,9 @@ export const fetchActiveOrderDetails = async (): Promise<OrderDetailsRecord | nu
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      // No active order found is not an error
-      if (error.code === 'PGRST116') return null;
       console.error('Error fetching order details:', error.message);
       return null;
     }

@@ -254,7 +254,7 @@ const toSupabaseRecord = (machine: Machine): MachineRecord => ({
 export const initializeMachines = async (): Promise<Machine[]> => {
   try {
     const records = await fetchMachines();
-    
+
     if (records.length > 0) {
       machinesCache = records.map(toLocalMachine);
       // Also save to localStorage as backup
@@ -315,7 +315,7 @@ const getMachinesDataLocal = (): Machine[] => {
     localStorage.setItem(MACHINES_KEY, JSON.stringify(MACHINES));
     return MACHINES;
   }
-  
+
   try {
     return JSON.parse(stored);
   } catch {
@@ -328,7 +328,7 @@ export const saveShiftData = (data: ShiftData): void => {
   const existing = getShiftHistory();
   existing.unshift(data);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-  
+
   // Update machine data
   updateMachineLastSubmission(data.machine, data.submittedAt.toISOString());
 };
@@ -337,7 +337,7 @@ export const saveShiftData = (data: ShiftData): void => {
 export const getShiftHistory = (): ShiftData[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return [];
-  
+
   try {
     const parsed = JSON.parse(stored);
     return parsed.map((item: any) => ({
@@ -377,11 +377,11 @@ export const getTodayStats = () => {
   const today = new Date().toISOString().split('T')[0];
   const history = getShiftHistory();
   const todayData = history.filter(item => item.date === today);
-  
+
   const totalWaste = todayData.reduce((sum, item) => sum + item.totalWaste, 0);
   const totalDowntime = todayData.reduce((sum, item) => sum + item.totalDowntime, 0);
   const submissionCount = todayData.length;
-  
+
   return { totalWaste, totalDowntime, submissionCount };
 };
 
@@ -401,7 +401,7 @@ export const getMachinesData = (): Machine[] => {
   if (machinesCache) {
     return machinesCache;
   }
-  
+
   // Otherwise return from localStorage
   return getMachinesDataLocal();
 };
@@ -414,7 +414,7 @@ export const updateMachine = async (machineId: string, updates: Partial<Machine>
     machines[index] = { ...machines[index], ...updates };
     machinesCache = machines;
     localStorage.setItem(MACHINES_KEY, JSON.stringify(machines));
-    
+
     // Sync to Supabase
     if (useSupabase) {
       try {
@@ -432,7 +432,7 @@ export const addMachine = async (machine: Machine): Promise<void> => {
   machines.push(machine);
   machinesCache = machines;
   localStorage.setItem(MACHINES_KEY, JSON.stringify(machines));
-  
+
   // Sync to Supabase
   if (useSupabase) {
     try {
@@ -449,7 +449,7 @@ export const deleteMachine = async (machineId: string): Promise<void> => {
   const filtered = machines.filter(m => m.id !== machineId);
   machinesCache = filtered;
   localStorage.setItem(MACHINES_KEY, JSON.stringify(filtered));
-  
+
   // Sync to Supabase
   if (useSupabase) {
     try {
@@ -464,7 +464,7 @@ export const deleteMachine = async (machineId: string): Promise<void> => {
 export const resetMachines = async (): Promise<void> => {
   machinesCache = MACHINES;
   localStorage.setItem(MACHINES_KEY, JSON.stringify(MACHINES));
-  
+
   // Sync to Supabase
   if (useSupabase) {
     try {
@@ -482,7 +482,7 @@ export const getTimeAgo = (date: Date): string => {
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
-  
+
   if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins} min ago`;
   if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
@@ -499,29 +499,78 @@ export const exportToCSV = (data: ShiftData[], filename: string): void => {
     'Order Number',
     'Product',
     'Batch Number',
-    'Total Waste (kg)',
-    'Total Downtime (min)',
+    'Entry Type',
+    'Waste Type',
+    'Waste (kg)',
+    'Downtime Reason',
+    'Downtime (min)',
     'Submitted At',
   ];
-  
-  const rows = data.map(item => [
-    item.date,
-    item.shift,
-    item.operatorName,
-    item.machine,
-    item.orderNumber,
-    item.product,
-    item.batchNumber,
-    item.totalWaste.toFixed(2),
-    item.totalDowntime.toString(),
-    new Date(item.submittedAt).toLocaleString(),
-  ]);
-  
+
+  const rows: string[][] = [];
+
+  data.forEach(item => {
+    const baseRow = [
+      item.date,
+      item.shift,
+      item.operatorName,
+      item.machine,
+      item.orderNumber,
+      item.product,
+      item.batchNumber,
+    ];
+    const submittedAt = new Date(item.submittedAt).toLocaleString();
+
+    // Add a row for each waste entry
+    if (item.wasteEntries && item.wasteEntries.length > 0) {
+      item.wasteEntries.forEach(w => {
+        rows.push([
+          ...baseRow,
+          'Waste',
+          w.wasteType,
+          w.waste.toFixed(2),
+          '',
+          '',
+          submittedAt,
+        ]);
+      });
+    }
+
+    // Add a row for each downtime entry
+    if (item.downtimeEntries && item.downtimeEntries.length > 0) {
+      item.downtimeEntries.forEach(d => {
+        rows.push([
+          ...baseRow,
+          'Downtime',
+          '',
+          '',
+          d.downtimeReason,
+          d.downtime.toString(),
+          submittedAt,
+        ]);
+      });
+    }
+
+    // If no entries at all, still add one summary row
+    if ((!item.wasteEntries || item.wasteEntries.length === 0) &&
+      (!item.downtimeEntries || item.downtimeEntries.length === 0)) {
+      rows.push([
+        ...baseRow,
+        'Summary',
+        '',
+        item.totalWaste.toFixed(2),
+        '',
+        item.totalDowntime.toString(),
+        submittedAt,
+      ]);
+    }
+  });
+
   const csvContent = [
     headers.join(','),
     ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
   ].join('\n');
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
