@@ -8,11 +8,12 @@ const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 
 // Static assets to cache on install
+// Use relative paths for GitHub Pages compatibility (served from subdirectory)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.ico',
 ];
 
 // Install event - cache static assets
@@ -20,9 +21,18 @@ self.addEventListener('install', (event) => {
   console.log('[ServiceWorker] Installing...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[ServiceWorker] Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
+        // Cache each asset individually with error handling
+        // This prevents one failed request from breaking the entire install
+        const cachePromises = STATIC_ASSETS.map(async (asset) => {
+          try {
+            await cache.add(asset);
+          } catch (err) {
+            console.warn(`[ServiceWorker] Failed to cache: ${asset}`, err.message);
+          }
+        });
+        return Promise.all(cachePromises);
       })
       .then(() => {
         console.log('[ServiceWorker] Installed');
@@ -109,7 +119,7 @@ self.addEventListener('fetch', (event) => {
                     .then((cache) => cache.put(request, response));
                 }
               })
-              .catch(() => {});
+              .catch(() => { });
             return cached;
           }
           // Not in cache, fetch from network
