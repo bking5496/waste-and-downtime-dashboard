@@ -169,7 +169,7 @@ const CaptureScreen: React.FC = () => {
   }, []);
 
   // Load saved session data
-  const loadSession = useCallback(() => {
+  const loadSession = useCallback(async () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const hours = new Date().getUTCHours() + 2;
     const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
@@ -193,41 +193,75 @@ const CaptureScreen: React.FC = () => {
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
           if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
+          return; // Session loaded from localStorage
         }
       } catch (e) {
         console.error('Failed to load session:', e);
       }
-    } else {
-      // No session - try to load admin order details from database
-      const loadAdminOrderDetails = async () => {
-        try {
-          // Import dynamically to avoid circular dependency
-          const { fetchActiveOrderDetails } = await import('../lib/supabase');
-          const activeOrder = await fetchActiveOrderDetails();
-          if (activeOrder) {
-            setOrderNumber(activeOrder.order_number);
-            setProduct(activeOrder.product);
-            setBatchNumber(activeOrder.batch_number);
-            return;
-          }
-        } catch (e) {
-          console.error('Failed to load from database:', e);
-        }
+    }
 
-        // Fall back to localStorage
-        const adminOrderDetails = localStorage.getItem('admin_order_details');
-        if (adminOrderDetails) {
-          try {
-            const details = JSON.parse(adminOrderDetails);
-            if (details.orderNumber) setOrderNumber(details.orderNumber);
-            if (details.product) setProduct(details.product);
-            if (details.batchNumber) setBatchNumber(details.batchNumber);
-          } catch (e) {
-            console.error('Failed to load admin order details:', e);
-          }
-        }
-      };
-      loadAdminOrderDetails();
+    // No localStorage session - try to restore from Supabase live_sessions
+    try {
+      const { fetchLiveSessionByMachine } = await import('../lib/liveSession');
+      const liveSession = await fetchLiveSessionByMachine(machineName, currentShift, currentDate);
+      if (liveSession && liveSession.is_locked) {
+        // Restore session from Supabase
+        setOperatorName(liveSession.operator_name);
+        setOrderNumber(liveSession.order_number);
+        setProduct(liveSession.product);
+        setBatchNumber(liveSession.batch_number);
+        setIsSessionLocked(true);
+
+        // Save to localStorage for faster future loads
+        const localSession: ShiftSession = {
+          machineName: liveSession.machine_name,
+          operatorName: liveSession.operator_name,
+          orderNumber: liveSession.order_number,
+          product: liveSession.product,
+          batchNumber: liveSession.batch_number,
+          shift: liveSession.shift,
+          date: liveSession.session_date,
+          locked: true,
+          wasteEntries: [],
+          downtimeEntries: [],
+          speedEntries: [],
+          sachetMassEntries: [],
+          looseCasesEntries: [],
+          palletScanEntries: [],
+        };
+        localStorage.setItem(sessionKey, JSON.stringify(localSession));
+        console.log('📋 Session restored from Supabase:', machineName);
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to restore session from Supabase:', e);
+    }
+
+    // No session anywhere - try to load admin order details from database
+    try {
+      const { fetchActiveOrderDetails } = await import('../lib/supabase');
+      const activeOrder = await fetchActiveOrderDetails();
+      if (activeOrder) {
+        setOrderNumber(activeOrder.order_number);
+        setProduct(activeOrder.product);
+        setBatchNumber(activeOrder.batch_number);
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to load from database:', e);
+    }
+
+    // Fall back to localStorage admin details
+    const adminOrderDetails = localStorage.getItem('admin_order_details');
+    if (adminOrderDetails) {
+      try {
+        const details = JSON.parse(adminOrderDetails);
+        if (details.orderNumber) setOrderNumber(details.orderNumber);
+        if (details.product) setProduct(details.product);
+        if (details.batchNumber) setBatchNumber(details.batchNumber);
+      } catch (e) {
+        console.error('Failed to load admin order details:', e);
+      }
     }
   }, [machineName]);
 
