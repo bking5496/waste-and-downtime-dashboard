@@ -8,7 +8,7 @@ import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
-import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
+import { submitShiftData, fetchMachineOrdersByName, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission } from '../lib/storage';
 import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
 
@@ -290,16 +290,17 @@ const CaptureScreen: React.FC = () => {
   // Load available orders from machine queue
   useEffect(() => {
     const loadMachineOrders = async () => {
-      if (!machineId) return;
+      if (!machineName) return;
       try {
-        const orders = await fetchMachineOrders(machineId);
+        // Use machineName to support sub-machines (e.g., "A - Machine 1")
+        const orders = await fetchMachineOrdersByName(machineName);
         setAvailableOrders(orders);
       } catch (e) {
         console.error('Failed to load machine orders:', e);
       }
     };
     loadMachineOrders();
-  }, [machineId]);
+  }, [machineName]);
 
   // Auto-save entries when they change (if session is locked)
   useEffect(() => {
