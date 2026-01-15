@@ -426,6 +426,7 @@ export const getActiveSubmachineNumbers = async (parentMachineId: string, subMac
 };
 
 // Upsert a machine (insert or update)
+// Also creates submachine records if sub_machine_count > 0
 export const upsertMachine = async (machine: MachineRecord): Promise<MachineRecord | null> => {
   requireSupabaseConfigured();
   const { data, error } = await supabase
@@ -449,12 +450,78 @@ export const upsertMachine = async (machine: MachineRecord): Promise<MachineReco
     return null;
   }
 
+  // If this is a parent machine with submachines, create the submachine records
+  if (machine.sub_machine_count && machine.sub_machine_count > 0 && !machine.parent_machine_id) {
+    await generateSubmachines(machine.id, machine.name, machine.sub_machine_count);
+  }
+
   return data;
 };
 
+// Generate submachine records for a parent machine
+export const generateSubmachines = async (
+  parentId: string,
+  parentName: string,
+  subCount: number
+): Promise<boolean> => {
+  if (!isSupabaseConfigured) return false;
+
+  try {
+    const submachines: Partial<MachineRecord>[] = [];
+
+    for (let i = 1; i <= subCount; i++) {
+      const subId = `${parentId}-sub-${i}`;
+      const subName = `${parentName} - Machine ${i}`;
+
+      submachines.push({
+        id: subId,
+        name: subName,
+        status: 'idle',
+        parent_machine_id: parentId,
+      });
+    }
+
+    // Upsert all submachines (insert if not exists, ignore if exists)
+    const { error } = await supabase
+      .from('machines')
+      .upsert(
+        submachines.map(sub => ({
+          ...sub,
+          updated_at: new Date().toISOString(),
+        })),
+        { onConflict: 'id', ignoreDuplicates: true }
+      );
+
+    if (error) {
+      console.error('Failed to generate submachines:', error.message);
+      return false;
+    }
+
+    console.log(`Generated ${subCount} submachines for ${parentName}`);
+    return true;
+  } catch (e) {
+    console.error('Failed to generate submachines:', e);
+    return false;
+  }
+};
+
 // Delete a machine from Supabase
+// Also deletes all submachines if this is a parent machine
 export const removeMachine = async (machineId: string): Promise<boolean> => {
   requireSupabaseConfigured();
+
+  // First, delete any submachines associated with this machine
+  const { error: subError } = await supabase
+    .from('machines')
+    .delete()
+    .eq('parent_machine_id', machineId);
+
+  if (subError) {
+    console.error('Failed to delete submachines:', subError.message);
+    // Continue to delete parent anyway
+  }
+
+  // Then delete the machine itself
   const { error } = await supabase
     .from('machines')
     .delete()
@@ -808,6 +875,61 @@ export const fetchMachineOrders = async (machineId: string): Promise<MachineOrde
     return data || [];
   } catch (e) {
     console.error('Failed to fetch machine orders:', e);
+    return [];
+  }
+};
+
+// Fetch orders by machine name (supports sub-machine names like "A - Machine 1")
+export const fetchMachineOrdersByName = async (machineName: string): Promise<MachineOrderQueueRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    // First try exact match on machine_id (for compatibility)
+    let { data, error } = await supabase
+      .from('machine_order_queue')
+      .select('*')
+      .eq('machine_id', machineName)
+      .eq('is_active', true)
+      .order('priority', { ascending: true });
+
+    if (error) throw error;
+    if (data && data.length > 0) return data;
+
+    // If no results, try matching via machines table name lookup
+    // (This handles cases where machine_id is the UUID but we have the name)
+    const { data: machines } = await supabase
+      .from('machines')
+      .select('id, name, sub_machine_count')
+      .order('name');
+
+    if (machines) {
+      // Check for exact match first
+      let matchingMachine = machines.find(m => m.name === machineName);
+
+      // If no exact match, check if this is a sub-machine name (e.g., "A - Machine 1")
+      if (!matchingMachine) {
+        // Try to find parent machine - sub-machine names are "ParentName - Machine N"
+        const parentMatch = machineName.match(/^(.+?) - Machine \d+$/);
+        if (parentMatch) {
+          const parentName = parentMatch[1];
+          matchingMachine = machines.find(m => m.name === parentName);
+        }
+      }
+
+      if (matchingMachine) {
+        const { data: orders } = await supabase
+          .from('machine_order_queue')
+          .select('*')
+          .eq('machine_id', matchingMachine.id)
+          .eq('is_active', true)
+          .order('priority', { ascending: true });
+        return orders || [];
+      }
+    }
+
+    return [];
+  } catch (e) {
+    console.error('Failed to fetch machine orders by name:', e);
     return [];
   }
 };

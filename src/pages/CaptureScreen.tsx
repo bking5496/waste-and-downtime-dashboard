@@ -8,7 +8,7 @@ import DashboardCharts from '../components/DashboardCharts';
 import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
-import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
+import { submitShiftData, fetchMachineOrdersByName, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission } from '../lib/storage';
 import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
 
@@ -168,7 +168,11 @@ const CaptureScreen: React.FC = () => {
     }
   }, []);
 
+<<<<<<< HEAD
   // Load saved session data (check localStorage first, then Supabase for cross-browser sync)
+=======
+  // Load saved session data
+>>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
   const loadSession = useCallback(async () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const hours = new Date().getUTCHours() + 2;
@@ -194,13 +198,18 @@ const CaptureScreen: React.FC = () => {
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
           if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
+<<<<<<< HEAD
           return; // Found local session, done
+=======
+          return; // Session loaded from localStorage
+>>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
         }
       } catch (e) {
         console.error('Failed to load session:', e);
       }
     }
 
+<<<<<<< HEAD
     // Check Supabase live_sessions for cross-browser sync
     try {
       const { fetchActiveSessions } = await import('../lib/liveSession');
@@ -229,6 +238,29 @@ const CaptureScreen: React.FC = () => {
           batchNumber: supabaseSession.batch_number,
           shift: currentShift,
           date: currentDate,
+=======
+    // No localStorage session - try to restore from Supabase live_sessions
+    try {
+      const { fetchLiveSessionByMachine } = await import('../lib/liveSession');
+      const liveSession = await fetchLiveSessionByMachine(machineName, currentShift, currentDate);
+      if (liveSession && liveSession.is_locked) {
+        // Restore session from Supabase
+        setOperatorName(liveSession.operator_name);
+        setOrderNumber(liveSession.order_number);
+        setProduct(liveSession.product);
+        setBatchNumber(liveSession.batch_number);
+        setIsSessionLocked(true);
+
+        // Save to localStorage for faster future loads
+        const localSession: ShiftSession = {
+          machineName: liveSession.machine_name,
+          operatorName: liveSession.operator_name,
+          orderNumber: liveSession.order_number,
+          product: liveSession.product,
+          batchNumber: liveSession.batch_number,
+          shift: liveSession.shift,
+          date: liveSession.session_date,
+>>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
           locked: true,
           wasteEntries: [],
           downtimeEntries: [],
@@ -237,6 +269,7 @@ const CaptureScreen: React.FC = () => {
           looseCasesEntries: [],
           palletScanEntries: [],
         };
+<<<<<<< HEAD
         localStorage.setItem(sessionKey, JSON.stringify(session));
         return; // Found Supabase session, done
       }
@@ -245,6 +278,17 @@ const CaptureScreen: React.FC = () => {
     }
 
     // No locked session found - try to load admin order defaults
+=======
+        localStorage.setItem(sessionKey, JSON.stringify(localSession));
+        console.log('📋 Session restored from Supabase:', machineName);
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to restore session from Supabase:', e);
+    }
+
+    // No session anywhere - try to load admin order details from database
+>>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
     try {
       const { fetchActiveOrderDetails } = await import('../lib/supabase');
       const activeOrder = await fetchActiveOrderDetails();
@@ -258,7 +302,11 @@ const CaptureScreen: React.FC = () => {
       console.error('Failed to load from database:', e);
     }
 
+<<<<<<< HEAD
     // Fall back to localStorage admin order details
+=======
+    // Fall back to localStorage admin details
+>>>>>>> 9fafa97fc34e133fea0b0a86ab4e8eb15145be39
     const adminOrderDetails = localStorage.getItem('admin_order_details');
     if (adminOrderDetails) {
       try {
@@ -343,16 +391,17 @@ const CaptureScreen: React.FC = () => {
   // Load available orders from machine queue
   useEffect(() => {
     const loadMachineOrders = async () => {
-      if (!machineId) return;
+      if (!machineName) return;
       try {
-        const orders = await fetchMachineOrders(machineId);
+        // Use machineName to support sub-machines (e.g., "A - Machine 1")
+        const orders = await fetchMachineOrdersByName(machineName);
         setAvailableOrders(orders);
       } catch (e) {
         console.error('Failed to load machine orders:', e);
       }
     };
     loadMachineOrders();
-  }, [machineId]);
+  }, [machineName]);
 
   // Auto-save entries when they change (if session is locked)
   useEffect(() => {
