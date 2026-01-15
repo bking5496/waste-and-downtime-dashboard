@@ -345,6 +345,7 @@ export interface MachineRecord {
   today_waste?: number;
   today_downtime?: number;
   sub_machine_count?: number;
+  parent_machine_id?: string; // null for parent machines, set for submachines
   created_at?: string;
   updated_at?: string;
 }
@@ -352,9 +353,11 @@ export interface MachineRecord {
 // Fetch all machines from Supabase
 export const fetchMachines = async (): Promise<MachineRecord[]> => {
   requireSupabaseConfigured();
+  // Only fetch parent machines (not submachines) for the dashboard
   const { data, error } = await supabase
     .from('machines')
     .select('*')
+    .is('parent_machine_id', null)
     .order('name', { ascending: true });
 
   if (error) {
@@ -363,6 +366,63 @@ export const fetchMachines = async (): Promise<MachineRecord[]> => {
   }
 
   return data || [];
+};
+
+// Fetch a specific submachine by ID
+export const fetchSubmachine = async (submachineId: string): Promise<MachineRecord | null> => {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('machines')
+    .select('*')
+    .eq('id', submachineId)
+    .single();
+
+  if (error) {
+    console.error('Failed to fetch submachine:', error.message);
+    return null;
+  }
+
+  return data;
+};
+
+// Fetch all submachines for a parent machine
+export const fetchSubmachinesForParent = async (parentMachineId: string): Promise<MachineRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  const { data, error } = await supabase
+    .from('machines')
+    .select('*')
+    .eq('parent_machine_id', parentMachineId)
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Failed to fetch submachines:', error.message);
+    return [];
+  }
+
+  return data || [];
+};
+
+// Get active (running) submachine numbers for a parent machine
+export const getActiveSubmachineNumbers = async (parentMachineId: string, subMachineCount: number): Promise<Set<number>> => {
+  const activeSet = new Set<number>();
+
+  if (!isSupabaseConfigured) return activeSet;
+
+  const submachines = await fetchSubmachinesForParent(parentMachineId);
+
+  for (const sub of submachines) {
+    if (sub.status === 'running') {
+      // Extract submachine number from ID (e.g., "machine-4-sub-2" -> 2)
+      const match = sub.id.match(/-sub-(\d+)$/);
+      if (match) {
+        activeSet.add(parseInt(match[1], 10));
+      }
+    }
+  }
+
+  return activeSet;
 };
 
 // Upsert a machine (insert or update)

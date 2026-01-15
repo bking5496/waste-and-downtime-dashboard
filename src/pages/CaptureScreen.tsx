@@ -168,13 +168,14 @@ const CaptureScreen: React.FC = () => {
     }
   }, []);
 
-  // Load saved session data
-  const loadSession = useCallback(() => {
+  // Load saved session data (check localStorage first, then Supabase for cross-browser sync)
+  const loadSession = useCallback(async () => {
     const currentDate = new Date().toISOString().split('T')[0];
     const hours = new Date().getUTCHours() + 2;
     const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
 
+    // First check localStorage (same browser)
     const savedSession = localStorage.getItem(sessionKey);
     if (savedSession) {
       try {
@@ -193,41 +194,81 @@ const CaptureScreen: React.FC = () => {
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
           if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
+          return; // Found local session, done
         }
       } catch (e) {
         console.error('Failed to load session:', e);
       }
-    } else {
-      // No session - try to load admin order details from database
-      const loadAdminOrderDetails = async () => {
-        try {
-          // Import dynamically to avoid circular dependency
-          const { fetchActiveOrderDetails } = await import('../lib/supabase');
-          const activeOrder = await fetchActiveOrderDetails();
-          if (activeOrder) {
-            setOrderNumber(activeOrder.order_number);
-            setProduct(activeOrder.product);
-            setBatchNumber(activeOrder.batch_number);
-            return;
-          }
-        } catch (e) {
-          console.error('Failed to load from database:', e);
-        }
+    }
 
-        // Fall back to localStorage
-        const adminOrderDetails = localStorage.getItem('admin_order_details');
-        if (adminOrderDetails) {
-          try {
-            const details = JSON.parse(adminOrderDetails);
-            if (details.orderNumber) setOrderNumber(details.orderNumber);
-            if (details.product) setProduct(details.product);
-            if (details.batchNumber) setBatchNumber(details.batchNumber);
-          } catch (e) {
-            console.error('Failed to load admin order details:', e);
-          }
-        }
-      };
-      loadAdminOrderDetails();
+    // Check Supabase live_sessions for cross-browser sync
+    try {
+      const { fetchActiveSessions } = await import('../lib/liveSession');
+      const sessions = await fetchActiveSessions();
+      const supabaseSession = sessions.find(s =>
+        s.machine_name === machineName &&
+        s.shift === currentShift &&
+        s.session_date === currentDate &&
+        s.is_locked
+      );
+
+      if (supabaseSession) {
+        console.log('📥 Found locked session in Supabase for', machineName);
+        setOperatorName(supabaseSession.operator_name);
+        setOrderNumber(supabaseSession.order_number);
+        setProduct(supabaseSession.product);
+        setBatchNumber(supabaseSession.batch_number);
+        setIsSessionLocked(true);
+
+        // Save to localStorage for future local access
+        const session: ShiftSession = {
+          machineName,
+          operatorName: supabaseSession.operator_name,
+          orderNumber: supabaseSession.order_number,
+          product: supabaseSession.product,
+          batchNumber: supabaseSession.batch_number,
+          shift: currentShift,
+          date: currentDate,
+          locked: true,
+          wasteEntries: [],
+          downtimeEntries: [],
+          speedEntries: [],
+          sachetMassEntries: [],
+          looseCasesEntries: [],
+          palletScanEntries: [],
+        };
+        localStorage.setItem(sessionKey, JSON.stringify(session));
+        return; // Found Supabase session, done
+      }
+    } catch (e) {
+      console.warn('Could not check Supabase for session:', e);
+    }
+
+    // No locked session found - try to load admin order defaults
+    try {
+      const { fetchActiveOrderDetails } = await import('../lib/supabase');
+      const activeOrder = await fetchActiveOrderDetails();
+      if (activeOrder) {
+        setOrderNumber(activeOrder.order_number);
+        setProduct(activeOrder.product);
+        setBatchNumber(activeOrder.batch_number);
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to load from database:', e);
+    }
+
+    // Fall back to localStorage admin order details
+    const adminOrderDetails = localStorage.getItem('admin_order_details');
+    if (adminOrderDetails) {
+      try {
+        const details = JSON.parse(adminOrderDetails);
+        if (details.orderNumber) setOrderNumber(details.orderNumber);
+        if (details.product) setProduct(details.product);
+        if (details.batchNumber) setBatchNumber(details.batchNumber);
+      } catch (e) {
+        console.error('Failed to load admin order details:', e);
+      }
     }
   }, [machineName]);
 
@@ -271,13 +312,25 @@ const CaptureScreen: React.FC = () => {
       shift: currentShift,
       date: currentDate,
       locked: true,
+    }).then(success => {
+      if (success) {
+        console.log('✅ Session synced to Supabase:', machineName);
+      } else {
+        console.warn('⚠️ Failed to sync session to Supabase - check if live_sessions table exists');
+      }
     });
 
     if (!isSessionLocked) {
       setIsSessionLocked(true);
       // Update machine status to 'running' in Supabase
       if (machineId) {
-        updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift);
+        updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift).then(success => {
+          if (success) {
+            console.log('✅ Machine status updated in Supabase:', machineId);
+          } else {
+            console.warn('⚠️ Failed to update machine status - check Supabase configuration');
+          }
+        });
       }
       if (showMessage) showToast('Shift details locked for this session', 'success');
     }
