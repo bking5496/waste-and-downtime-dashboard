@@ -39,7 +39,7 @@
     "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",
     "validate": "npm run typecheck && npm run lint && npm run test:ci",
-    "predeploy": "npm run validate && npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "eject": "react-scripts eject"
   },

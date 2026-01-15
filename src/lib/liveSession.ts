@@ -183,6 +183,51 @@ export const fetchActiveSessions = async (): Promise<LiveSession[]> => {
 };
 
 // ==========================================
+// FETCH SESSION BY MACHINE NAME
+// ==========================================
+export const fetchLiveSessionByMachine = async (
+    machineName: string,
+    shift: string,
+    date: string
+): Promise<LiveSession | null> => {
+    const sessionId = getLiveSessionId(machineName, shift, date);
+
+    // Check cache first
+    if (sessionsCache.has(sessionId)) {
+        return sessionsCache.get(sessionId) || null;
+    }
+
+    if (!isSupabaseConfigured) {
+        return null;
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('live_sessions')
+            .select('*')
+            .eq('id', sessionId)
+            .eq('is_locked', true)
+            .maybeSingle();
+
+        if (error) {
+            console.error('Failed to fetch session:', error.message);
+            return null;
+        }
+
+        if (data) {
+            // Update cache
+            sessionsCache.set(sessionId, data);
+            console.log('📋 Restored session from Supabase:', machineName);
+        }
+
+        return data;
+    } catch (e) {
+        console.error('Failed to fetch session by machine:', e);
+        return null;
+    }
+};
+
+// ==========================================
 // GET ACTIVE SUB-MACHINES (Replacement for localStorage check)
 // ==========================================
 export const getActiveSubMachinesFromSupabase = async (

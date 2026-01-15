@@ -345,6 +345,7 @@ export interface MachineRecord {
   today_waste?: number;
   today_downtime?: number;
   sub_machine_count?: number;
+  parent_machine_id?: string; // null for parent machines, set for submachines
   created_at?: string;
   updated_at?: string;
 }
@@ -352,9 +353,11 @@ export interface MachineRecord {
 // Fetch all machines from Supabase
 export const fetchMachines = async (): Promise<MachineRecord[]> => {
   requireSupabaseConfigured();
+  // Only fetch parent machines (not submachines) for the dashboard
   const { data, error } = await supabase
     .from('machines')
     .select('*')
+    .is('parent_machine_id', null)
     .order('name', { ascending: true });
 
   if (error) {
@@ -365,7 +368,65 @@ export const fetchMachines = async (): Promise<MachineRecord[]> => {
   return data || [];
 };
 
+// Fetch a specific submachine by ID
+export const fetchSubmachine = async (submachineId: string): Promise<MachineRecord | null> => {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('machines')
+    .select('*')
+    .eq('id', submachineId)
+    .single();
+
+  if (error) {
+    console.error('Failed to fetch submachine:', error.message);
+    return null;
+  }
+
+  return data;
+};
+
+// Fetch all submachines for a parent machine
+export const fetchSubmachinesForParent = async (parentMachineId: string): Promise<MachineRecord[]> => {
+  if (!isSupabaseConfigured) return [];
+
+  const { data, error } = await supabase
+    .from('machines')
+    .select('*')
+    .eq('parent_machine_id', parentMachineId)
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Failed to fetch submachines:', error.message);
+    return [];
+  }
+
+  return data || [];
+};
+
+// Get active (running) submachine numbers for a parent machine
+export const getActiveSubmachineNumbers = async (parentMachineId: string, subMachineCount: number): Promise<Set<number>> => {
+  const activeSet = new Set<number>();
+
+  if (!isSupabaseConfigured) return activeSet;
+
+  const submachines = await fetchSubmachinesForParent(parentMachineId);
+
+  for (const sub of submachines) {
+    if (sub.status === 'running') {
+      // Extract submachine number from ID (e.g., "machine-4-sub-2" -> 2)
+      const match = sub.id.match(/-sub-(\d+)$/);
+      if (match) {
+        activeSet.add(parseInt(match[1], 10));
+      }
+    }
+  }
+
+  return activeSet;
+};
+
 // Upsert a machine (insert or update)
+// Also creates submachine records if sub_machine_count > 0
 export const upsertMachine = async (machine: MachineRecord): Promise<MachineRecord | null> => {
   requireSupabaseConfigured();
   const { data, error } = await supabase
@@ -389,12 +450,78 @@ export const upsertMachine = async (machine: MachineRecord): Promise<MachineReco
     return null;
   }
 
+  // If this is a parent machine with submachines, create the submachine records
+  if (machine.sub_machine_count && machine.sub_machine_count > 0 && !machine.parent_machine_id) {
+    await generateSubmachines(machine.id, machine.name, machine.sub_machine_count);
+  }
+
   return data;
 };
 
+// Generate submachine records for a parent machine
+export const generateSubmachines = async (
+  parentId: string,
+  parentName: string,
+  subCount: number
+): Promise<boolean> => {
+  if (!isSupabaseConfigured) return false;
+
+  try {
+    const submachines: Partial<MachineRecord>[] = [];
+
+    for (let i = 1; i <= subCount; i++) {
+      const subId = `${parentId}-sub-${i}`;
+      const subName = `${parentName} - Machine ${i}`;
+
+      submachines.push({
+        id: subId,
+        name: subName,
+        status: 'idle',
+        parent_machine_id: parentId,
+      });
+    }
+
+    // Upsert all submachines (insert if not exists, ignore if exists)
+    const { error } = await supabase
+      .from('machines')
+      .upsert(
+        submachines.map(sub => ({
+          ...sub,
+          updated_at: new Date().toISOString(),
+        })),
+        { onConflict: 'id', ignoreDuplicates: true }
+      );
+
+    if (error) {
+      console.error('Failed to generate submachines:', error.message);
+      return false;
+    }
+
+    console.log(`Generated ${subCount} submachines for ${parentName}`);
+    return true;
+  } catch (e) {
+    console.error('Failed to generate submachines:', e);
+    return false;
+  }
+};
+
 // Delete a machine from Supabase
+// Also deletes all submachines if this is a parent machine
 export const removeMachine = async (machineId: string): Promise<boolean> => {
   requireSupabaseConfigured();
+
+  // First, delete any submachines associated with this machine
+  const { error: subError } = await supabase
+    .from('machines')
+    .delete()
+    .eq('parent_machine_id', machineId);
+
+  if (subError) {
+    console.error('Failed to delete submachines:', subError.message);
+    // Continue to delete parent anyway
+  }
+
+  // Then delete the machine itself
   const { error } = await supabase
     .from('machines')
     .delete()
