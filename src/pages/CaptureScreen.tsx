@@ -34,7 +34,30 @@ const CaptureScreen: React.FC = () => {
   const { machineId } = useParams<{ machineId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const machineName = (location.state as { machineName?: string })?.machineName || machineId || '';
+
+  // Get machine name from state, or restore from sessionStorage for sub-machines
+  // This ensures sub-machines keep their unique names even after page refresh
+  const getMachineName = (): string => {
+    const stateKey = `capture_machine_name_${machineId}`;
+    const fromState = (location.state as { machineName?: string })?.machineName;
+
+    if (fromState) {
+      // Save to sessionStorage for persistence across refreshes
+      sessionStorage.setItem(stateKey, fromState);
+      return fromState;
+    }
+
+    // Try to restore from sessionStorage
+    const restored = sessionStorage.getItem(stateKey);
+    if (restored) {
+      return restored;
+    }
+
+    // Fallback to machineId
+    return machineId || '';
+  };
+
+  const machineName = getMachineName();
 
   // Track current machine for chat widget location context
   useEffect(() => {
@@ -325,11 +348,35 @@ const CaptureScreen: React.FC = () => {
 
     if (!isSessionLocked) {
       setIsSessionLocked(true);
+
+      // Auto-start production timer when session is first locked
+      const now = new Date();
+      const newTimerState: ProductionState = {
+        isRunning: true,
+        startTime: now,
+        pausedAt: null,
+        totalRunTimeMs: 0,
+        lastResumedAt: now,
+      };
+      setProductionState(newTimerState);
+      setDisplayRunTime('00:00:00');
+
+      // Save the timer state
+      const timerStateToSave: ProductionTimerState = {
+        isRunning: true,
+        startTime: now.toISOString(),
+        pausedAt: null,
+        totalRunTimeMs: 0,
+        lastResumedAt: now.toISOString(),
+        pauseHistory: [],
+      };
+      saveProductionTimer(machineName, currentShift, currentDate, timerStateToSave);
+
       // Update machine status to 'running' in Supabase
       if (machineId) {
         updateMachineStatus(machineId, 'running', operatorName, orderNumber, currentShift);
       }
-      if (showMessage) showToast('Shift details locked for this session', 'success');
+      if (showMessage) showToast('Session locked - Production timer started', 'success');
     }
   }, [machineName, operatorName, orderNumber, product, batchNumber, wasteEntries, downtimeEntries, speedEntries, sachetMassEntries, looseCasesEntries, palletScanEntries, isSessionLocked, machineId]);
 
@@ -337,12 +384,54 @@ const CaptureScreen: React.FC = () => {
     loadSession();
   }, [loadSession]);
 
-  // Cleanup session lock and subscriptions on unmount
+  // Ref to hold current production state for cleanup (to avoid stale closure)
+  const productionStateRef = useRef(productionState);
   useEffect(() => {
-    return () => {
-      // Release session lock when leaving the page
+    productionStateRef.current = productionState;
+  }, [productionState]);
+
+  // Auto-save timer state every 30 seconds while running
+  useEffect(() => {
+    if (!productionState.isRunning || !isSessionLocked) return;
+
+    const autoSaveInterval = setInterval(() => {
       const currentDate = new Date().toISOString().split('T')[0];
       const currentShift = getCurrentShift();
+      const timerState: ProductionTimerState = {
+        isRunning: productionState.isRunning,
+        startTime: productionState.startTime?.toISOString() || null,
+        pausedAt: productionState.pausedAt?.toISOString() || null,
+        totalRunTimeMs: productionState.totalRunTimeMs,
+        lastResumedAt: productionState.lastResumedAt?.toISOString() || null,
+        pauseHistory: [],
+      };
+      saveProductionTimer(machineName, currentShift, currentDate, timerState);
+    }, 30000); // Every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [productionState.isRunning, productionState.lastResumedAt, productionState.totalRunTimeMs, isSessionLocked, machineName]);
+
+  // Cleanup session lock and save timer on unmount
+  useEffect(() => {
+    return () => {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const currentShift = getCurrentShift();
+
+      // Save timer state before leaving (use ref to get current state)
+      const state = productionStateRef.current;
+      if (state.isRunning || state.totalRunTimeMs > 0) {
+        const timerState: ProductionTimerState = {
+          isRunning: state.isRunning,
+          startTime: state.startTime?.toISOString() || null,
+          pausedAt: state.pausedAt?.toISOString() || null,
+          totalRunTimeMs: state.totalRunTimeMs,
+          lastResumedAt: state.lastResumedAt?.toISOString() || null,
+          pauseHistory: [],
+        };
+        saveProductionTimer(machineName, currentShift, currentDate, timerState);
+      }
+
+      // Release session lock when leaving the page
       releaseSessionLock(machineName, currentShift, currentDate);
 
       // Unsubscribe from conflict notifications
