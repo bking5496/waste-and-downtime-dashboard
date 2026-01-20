@@ -12,6 +12,14 @@ import {
 } from '../lib/supabase';
 import { getMachinesData } from '../lib/storage';
 import { Machine } from '../types';
+import {
+    getFacilitySettings,
+    saveFacilitySettings,
+    resetFacilitySettings,
+    FacilitySettings,
+    formatShiftTimes
+} from '../lib/facilitySettings';
+import { showSuccess, showError } from '../lib/errorMonitoring';
 
 // Parsed order from bulk paste
 interface ParsedOrder {
@@ -46,9 +54,34 @@ const AdminConsole: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+    // Facility settings state
+    const [facilitySettings, setFacilitySettings] = useState<FacilitySettings>(getFacilitySettings());
+    const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+
     const showToast = (message: string, type: 'success' | 'error') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 4000);
+    };
+
+    // Handle facility settings save
+    const handleSaveSettings = () => {
+        try {
+            const updated = saveFacilitySettings(facilitySettings);
+            setFacilitySettings(updated);
+            showSuccess('Facility settings saved');
+            setShowSettingsPanel(false);
+        } catch (e) {
+            showError('Failed to save settings');
+        }
+    };
+
+    // Handle facility settings reset
+    const handleResetSettings = () => {
+        if (window.confirm('Reset all facility settings to defaults?')) {
+            const defaults = resetFacilitySettings();
+            setFacilitySettings(defaults);
+            showSuccess('Settings reset to defaults');
+        }
     };
 
     // Load machines and orders
@@ -598,7 +631,296 @@ const AdminConsole: React.FC = () => {
                         </p>
                     </div>
                 </section>
+
+                {/* Facility Settings Section */}
+                <section className="admin-settings-section">
+                    <div className="settings-header" onClick={() => setShowSettingsPanel(!showSettingsPanel)}>
+                        <h2 className="section-heading">
+                            <span className="section-icon">&#9881;</span>
+                            Facility Settings
+                        </h2>
+                        <span className={`expand-icon ${showSettingsPanel ? 'expanded' : ''}`}>
+                            {showSettingsPanel ? '−' : '+'}
+                        </span>
+                    </div>
+
+                    <AnimatePresence>
+                        {showSettingsPanel && (
+                            <motion.div
+                                className="settings-panel"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="settings-grid">
+                                    {/* Shift Configuration */}
+                                    <div className="settings-group">
+                                        <h3>Shift Times</h3>
+                                        <div className="settings-row">
+                                            <label>Day Shift Start</label>
+                                            <select
+                                                value={facilitySettings.dayShiftStart}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    dayShiftStart: parseInt(e.target.value)
+                                                }))}
+                                            >
+                                                {Array.from({ length: 24 }, (_, i) => (
+                                                    <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="settings-row">
+                                            <label>Day Shift End</label>
+                                            <select
+                                                value={facilitySettings.dayShiftEnd}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    dayShiftEnd: parseInt(e.target.value)
+                                                }))}
+                                            >
+                                                {Array.from({ length: 24 }, (_, i) => (
+                                                    <option key={i} value={i}>{i.toString().padStart(2, '0')}:00</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="settings-preview">
+                                            Current: Day {formatShiftTimes().day}, Night {formatShiftTimes().night}
+                                        </div>
+                                    </div>
+
+                                    {/* Timezone */}
+                                    <div className="settings-group">
+                                        <h3>Timezone</h3>
+                                        <div className="settings-row">
+                                            <label>UTC Offset</label>
+                                            <select
+                                                value={facilitySettings.timezoneOffset}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    timezoneOffset: parseInt(e.target.value)
+                                                }))}
+                                            >
+                                                {Array.from({ length: 25 }, (_, i) => i - 12).map(offset => (
+                                                    <option key={offset} value={offset}>
+                                                        UTC{offset >= 0 ? '+' : ''}{offset}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Submission Window */}
+                                    <div className="settings-group">
+                                        <h3>Submission Window</h3>
+                                        <div className="settings-row">
+                                            <label>Window Size (minutes)</label>
+                                            <input
+                                                type="number"
+                                                min="5"
+                                                max="60"
+                                                value={facilitySettings.submissionWindowMinutes}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    submissionWindowMinutes: parseInt(e.target.value) || 15
+                                                }))}
+                                            />
+                                        </div>
+                                        <div className="settings-hint">
+                                            Time before/after shift end when submissions are allowed
+                                        </div>
+                                    </div>
+
+                                    {/* Session Locking */}
+                                    <div className="settings-group">
+                                        <h3>Session Locking</h3>
+                                        <div className="settings-row checkbox-row">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={facilitySettings.sessionLockingEnabled}
+                                                    onChange={(e) => setFacilitySettings(prev => ({
+                                                        ...prev,
+                                                        sessionLockingEnabled: e.target.checked
+                                                    }))}
+                                                />
+                                                Enable session locking
+                                            </label>
+                                        </div>
+                                        <div className="settings-hint">
+                                            Prevents multiple users from editing the same shift
+                                        </div>
+                                    </div>
+
+                                    {/* Facility Info */}
+                                    <div className="settings-group">
+                                        <h3>Facility Info</h3>
+                                        <div className="settings-row">
+                                            <label>Name</label>
+                                            <input
+                                                type="text"
+                                                value={facilitySettings.facilityName}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    facilityName: e.target.value
+                                                }))}
+                                            />
+                                        </div>
+                                        <div className="settings-row">
+                                            <label>Location</label>
+                                            <input
+                                                type="text"
+                                                value={facilitySettings.facilityLocation}
+                                                onChange={(e) => setFacilitySettings(prev => ({
+                                                    ...prev,
+                                                    facilityLocation: e.target.value
+                                                }))}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="settings-actions">
+                                    <button className="admin-save-btn" onClick={handleSaveSettings}>
+                                        Save Settings
+                                    </button>
+                                    <button className="admin-clear-btn" onClick={handleResetSettings}>
+                                        Reset to Defaults
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </section>
             </main>
+
+            {/* Settings Panel Styles */}
+            <style>{`
+                .admin-settings-section {
+                    margin-top: 2rem;
+                    background: #1a1a2e;
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    overflow: hidden;
+                }
+
+                .settings-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 1.5rem;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+
+                .settings-header:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+
+                .settings-header .section-heading {
+                    margin: 0;
+                    font-size: 1.1rem;
+                }
+
+                .expand-icon {
+                    font-size: 1.5rem;
+                    color: #20C997;
+                    transition: transform 0.2s;
+                }
+
+                .expand-icon.expanded {
+                    transform: rotate(180deg);
+                }
+
+                .settings-panel {
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    padding: 1.5rem;
+                    overflow: hidden;
+                }
+
+                .settings-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                .settings-group {
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: 1rem;
+                    border-radius: 8px;
+                }
+
+                .settings-group h3 {
+                    margin: 0 0 1rem 0;
+                    font-size: 0.9rem;
+                    color: #20C997;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                .settings-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.75rem;
+                }
+
+                .settings-row label {
+                    color: rgba(255, 255, 255, 0.8);
+                    font-size: 0.9rem;
+                }
+
+                .settings-row select,
+                .settings-row input[type="number"],
+                .settings-row input[type="text"] {
+                    background: #16213e;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 4px;
+                    padding: 0.5rem;
+                    color: #fff;
+                    min-width: 100px;
+                }
+
+                .settings-row select:focus,
+                .settings-row input:focus {
+                    outline: none;
+                    border-color: #20C997;
+                }
+
+                .checkbox-row label {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                }
+
+                .checkbox-row input[type="checkbox"] {
+                    width: 18px;
+                    height: 18px;
+                    accent-color: #20C997;
+                }
+
+                .settings-preview {
+                    font-size: 0.8rem;
+                    color: rgba(255, 255, 255, 0.5);
+                    margin-top: 0.5rem;
+                }
+
+                .settings-hint {
+                    font-size: 0.75rem;
+                    color: rgba(255, 255, 255, 0.4);
+                    margin-top: 0.25rem;
+                }
+
+                .settings-actions {
+                    display: flex;
+                    gap: 1rem;
+                    margin-top: 1.5rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                }
+            `}</style>
         </motion.div>
     );
 };

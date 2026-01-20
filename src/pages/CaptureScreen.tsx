@@ -134,60 +134,44 @@ const CaptureScreen: React.FC = () => {
     showToast(`Selected order: ${order.order_number}`, 'success');
   };
 
-  // Check if within submission window (15 min before/after shift end)
-  const checkSubmissionWindow = useCallback((currentDateTime: Date) => {
-    const hours = currentDateTime.getUTCHours() + 2; // GMT+2
-    const minutes = currentDateTime.getMinutes();
-    const totalMinutes = hours * 60 + minutes;
+  // Session conflict state
+  const [sessionConflict, setSessionConflict] = useState<string | null>(null);
+  const unsubscribeConflictRef = useRef<(() => void) | null>(null);
 
-    // Day shift ends at 18:00 (1080 min), Night shift ends at 06:00 (360 min)
-    const dayShiftEnd = 18 * 60; // 1080
-    const nightShiftEnd = 6 * 60; // 360
-
-    // Check if within 15 minutes of shift end
-    const dayWindowStart = dayShiftEnd - 15;
-    const dayWindowEnd = dayShiftEnd + 15;
-    const nightWindowStart = nightShiftEnd - 15;
-    const nightWindowEnd = nightShiftEnd + 15;
-
-    let inWindow = false;
-    let minutesToWindow = 0;
-
-    if (totalMinutes >= dayWindowStart && totalMinutes <= dayWindowEnd) {
-      inWindow = true;
-    } else if (totalMinutes >= nightWindowStart && totalMinutes <= nightWindowEnd) {
-      inWindow = true;
-    } else if (totalMinutes >= (24 * 60 - 15)) {
-      // Handle night shift window that wraps around midnight
-      inWindow = true;
-    } else {
-      // Calculate time to next window
-      if (totalMinutes < nightWindowStart) {
-        minutesToWindow = nightWindowStart - totalMinutes;
-      } else if (totalMinutes < dayWindowStart) {
-        minutesToWindow = dayWindowStart - totalMinutes;
-      } else {
-        minutesToWindow = (24 * 60 - 15) - totalMinutes;
-      }
-    }
-
-    setIsInSubmissionWindow(inWindow);
-
-    if (!inWindow && minutesToWindow > 0) {
-      const hoursTo = Math.floor(minutesToWindow / 60);
-      const minsTo = minutesToWindow % 60;
-      setTimeToWindow(hoursTo > 0 ? `${hoursTo}h ${minsTo}m` : `${minsTo}m`);
-    } else {
-      setTimeToWindow('');
-    }
+  // Check if within submission window using facility settings
+  const checkSubmissionWindowCallback = useCallback((currentDateTime: Date) => {
+    const result = checkSubmissionWindow(currentDateTime);
+    setIsInSubmissionWindow(result.isInWindow);
+    setTimeToWindow(result.isInWindow ? '' : result.timeToWindow);
   }, []);
 
-  // Load saved session data
+  // Load saved session data and production timer
   const loadSession = useCallback(async () => {
     const currentDate = new Date().toISOString().split('T')[0];
-    const hours = new Date().getUTCHours() + 2;
-    const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+    const currentShift = getCurrentShift();
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
+
+    // Check for session conflicts before loading
+    const { hasConflict, activeSession } = await checkForActiveSession(machineName, currentShift, currentDate);
+    if (hasConflict && activeSession) {
+      setSessionConflict(`Machine in use by ${activeSession.operator_name} since ${new Date(activeSession.started_at).toLocaleTimeString()}`);
+      showWarning(`This machine is currently being used by ${activeSession.operator_name}`);
+    }
+
+    // Load production timer state
+    const timerState = await loadProductionTimer(machineName, currentShift, currentDate);
+    if (timerState) {
+      setProductionState({
+        isRunning: timerState.isRunning,
+        startTime: timerState.startTime ? new Date(timerState.startTime) : null,
+        pausedAt: timerState.pausedAt ? new Date(timerState.pausedAt) : null,
+        totalRunTimeMs: timerState.totalRunTimeMs,
+        lastResumedAt: timerState.lastResumedAt ? new Date(timerState.lastResumedAt) : null,
+      });
+      if (timerState.isRunning || timerState.totalRunTimeMs > 0) {
+        setDisplayRunTime(formatRunTime(calculateCurrentRunTime(timerState)));
+      }
+    }
 
     const savedSession = localStorage.getItem(sessionKey);
     if (savedSession) {
@@ -279,15 +263,33 @@ const CaptureScreen: React.FC = () => {
     }
   }, [machineName]);
 
-  // Save session data
-  const saveSession = useCallback((showMessage = true) => {
+  // Save session data with session locking
+  const saveSession = useCallback(async (showMessage = true) => {
     if (!operatorName || !orderNumber || !product || !batchNumber) return;
 
     const currentDate = new Date().toISOString().split('T')[0];
-    // Calculate shift consistently (don't rely on state which may not be set yet)
-    const hours = new Date().getUTCHours() + 2;
-    const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+    const currentShift = getCurrentShift();
     const sessionKey = getSessionKey(machineName, currentShift, currentDate);
+
+    // Acquire session lock
+    const lockResult = await acquireSessionLock(machineName, operatorName, currentShift, currentDate);
+    if (!lockResult.success) {
+      showError(lockResult.error || 'Failed to acquire session lock');
+      return;
+    }
+
+    // Subscribe to session conflicts for real-time notifications
+    if (unsubscribeConflictRef.current) {
+      unsubscribeConflictRef.current();
+    }
+    unsubscribeConflictRef.current = subscribeToSessionConflicts(
+      machineName,
+      currentShift,
+      currentDate,
+      (conflictSession) => {
+        setSessionConflict(`Another user (${conflictSession.operator_name}) is accessing this machine`);
+      }
+    );
 
     const session: ShiftSession = {
       machineName,
@@ -335,6 +337,21 @@ const CaptureScreen: React.FC = () => {
     loadSession();
   }, [loadSession]);
 
+  // Cleanup session lock and subscriptions on unmount
+  useEffect(() => {
+    return () => {
+      // Release session lock when leaving the page
+      const currentDate = new Date().toISOString().split('T')[0];
+      const currentShift = getCurrentShift();
+      releaseSessionLock(machineName, currentShift, currentDate);
+
+      // Unsubscribe from conflict notifications
+      if (unsubscribeConflictRef.current) {
+        unsubscribeConflictRef.current();
+      }
+    };
+  }, [machineName]);
+
   // Load available orders from machine queue
   useEffect(() => {
     const loadMachineOrders = async () => {
@@ -354,8 +371,7 @@ const CaptureScreen: React.FC = () => {
   useEffect(() => {
     if (isSessionLocked && operatorName && orderNumber && product && batchNumber) {
       const currentDate = new Date().toISOString().split('T')[0];
-      const hours = new Date().getUTCHours() + 2;
-      const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+      const currentShift = getCurrentShift();
       const sessionKey = getSessionKey(machineName, currentShift, currentDate);
 
       const session: ShiftSession = {
@@ -383,12 +399,11 @@ const CaptureScreen: React.FC = () => {
     const timer = setInterval(() => {
       const now = new Date();
       setDateTime(now);
-      checkSubmissionWindow(now);
+      checkSubmissionWindowCallback(now);
     }, 1000);
 
-    // Set the shift
-    const hours = dateTime.getUTCHours() + 2; // GMT+2
-    const newShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
+    // Set the shift using facility settings
+    const newShift = getCurrentShift();
 
     // Detect shift change
     if (lastKnownShift !== null && lastKnownShift !== newShift && isSessionLocked) {
@@ -424,18 +439,35 @@ const CaptureScreen: React.FC = () => {
     return () => clearInterval(timerInterval);
   }, [productionState.isRunning, productionState.lastResumedAt, productionState.totalRunTimeMs]);
 
+  // Helper to persist timer state
+  const persistTimerState = useCallback((state: ProductionState) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const currentShift = getCurrentShift();
+    const timerState: ProductionTimerState = {
+      isRunning: state.isRunning,
+      startTime: state.startTime?.toISOString() || null,
+      pausedAt: state.pausedAt?.toISOString() || null,
+      totalRunTimeMs: state.totalRunTimeMs,
+      lastResumedAt: state.lastResumedAt?.toISOString() || null,
+      pauseHistory: [],
+    };
+    saveProductionTimer(machineName, currentShift, currentDate, timerState);
+  }, [machineName]);
+
   // Start production timer (called when session is locked)
   const handleStartProduction = useCallback(() => {
     const now = new Date();
-    setProductionState({
+    const newState: ProductionState = {
       isRunning: true,
       startTime: now,
       pausedAt: null,
       totalRunTimeMs: 0,
       lastResumedAt: now,
-    });
+    };
+    setProductionState(newState);
     setDisplayRunTime('00:00:00');
-  }, []);
+    persistTimerState(newState);
+  }, [persistTimerState]);
 
   // Pause production - record pause start time
   const handlePauseProduction = useCallback(() => {
@@ -447,14 +479,16 @@ const CaptureScreen: React.FC = () => {
       ? now.getTime() - productionState.lastResumedAt.getTime()
       : 0;
 
-    setProductionState(prev => ({
-      ...prev,
+    const newState: ProductionState = {
+      ...productionState,
       isRunning: false,
       pausedAt: now,
-      totalRunTimeMs: prev.totalRunTimeMs + currentSessionMs,
-    }));
+      totalRunTimeMs: productionState.totalRunTimeMs + currentSessionMs,
+    };
+    setProductionState(newState);
+    persistTimerState(newState);
     showToast('Production paused - timer stopped', 'success');
-  }, [productionState.isRunning, productionState.lastResumedAt, showToast]);
+  }, [productionState, persistTimerState, showToast]);
 
   // Continue production - show modal to get reason, then record downtime
   const handleContinueProduction = useCallback(() => {
@@ -480,18 +514,20 @@ const CaptureScreen: React.FC = () => {
     setDowntimeEntries(prev => [...prev, newDowntimeEntry]);
 
     // Resume production
-    setProductionState(prev => ({
-      ...prev,
+    const newState: ProductionState = {
+      ...productionState,
       isRunning: true,
       pausedAt: null,
       lastResumedAt: now,
-    }));
+    };
+    setProductionState(newState);
+    persistTimerState(newState);
 
     // Reset modal state
     setShowContinueModal(false);
     setPauseDowntimeReason('');
     showToast(`Production resumed. ${pauseDurationMinutes} min downtime recorded.`, 'success');
-  }, [pauseDowntimeReason, productionState.pausedAt, showToast]);
+  }, [pauseDowntimeReason, productionState, persistTimerState, showToast]);
 
   // Handle Waste Entry from Modal
   const handleWasteSubmit = () => {
