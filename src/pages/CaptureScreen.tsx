@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,20 @@ import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, Loos
 import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission } from '../lib/storage';
 import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
+import { getCurrentShift, checkSubmissionWindow, getLocalHours } from '../lib/facilitySettings';
+import {
+  checkForActiveSession,
+  acquireSessionLock,
+  releaseSessionLock,
+  subscribeToSessionConflicts,
+  saveProductionTimer,
+  loadProductionTimer,
+  clearProductionTimer,
+  calculateCurrentRunTime,
+  formatRunTime,
+  ProductionTimerState
+} from '../lib/sessionManager';
+import { logError, showWarning, showSuccess, showError } from '../lib/errorMonitoring';
 
 // Storage key for shift session
 const getSessionKey = (machineName: string, shift: string, date: string) =>
