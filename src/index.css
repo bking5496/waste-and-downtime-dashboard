@@ -1,31 +1,51 @@
-/* Industrial Dashboard Theme */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+/* ========================================
+   MISSION CONTROL INDUSTRIAL THEME
+   Premium Manufacturing Dashboard
+   ======================================== */
+
+/* Distinctive Typography - Oxanium for headers, DM Sans for body */
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 /* iPad-optimized styles */
 :root {
-  /* Industrial Neon Colors */
-  --neon-cyan: #22d3ee;
-  --neon-green: #4ade80;
-  --neon-amber: #fbbf24;
-  --neon-red: #f87171;
-  --neon-blue: #60a5fa;
-  --neon-purple: #a78bfa;
+  /* Industrial Neon Colors - Enhanced saturation */
+  --neon-cyan: #00f5ff;
+  --neon-green: #00ff88;
+  --neon-amber: #ffb800;
+  --neon-red: #ff4757;
+  --neon-blue: #4d9fff;
+  --neon-purple: #bf7dff;
+  --neon-teal: #14b8a6;
 
-  /* Glow Effects */
-  --glow-cyan: 0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.2);
-  --glow-green: 0 0 20px rgba(74, 222, 128, 0.4), 0 0 40px rgba(74, 222, 128, 0.2);
-  --glow-amber: 0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2);
-  --glow-red: 0 0 20px rgba(248, 113, 113, 0.4), 0 0 40px rgba(248, 113, 113, 0.2);
-  --glow-blue: 0 0 20px rgba(96, 165, 250, 0.4), 0 0 40px rgba(96, 165, 250, 0.2);
+  /* Status Colors */
+  --status-running: #00ff88;
+  --status-idle: #ffb800;
+  --status-maintenance: #ff4757;
+  --status-active: #4d9fff;
 
-  /* Glassmorphism */
-  --glass-bg: rgba(15, 23, 42, 0.7);
-  --glass-border: rgba(148, 163, 184, 0.15);
-  --glass-blur: blur(20px);
+  /* Enhanced Glow Effects */
+  --glow-cyan: 0 0 20px rgba(0, 245, 255, 0.5), 0 0 40px rgba(0, 245, 255, 0.25), 0 0 60px rgba(0, 245, 255, 0.1);
+  --glow-green: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 40px rgba(0, 255, 136, 0.25), 0 0 60px rgba(0, 255, 136, 0.1);
+  --glow-amber: 0 0 20px rgba(255, 184, 0, 0.5), 0 0 40px rgba(255, 184, 0, 0.25), 0 0 60px rgba(255, 184, 0, 0.1);
+  --glow-red: 0 0 20px rgba(255, 71, 87, 0.5), 0 0 40px rgba(255, 71, 87, 0.25), 0 0 60px rgba(255, 71, 87, 0.1);
+  --glow-blue: 0 0 20px rgba(77, 159, 255, 0.5), 0 0 40px rgba(77, 159, 255, 0.25);
 
-  /* Industrial Fonts */
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Enhanced Glassmorphism */
+  --glass-bg: rgba(10, 15, 28, 0.75);
+  --glass-border: rgba(148, 163, 184, 0.12);
+  --glass-blur: blur(24px);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
+
+  /* Surface Layers */
+  --surface-0: #050810;
+  --surface-1: rgba(12, 18, 32, 0.95);
+  --surface-2: rgba(20, 28, 48, 0.85);
+  --surface-3: rgba(30, 40, 65, 0.75);
+
+  /* Mission Control Fonts */
+  --font-display: 'Oxanium', 'Rajdhani', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
@@ -50,15 +70,80 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-primary);
   font-size: 16px;
   line-height: 1.5;
+}
+
+/* ========================================
+   MISSION CONTROL ATMOSPHERIC EFFECTS
+   ======================================== */
+
+/* Grid pattern background overlay */
+.dashboard-v2::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* Animated gradient orbs */
+.dashboard-v2::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(0, 245, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(191, 125, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gradient-shift 20s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Scanline effect - subtle */
+.dashboard-v2 .machines-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
+}
+
+.dashboard-v2 .machines-section {
+  position: relative;
 }
 
 code {
@@ -1180,24 +1265,32 @@ hr {
 
 .dashboard-v2 {
   min-height: 100vh;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 0%, rgba(0, 40, 60, 0.4) 0%, transparent 50%),
+    linear-gradient(180deg, #030508 0%, #0a0f1a 20%, #0d1321 60%, #050810 100%);
   color: #f8fafc;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-/* Top Navigation */
+/* Top Navigation - Mission Control Header */
 .top-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 16px 28px;
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.03) 0%, rgba(10, 15, 28, 0.95) 20%, rgba(10, 15, 28, 0.95) 80%, rgba(0, 255, 136, 0.03) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02),
+    0 0 60px rgba(0, 245, 255, 0.05);
 }
 
 .nav-brand {
@@ -1229,17 +1322,22 @@ hr {
 }
 
 .brand-name {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 20px;
   font-weight: 700;
   color: #f8fafc;
   line-height: 1.2;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
 }
 
 .brand-subtitle {
-  font-size: 12px;
-  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--neon-cyan);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 2px;
+  opacity: 0.8;
 }
 
 .nav-center {
@@ -1260,12 +1358,21 @@ hr {
 
 .clock-time {
   font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--neon-cyan);
-  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
-  letter-spacing: 1px;
+  text-shadow:
+    0 0 10px rgba(0, 245, 255, 0.8),
+    0 0 20px rgba(0, 245, 255, 0.4),
+    0 0 40px rgba(0, 245, 255, 0.2);
+  letter-spacing: 2px;
+  animation: clock-pulse 2s ease-in-out infinite;
+}
+
+@keyframes clock-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
 }
 
 .clock-date {
@@ -1621,10 +1728,13 @@ hr {
 }
 
 .section-header h2 {
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 26px;
   font-weight: 700;
   color: #f8fafc;
   margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
 }
 
 .view-toggle {
@@ -1670,50 +1780,81 @@ hr {
 
 .machine-tile {
   position: relative;
-  background: var(--glass-bg);
+  background:
+    linear-gradient(145deg, rgba(20, 28, 48, 0.9) 0%, rgba(10, 15, 28, 0.95) 100%);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(148, 163, 184, 0.08);
   border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Status-based neon glow borders */
+/* Inner highlight effect */
+.machine-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+  pointer-events: none;
+  border-radius: 20px 20px 0 0;
+}
+
+/* Status-based neon glow borders - Enhanced */
 .machine-tile.running {
-  border-color: rgba(74, 222, 128, 0.3);
+  border-color: rgba(0, 255, 136, 0.25);
+  border-top: 3px solid var(--neon-green);
 }
 
 .machine-tile.running:hover:not(.disabled) {
-  border-color: rgba(74, 222, 128, 0.5);
-  box-shadow: var(--glow-green), 0 12px 40px rgba(0, 0, 0, 0.4);
-  transform: translateY(-6px);
+  border-color: rgba(0, 255, 136, 0.4);
+  box-shadow:
+    var(--glow-green),
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(0, 255, 136, 0.03);
+  transform: translateY(-8px) scale(1.02);
 }
 
 .machine-tile.idle {
-  border-color: rgba(251, 191, 36, 0.25);
+  border-color: rgba(255, 184, 0, 0.2);
+  border-top: 3px solid var(--neon-amber);
 }
 
 .machine-tile.idle:hover:not(.disabled) {
-  border-color: rgba(251, 191, 36, 0.5);
-  box-shadow: var(--glow-amber), 0 12px 40px rgba(0, 0, 0, 0.4);
-  transform: translateY(-6px);
+  border-color: rgba(255, 184, 0, 0.4);
+  box-shadow:
+    var(--glow-amber),
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(255, 184, 0, 0.03);
+  transform: translateY(-8px) scale(1.02);
 }
 
 .machine-tile.maintenance {
-  border-color: rgba(248, 113, 113, 0.25);
+  border-color: rgba(255, 71, 87, 0.2);
+  border-top: 3px solid var(--neon-red);
 }
 
 .machine-tile.maintenance:hover:not(.disabled) {
-  border-color: rgba(248, 113, 113, 0.5);
-  box-shadow: var(--glow-red), 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 71, 87, 0.4);
+  box-shadow:
+    var(--glow-red),
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(255, 71, 87, 0.03);
 }
 
 .machine-tile:hover:not(.disabled) {
-  border-color: rgba(148, 163, 184, 0.35);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-  transform: translateY(-6px);
+  border-color: rgba(0, 245, 255, 0.3);
+  box-shadow:
+    0 0 30px rgba(0, 245, 255, 0.15),
+    0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: translateY(-8px) scale(1.02);
 }
 
 .machine-tile.disabled {
@@ -1743,9 +1884,11 @@ hr {
 }
 
 .tile-name {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 20px;
   font-weight: 700;
   color: #f8fafc;
+  letter-spacing: 0.5px;
 }
 
 .tile-status-text {
@@ -1794,6 +1937,60 @@ hr {
   color: #3b82f6;
 }
 
+/* Machine tile stats row */
+.tile-stats {
+  display: flex;
+  gap: 12px;
+  margin: 10px 0;
+  padding: 8px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.tile-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  flex: 1;
+}
+
+.tile-stat .stat-icon {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.tile-stat .stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.tile-stat .stat-unit {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.tile-stat.waste .stat-value {
+  color: #ef4444;
+}
+
+.tile-stat.downtime .stat-value {
+  color: #f59e0b;
+}
+
+/* Highlight stats when non-zero */
+.tile-stat.waste:has(.stat-value:not(:empty)) {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.tile-stat.downtime:has(.stat-value:not(:empty)) {
+  background: rgba(245, 158, 11, 0.08);
+}
+
 /* Sub-machine count badge */
 .sub-count-badge {
   margin-left: 8px;
@@ -1830,27 +2027,38 @@ hr {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 12px;
-  color: #60a5fa;
-  font-size: 18px;
+  min-width: 52px;
+  height: 52px;
+  background:
+    linear-gradient(145deg, rgba(30, 40, 65, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 2px solid rgba(77, 159, 255, 0.25);
+  border-radius: 14px;
+  color: var(--neon-blue);
+  font-family: var(--font-display);
+  font-size: 20px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .sub-machine-inline-btn:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%);
-  border-color: rgba(59, 130, 246, 0.5);
+  background:
+    linear-gradient(145deg, rgba(40, 50, 80, 0.95) 0%, rgba(20, 30, 55, 0.95) 100%);
+  border-color: rgba(77, 159, 255, 0.5);
   color: #93c5fd;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow:
+    0 0 20px rgba(77, 159, 255, 0.3),
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-3px) scale(1.05);
 }
 
 .sub-machine-inline-btn:active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%);
+  background: linear-gradient(145deg, rgba(77, 159, 255, 0.2) 0%, rgba(30, 40, 65, 0.95) 100%);
+  transform: translateY(-1px) scale(1.02);
 }
 
 /* Machines with sub-machines don't need whole-tile hover effect */
@@ -1862,22 +2070,31 @@ hr {
   transform: none;
 }
 
-/* Sub-machine button status indicators */
+/* Sub-machine button status indicators - Enhanced */
 .sub-machine-inline-btn.busy {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: linear-gradient(145deg, rgba(255, 71, 87, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: rgba(255, 71, 87, 0.4);
+  color: var(--neon-red);
+  box-shadow:
+    0 0 15px rgba(255, 71, 87, 0.15),
+    0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .sub-machine-inline-btn.busy:hover {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.25) 100%);
+  background: linear-gradient(145deg, rgba(255, 71, 87, 0.25) 0%, rgba(20, 28, 48, 0.95) 100%);
+  box-shadow:
+    0 0 25px rgba(255, 71, 87, 0.25),
+    0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .sub-machine-inline-btn.selected {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.2) 100%);
-  border-color: rgba(16, 185, 129, 0.6);
-  color: #6ee7b7;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(145deg, rgba(0, 255, 136, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: rgba(0, 255, 136, 0.5);
+  color: var(--neon-green);
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.25),
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 0 20px rgba(0, 255, 136, 0.05);
 }
 
 .sub-machine-inline-btn.disabled {
@@ -8554,15 +8771,18 @@ body {
   cursor: not-allowed;
 }
 
-/* Dark Theme Support (for capture screen) */
+/* Dark Theme Support (for dashboard and capture screen) */
+.dashboard-v2 .chat-widget .chat-panel,
 .capture-screen-v2 .chat-widget .chat-panel {
-  background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(10, 15, 28, 0.98);
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 245, 255, 0.05);
 }
 
+.dashboard-v2 .chat-widget .chat-header,
 .capture-screen-v2 .chat-widget .chat-header {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(148, 163, 184, 0.15);
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(0, 255, 136, 0.05) 100%);
+  border-color: rgba(0, 245, 255, 0.12);
 }
 
 .capture-screen-v2 .chat-widget .chat-title {
@@ -8595,18 +8815,61 @@ body {
   color: white;
 }
 
-/* Dark theme for top bar on capture screen */
-.capture-screen-v2 .latest-message-bar {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
-  border-color: rgba(148, 163, 184, 0.15);
+/* Enhanced Chat Toggle for dark theme */
+.dashboard-v2 .chat-toggle,
+.capture-screen-v2 .chat-toggle {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(20, 28, 48, 0.95) 100%);
+  border: 2px solid rgba(0, 245, 255, 0.3);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 25px rgba(0, 245, 255, 0.2), 0 4px 20px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-display);
 }
 
+.dashboard-v2 .chat-toggle:hover,
+.capture-screen-v2 .chat-toggle:hover {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.25) 0%, rgba(30, 40, 65, 0.95) 100%);
+  border-color: rgba(0, 245, 255, 0.5);
+  box-shadow: 0 0 35px rgba(0, 245, 255, 0.3), 0 8px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(-3px);
+}
+
+/* Dark theme for top bar on dashboard and capture screen */
+.dashboard-v2 .latest-message-bar,
+.capture-screen-v2 .latest-message-bar {
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, rgba(10, 15, 28, 0.98) 15%, rgba(10, 15, 28, 0.98) 85%, rgba(0, 255, 136, 0.05) 100%);
+  border-color: rgba(0, 245, 255, 0.15);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.12);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 245, 255, 0.03);
+}
+
+.dashboard-v2 .latest-message-text,
 .capture-screen-v2 .latest-message-text {
   color: rgba(255, 255, 255, 0.9);
 }
 
+.dashboard-v2 .latest-message-label,
+.capture-screen-v2 .latest-message-label {
+  color: var(--neon-cyan);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+.dashboard-v2 .latest-message-action,
+.capture-screen-v2 .latest-message-action {
+  background: rgba(0, 245, 255, 0.1);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.dashboard-v2 .latest-message-bar:hover,
 .capture-screen-v2 .latest-message-bar:hover {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(51, 65, 85, 0.95) 100%);
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.08) 0%, rgba(15, 23, 42, 0.98) 15%, rgba(15, 23, 42, 0.98) 85%, rgba(0, 255, 136, 0.08) 100%);
+}
+
+.dashboard-v2 .latest-message-bar:hover .latest-message-action,
+.capture-screen-v2 .latest-message-bar:hover .latest-message-action {
+  background: rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
 }
 
 /* Mobile Responsiveness */
@@ -9784,4 +10047,1740 @@ body {
 .speed-change-btn:hover {
   background: rgba(59, 130, 246, 0.25);
   border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* ==========================================================
+   CAPTURE SCREEN - MISSION CONTROL INDUSTRIAL REDESIGN
+   Professional aerospace control room meets heavy industry
+   ========================================================== */
+
+/* Override base capture screen with Mission Control fonts */
+.capture-screen-v2 {
+  font-family: var(--font-sans, 'DM Sans', -apple-system, sans-serif);
+  background:
+    linear-gradient(180deg, rgba(10, 15, 28, 0.97) 0%, rgba(8, 12, 22, 0.99) 100%);
+}
+
+/* Atmospheric grid pattern for capture screen */
+.capture-screen-v2::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* Gradient orb overlays */
+.capture-screen-v2::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 30%, rgba(0, 245, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 85% 70%, rgba(191, 125, 255, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 50% at 50% 90%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gradient-shift 25s ease-in-out infinite;
+}
+
+/* Mission Control Header - Refined */
+.capture-header-v2 {
+  background: linear-gradient(90deg,
+    rgba(30, 41, 59, 0.95) 0%,
+    rgba(15, 23, 42, 0.98) 50%,
+    rgba(30, 41, 59, 0.95) 100%
+  );
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  padding: 16px 24px;
+}
+
+/* Back button - Professional style */
+.back-btn-v2 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  background: rgba(51, 65, 85, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.back-btn-v2:hover {
+  background: rgba(71, 85, 105, 0.7);
+  border-color: rgba(148, 163, 184, 0.3);
+  transform: translateX(-3px);
+}
+
+/* Title with Mission Control typography */
+.capture-title-v2 h1 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #f8fafc;
+}
+
+.capture-subtitle {
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Shift badge - neon style */
+.shift-badge-v2 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.shift-badge-v2.day {
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.15) 0%, rgba(255, 184, 0, 0.05) 100%);
+  color: var(--neon-amber, #ffb800);
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 184, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.shift-badge-v2.night {
+  background: linear-gradient(135deg, rgba(191, 125, 255, 0.15) 0%, rgba(191, 125, 255, 0.05) 100%);
+  color: var(--neon-purple, #bf7dff);
+  border: 1px solid rgba(191, 125, 255, 0.3);
+  box-shadow: 0 0 20px rgba(191, 125, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Main layout - improved grid */
+.capture-main {
+  max-width: 1800px;
+  padding: 24px 28px;
+  gap: 24px;
+  grid-template-columns: 1fr 380px;
+}
+
+/* Form sections - Professional glass cards */
+.capture-screen-v2 .form-section {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+.capture-screen-v2 .form-section:hover {
+  border-color: rgba(148, 163, 184, 0.18);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Section headings - Professional style */
+.capture-screen-v2 .section-heading {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+}
+
+.capture-screen-v2 .section-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Locked badge - enhanced */
+.locked-badge {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 136, 0.05) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--neon-green, #00ff88);
+  border-radius: 6px;
+  margin-left: auto;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); }
+}
+
+/* Form labels - Mission Control */
+.capture-screen-v2 .form-label {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+/* Form inputs - professional style */
+.capture-screen-v2 .form-control,
+.capture-screen-v2 .form-select {
+  font-family: var(--font-sans, 'DM Sans', sans-serif) !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  border-radius: 10px !important;
+  color: #f8fafc !important;
+  font-size: 15px !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease;
+}
+
+.capture-screen-v2 .form-control:focus,
+.capture-screen-v2 .form-select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  background: rgba(15, 23, 42, 0.8) !important;
+}
+
+/* Lock session button - professional style */
+.lock-session-btn {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  width: 100%;
+  margin-top: 20px;
+}
+
+.lock-session-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+/* =============================================
+   ACTION BUTTONS - MISSION CONTROL REDESIGN
+   ============================================= */
+
+/* Base capture add button */
+.capture-screen-v2 .capture-add-btn {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.capture-screen-v2 .capture-add-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.capture-screen-v2 .capture-add-btn:hover::before {
+  left: 100%;
+}
+
+/* Waste button - enhanced red neon */
+.capture-screen-v2 .capture-add-btn.waste-btn {
+  background: linear-gradient(135deg, #ff4757 0%, #c0392b 100%);
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.capture-screen-v2 .capture-add-btn.waste-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(255, 71, 87, 0.5), 0 0 50px rgba(255, 71, 87, 0.2);
+}
+
+/* Downtime button - enhanced amber neon */
+.capture-screen-v2 .capture-add-btn.downtime-btn {
+  background: linear-gradient(135deg, var(--neon-amber, #ffb800) 0%, #e6a700 100%);
+  color: #0a0f1a;
+  box-shadow: 0 4px 20px rgba(255, 184, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.capture-screen-v2 .capture-add-btn.downtime-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(255, 184, 0, 0.5), 0 0 50px rgba(255, 184, 0, 0.2);
+}
+
+/* Scan pallet & Loose cases buttons - neutral professional style */
+.capture-screen-v2 .capture-add-btn.scan-btn,
+.capture-screen-v2 .capture-add-btn.loose-cases-btn {
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.9) 0%, rgba(51, 65, 85, 0.95) 100%);
+  color: #f1f5f9;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.capture-screen-v2 .capture-add-btn.scan-btn:hover,
+.capture-screen-v2 .capture-add-btn.loose-cases-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(100, 116, 139, 0.9) 0%, rgba(71, 85, 105, 0.95) 100%);
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Product action buttons layout */
+.product-action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* =============================================
+   ENTRY ITEMS - REFINED STYLING
+   ============================================= */
+
+.capture-screen-v2 .capture-entry-item {
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.6) 0%, rgba(10, 15, 28, 0.8) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 10px;
+  padding: 14px 18px;
+  transition: all 0.2s ease;
+}
+
+.capture-screen-v2 .capture-entry-item:hover {
+  border-color: rgba(0, 245, 255, 0.15);
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.8) 0%, rgba(10, 15, 28, 0.9) 100%);
+}
+
+.capture-screen-v2 .capture-entry-item.latest {
+  border-left: 3px solid;
+  animation: entry-flash 0.5s ease;
+}
+
+@keyframes entry-flash {
+  0% { background: rgba(0, 245, 255, 0.1); }
+  100% { background: transparent; }
+}
+
+.capture-screen-v2 .capture-entry-item .entry-value {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.capture-screen-v2 .capture-entry-item .entry-unit {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.capture-screen-v2 .capture-entry-item .entry-time {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 12px;
+  color: rgba(0, 245, 255, 0.6);
+}
+
+/* Section totals - enhanced */
+.capture-screen-v2 .section-total {
+  background: linear-gradient(145deg, rgba(0, 245, 255, 0.05) 0%, rgba(10, 15, 28, 0.7) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+
+.capture-screen-v2 .section-total span {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(0, 245, 255, 0.6);
+}
+
+.capture-screen-v2 .section-total strong {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* =============================================
+   SIDEBAR CARDS - MISSION CONTROL UPGRADE
+   ============================================= */
+
+/* Live Stats Card - Professional Style */
+.capture-screen-v2 .live-stats-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.capture-screen-v2 .live-stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.capture-screen-v2 .live-stats-card h3 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.capture-screen-v2 .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.capture-screen-v2 .stat-box {
+  background: linear-gradient(145deg, rgba(10, 15, 28, 0.7) 0%, rgba(10, 15, 28, 0.9) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.05);
+  border-radius: 12px;
+  padding: 18px 14px;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.capture-screen-v2 .stat-box:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 245, 255, 0.15);
+}
+
+.capture-screen-v2 .stat-box .stat-number {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.capture-screen-v2 .stat-box .stat-unit {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  color: #475569;
+}
+
+.capture-screen-v2 .stat-box.waste .stat-number {
+  color: #ef4444;
+}
+
+.capture-screen-v2 .stat-box.downtime .stat-number {
+  color: #f59e0b;
+}
+
+.capture-screen-v2 .stat-box.cases .stat-number,
+.capture-screen-v2 .stat-box.pallets .stat-number {
+  color: #f8fafc;
+}
+
+/* Charts Card - Professional Style */
+.capture-screen-v2 .charts-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+}
+
+.capture-screen-v2 .charts-card h3 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+/* Submission Card - Professional Style */
+.capture-screen-v2 .submission-card {
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.8) 0%, rgba(10, 15, 28, 0.95) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+.capture-screen-v2 .submission-card h3 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.capture-screen-v2 .submission-details .detail-row {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  padding: 12px 0;
+}
+
+.capture-screen-v2 .submission-details .detail-row span {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.capture-screen-v2 .submission-details .detail-row strong {
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.capture-screen-v2 .submission-details .detail-row.highlight strong {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Submit button - Professional style */
+.capture-screen-v2 .submit-btn-v2 {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+}
+
+.capture-screen-v2 .submit-btn-v2:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(37, 99, 235, 0.4);
+}
+
+.capture-screen-v2 .submit-btn-v2.early-submit {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+}
+
+.capture-screen-v2 .submit-btn-v2.early-submit:hover:not(:disabled) {
+  box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
+}
+
+/* Submission window note */
+.capture-screen-v2 .submission-window-note {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 11px;
+  color: var(--neon-amber, #ffb800);
+  background: rgba(255, 184, 0, 0.1);
+  border: 1px solid rgba(255, 184, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* =============================================
+   WASTE & DOWNTIME SECTION ENHANCEMENTS
+   ============================================= */
+
+.capture-screen-v2 .waste-section {
+  background: linear-gradient(145deg, rgba(255, 71, 87, 0.05) 0%, rgba(10, 15, 28, 0.85) 100%);
+  border: 1px solid rgba(255, 71, 87, 0.15);
+}
+
+.capture-screen-v2 .waste-section:hover {
+  border-color: rgba(255, 71, 87, 0.3);
+}
+
+.capture-screen-v2 .waste-section .section-heading {
+  color: #ff6b7a;
+}
+
+.capture-screen-v2 .downtime-section {
+  background: linear-gradient(145deg, rgba(255, 184, 0, 0.05) 0%, rgba(10, 15, 28, 0.85) 100%);
+  border: 1px solid rgba(255, 184, 0, 0.15);
+}
+
+.capture-screen-v2 .downtime-section:hover {
+  border-color: rgba(255, 184, 0, 0.3);
+}
+
+.capture-screen-v2 .downtime-section .section-heading {
+  color: var(--neon-amber, #ffb800);
+}
+
+/* Entry count badges */
+.entry-count-badge {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
+/* =============================================
+   MODALS - MISSION CONTROL STYLING
+   ============================================= */
+
+.capture-modal-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(10, 15, 28, 0.85);
+}
+
+.capture-modal {
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.98) 0%, rgba(10, 15, 28, 0.99) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 80px rgba(0, 245, 255, 0.1);
+  padding: 32px;
+}
+
+.capture-modal .modal-title {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.capture-modal .modal-title .modal-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.capture-modal .modal-label {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(0, 245, 255, 0.6);
+  margin-bottom: 10px;
+  display: block;
+}
+
+.capture-modal .modal-input,
+.capture-modal .modal-select {
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 16px;
+  background: rgba(10, 15, 28, 0.8);
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  border-radius: 10px;
+  color: #f8fafc;
+  transition: all 0.25s ease;
+}
+
+.capture-modal .modal-input:focus,
+.capture-modal .modal-select:focus {
+  outline: none;
+  border-color: rgba(0, 245, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.1);
+}
+
+.capture-modal .modal-btn {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  padding: 14px 28px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.capture-modal .modal-btn.cancel {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.capture-modal .modal-btn.cancel:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.capture-modal .modal-btn.confirm {
+  background: linear-gradient(135deg, var(--neon-cyan, #00f5ff) 0%, #00d4e6 100%);
+  border: none;
+  color: #0a0f1a;
+  box-shadow: 0 4px 20px rgba(0, 245, 255, 0.3);
+}
+
+.capture-modal .modal-btn.confirm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 245, 255, 0.4);
+}
+
+.capture-modal .modal-btn.confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Waste modal specific */
+.capture-modal.waste-modal .modal-btn.waste-confirm {
+  background: linear-gradient(135deg, #ff4757 0%, #c0392b 100%);
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.3);
+}
+
+.capture-modal.waste-modal .modal-btn.waste-confirm:hover:not(:disabled) {
+  box-shadow: 0 6px 25px rgba(255, 71, 87, 0.4);
+}
+
+/* Downtime modal specific */
+.capture-modal.downtime-modal .modal-btn.downtime-confirm {
+  background: linear-gradient(135deg, var(--neon-amber, #ffb800) 0%, #e6a700 100%);
+  color: #0a0f1a;
+  box-shadow: 0 4px 20px rgba(255, 184, 0, 0.3);
+}
+
+.capture-modal.downtime-modal .modal-btn.downtime-confirm:hover:not(:disabled) {
+  box-shadow: 0 6px 25px rgba(255, 184, 0, 0.4);
+}
+
+/* Speed setting - Mission Control */
+.capture-screen-v2 .speed-setting {
+  background: linear-gradient(145deg, rgba(0, 245, 255, 0.05) 0%, rgba(10, 15, 28, 0.7) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.capture-screen-v2 .speed-label {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(0, 245, 255, 0.6);
+}
+
+.capture-screen-v2 .speed-value {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--neon-cyan, #00f5ff);
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+}
+
+.capture-screen-v2 .speed-change-btn {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 8px;
+  color: var(--neon-cyan, #00f5ff);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.capture-screen-v2 .speed-change-btn:hover {
+  background: rgba(0, 245, 255, 0.2);
+  border-color: rgba(0, 245, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+}
+
+/* Machine Details Section - Production Timer */
+.capture-screen-v2 .machine-details-section {
+  background: linear-gradient(145deg, rgba(0, 255, 136, 0.03) 0%, rgba(10, 15, 28, 0.85) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+}
+
+.capture-screen-v2 .production-status-badge {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
+.capture-screen-v2 .production-status-badge.running {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--neon-green, #00ff88);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.capture-screen-v2 .production-status-badge.paused {
+  background: rgba(255, 184, 0, 0.15);
+  border: 1px solid rgba(255, 184, 0, 0.3);
+  color: var(--neon-amber, #ffb800);
+}
+
+.capture-screen-v2 .machine-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.capture-screen-v2 .detail-card {
+  background: rgba(10, 15, 28, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.capture-screen-v2 .detail-card .detail-label {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #64748b;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.capture-screen-v2 .detail-card .detail-value {
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.capture-screen-v2 .detail-card.timer-card .timer-value {
+  font-size: 24px;
+  color: var(--neon-green, #00ff88);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+.capture-screen-v2 .pause-continue-btn {
+  font-family: var(--font-display, 'Oxanium', sans-serif);
+  width: 100%;
+  padding: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.capture-screen-v2 .pause-continue-btn.pause {
+  background: linear-gradient(135deg, var(--neon-amber, #ffb800) 0%, #e6a700 100%);
+  color: #0a0f1a;
+  box-shadow: 0 4px 20px rgba(255, 184, 0, 0.3);
+}
+
+.capture-screen-v2 .pause-continue-btn.pause:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 184, 0, 0.4);
+}
+
+.capture-screen-v2 .pause-continue-btn.continue {
+  background: linear-gradient(135deg, var(--neon-green, #00ff88) 0%, #00cc6a 100%);
+  color: #0a0f1a;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+}
+
+.capture-screen-v2 .pause-continue-btn.continue:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
+}
+
+/* =============================================
+   TABLET/IPAD RESPONSIVE - MISSION CONTROL
+   ============================================= */
+
+@media (max-width: 1024px) {
+  .capture-screen-v2 .capture-header-v2 {
+    padding: 12px 16px;
+  }
+
+  .capture-screen-v2 .capture-title-v2 h1 {
+    font-size: 18px;
+    letter-spacing: 0.5px;
+  }
+
+  .capture-screen-v2 .capture-subtitle {
+    font-size: 9px;
+  }
+
+  .capture-screen-v2 .shift-badge-v2 {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+
+  .capture-screen-v2 .back-btn-v2 {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+
+  .capture-screen-v2 .form-section {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .capture-screen-v2 .section-heading {
+    font-size: 11px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+
+  .capture-screen-v2 .capture-add-btn {
+    padding: 12px 18px;
+    font-size: 12px;
+  }
+
+  .capture-screen-v2 .capture-entry-item {
+    padding: 10px 14px;
+  }
+
+  .capture-screen-v2 .capture-entry-item .entry-value {
+    font-size: 18px;
+  }
+
+  .capture-screen-v2 .machine-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .capture-screen-v2 .detail-card.action-card {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ==========================================================
+   CAPTURE SCREEN - TABLET LAYOUT (768px - 1199px)
+   Two columns: Shift Details left, Waste/Downtime/Sachet right
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .capture-screen-v2 .capture-main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto auto auto !important;
+    gap: 12px !important;
+    align-items: start !important;
+  }
+
+  /* Hide the summary column on tablet */
+  .capture-screen-v2 .capture-summary-column {
+    display: none !important;
+  }
+
+  /* Form column uses display:contents to allow children to participate in parent grid */
+  .capture-screen-v2 .capture-form-column {
+    display: contents !important;
+  }
+
+  /* =========================
+     LEFT COLUMN ITEMS
+     ========================= */
+
+  /* Shift Details - Left column, spans multiple rows */
+  .capture-screen-v2 .form-section:not(.capture-section):not(.machine-details-section):not(.product-confirmation-section) {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+    height: fit-content !important;
+  }
+
+  /* Machine Details - Left column, after shift details */
+  .capture-screen-v2 .machine-details-section {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+
+  /* =========================
+     RIGHT COLUMN ITEMS
+     ========================= */
+
+  /* Waste section - Right column, row 1 */
+  .capture-screen-v2 .waste-section {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  /* Downtime section - Right column, row 2 */
+  .capture-screen-v2 .downtime-section {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  /* Sachet Mass - Right column, row 3 (it's a capture-section without specific class) */
+  .capture-screen-v2 .capture-section:not(.waste-section):not(.downtime-section):not(.product-confirmation-section) {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+  }
+
+  /* =========================
+     FULL WIDTH BOTTOM
+     ========================= */
+
+  /* Product Confirmation - Full width at bottom */
+  .capture-screen-v2 .product-confirmation-section {
+    grid-column: 1 / -1 !important;
+    grid-row: 4 !important;
+  }
+
+  /* =========================
+     COMPACT STYLES
+     ========================= */
+
+  /* Compact shift details */
+  .capture-screen-v2 .form-section:not(.capture-section) {
+    padding: 12px 14px !important;
+  }
+
+  .capture-screen-v2 .form-section:not(.capture-section) h2 {
+    font-size: 13px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .capture-screen-v2 .form-section:not(.capture-section) .form-grid {
+    gap: 10px !important;
+  }
+
+  .capture-screen-v2 .form-section:not(.capture-section) .form-field {
+    margin-bottom: 6px !important;
+  }
+
+  .capture-screen-v2 .form-section:not(.capture-section) .form-label {
+    font-size: 10px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .capture-screen-v2 .form-section:not(.capture-section) .form-input {
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* Compact action sections */
+  .capture-screen-v2 .capture-section {
+    padding: 12px 14px !important;
+  }
+
+  .capture-screen-v2 .capture-section h2 {
+    font-size: 12px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .capture-screen-v2 .capture-add-btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ==========================================================
+   CAPTURE SCREEN - IMPROVED DESKTOP LAYOUT
+   Better organization for manufacturing workflow
+   ========================================================== */
+
+/* Desktop layout: Primary actions (Waste/Downtime) side by side */
+@media (min-width: 1200px) {
+  .capture-screen-v2 .capture-main {
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+  }
+
+  .capture-screen-v2 .capture-form-column {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    align-content: start;
+  }
+
+  /* Shift Details spans full width */
+  .capture-screen-v2 .capture-form-column > section:first-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Machine Details spans full width */
+  .capture-screen-v2 .capture-form-column > .machine-details-section {
+    grid-column: 1 / -1;
+  }
+
+  /* Waste section - left column */
+  .capture-screen-v2 .capture-form-column > .waste-section {
+    grid-column: 1;
+  }
+
+  /* Downtime section - right column */
+  .capture-screen-v2 .capture-form-column > .downtime-section {
+    grid-column: 2;
+  }
+
+  /* Sachet Mass and Product Confirmation span full width */
+  .capture-screen-v2 .capture-form-column > section:nth-last-child(2),
+  .capture-screen-v2 .capture-form-column > section:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Make waste and downtime sections equal height */
+  .capture-screen-v2 .waste-section,
+  .capture-screen-v2 .downtime-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+  }
+
+  .capture-screen-v2 .waste-section .capture-section-content,
+  .capture-screen-v2 .downtime-section .capture-section-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .capture-screen-v2 .waste-section .capture-entries-list,
+  .capture-screen-v2 .downtime-section .capture-entries-list {
+    flex: 1;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+/* Compact Shift Details when locked */
+.capture-screen-v2 .form-section:has(.locked-badge) {
+  padding: 16px 20px;
+}
+
+.capture-screen-v2 .form-section:has(.locked-badge) .form-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+
+.capture-screen-v2 .form-section:has(.locked-badge) .main-form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.capture-screen-v2 .form-section:has(.locked-badge) .form-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.capture-screen-v2 .form-section:has(.locked-badge) .form-field .form-label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.capture-screen-v2 .form-section:has(.locked-badge) .form-field .form-control {
+  padding: 8px 12px !important;
+  min-height: 38px !important;
+  width: auto;
+  min-width: 140px;
+}
+
+/* Hide time/date card when locked - shown in header */
+.capture-screen-v2 .form-section:has(.locked-badge) .shift-info-card {
+  display: none;
+}
+
+/* Compact speed setting when locked */
+.capture-screen-v2 .form-section:has(.locked-badge) .speed-setting {
+  margin-top: 12px;
+  padding: 12px 16px;
+}
+
+/* Primary action buttons - make them more prominent */
+.capture-screen-v2 .waste-section .capture-add-btn,
+.capture-screen-v2 .downtime-section .capture-add-btn {
+  padding: 18px 24px;
+  font-size: 15px;
+}
+
+/* Section headings alignment */
+.capture-screen-v2 .waste-section .section-heading,
+.capture-screen-v2 .downtime-section .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Entry count badge position */
+.capture-screen-v2 .entry-count-badge {
+  margin-left: auto;
+}
+
+/* Product Confirmation - horizontal button layout */
+.capture-screen-v2 .product-action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Sachet Mass and Product Confirmation - compact styling */
+.capture-screen-v2 .capture-form-column > section:nth-last-child(2),
+.capture-screen-v2 .capture-form-column > section:last-child {
+  padding: 16px 20px;
+}
+
+/* Better visual hierarchy for section types */
+.capture-screen-v2 .waste-section {
+  border-left: 3px solid #ef4444;
+}
+
+.capture-screen-v2 .downtime-section {
+  border-left: 3px solid #f59e0b;
+}
+
+/* Sidebar improvements */
+.capture-screen-v2 .capture-summary-column {
+  gap: 16px;
+}
+
+/* Session Totals - more compact */
+.capture-screen-v2 .live-stats-card {
+  padding: 20px;
+}
+
+.capture-screen-v2 .stats-grid {
+  gap: 10px;
+}
+
+.capture-screen-v2 .stat-box {
+  padding: 14px 10px;
+}
+
+.capture-screen-v2 .stat-box .stat-number {
+  font-size: 24px;
+}
+
+.capture-screen-v2 .stat-box .stat-unit {
+  font-size: 8px;
+  margin-top: 6px;
+}
+
+/* ==========================================================
+   COMPACT UI SYSTEM - Global Density Improvements
+   Based on Material Design density scale & data-heavy UI patterns
+   Reference: 14px body, 32-36px buttons, 16px base spacing
+   ========================================================== */
+
+/* Global spacing reduction */
+.form-section,
+.dashboard-card,
+.history-card,
+.admin-card,
+.capture-section {
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+}
+
+/* Tighter gaps throughout */
+.dashboard-content,
+.capture-main,
+.history-content,
+.admin-content,
+.form-grid,
+.capture-form-column,
+.capture-summary-column {
+  gap: 16px !important;
+}
+
+/* Compact section headers */
+.section-title,
+.capture-section-title,
+h2, h3 {
+  margin-bottom: 12px !important;
+}
+
+/* Compact form fields */
+.form-field {
+  margin-bottom: 12px !important;
+}
+
+.form-label {
+  margin-bottom: 4px !important;
+  font-size: 11px !important;
+}
+
+.form-input,
+.form-select,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+}
+
+/* Compact buttons - 36px height standard */
+button,
+.btn,
+.capture-add-btn,
+.action-btn {
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+  min-height: 36px !important;
+}
+
+/* Primary action buttons slightly larger */
+.btn-primary,
+.capture-add-btn.waste-btn,
+.capture-add-btn.downtime-btn,
+.submit-btn {
+  padding: 10px 20px !important;
+  min-height: 40px !important;
+}
+
+/* Compact stat boxes */
+.stat-box,
+.stat-card,
+.summary-stat {
+  padding: 12px !important;
+  border-radius: 10px !important;
+}
+
+.stat-number {
+  font-size: 22px !important;
+  line-height: 1.1 !important;
+}
+
+.stat-label,
+.stat-unit {
+  font-size: 10px !important;
+  margin-top: 4px !important;
+}
+
+/* Compact tables */
+table th,
+table td {
+  padding: 8px 12px !important;
+}
+
+/* Compact entry lists */
+.capture-entry,
+.entry-item,
+.list-item {
+  padding: 10px 12px !important;
+  margin-bottom: 8px !important;
+  border-radius: 8px !important;
+}
+
+/* Page headers - less vertical space */
+.page-header,
+.capture-header,
+.dashboard-header {
+  padding: 12px 16px !important;
+  margin-bottom: 16px !important;
+}
+
+/* Reduce vertical margins on containers */
+.page-container,
+.capture-screen-v2,
+.dashboard-page,
+.history-page,
+.admin-page {
+  padding: 12px 16px !important;
+}
+
+/* Compact modals */
+.modal-content,
+.dialog-content {
+  padding: 20px !important;
+  border-radius: 12px !important;
+}
+
+.modal-header {
+  margin-bottom: 16px !important;
+}
+
+/* Tighter grid layouts */
+.grid-2,
+.grid-3,
+.grid-4 {
+  gap: 12px !important;
+}
+
+/* Compact visual summary section */
+.visual-summary,
+.summary-charts {
+  gap: 12px !important;
+  padding: 12px !important;
+}
+
+/* Machine cards on dashboard - more compact */
+.machine-card {
+  padding: 14px 16px !important;
+  border-radius: 12px !important;
+}
+
+.machine-card-header {
+  margin-bottom: 10px !important;
+}
+
+.machine-card-stats {
+  gap: 8px !important;
+}
+
+/* Sidebar adjustments */
+.capture-summary-column {
+  padding: 14px !important;
+}
+
+/* Toast notifications - compact */
+.toast,
+.notification {
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+}
+
+/* Navigation - compact */
+nav,
+.nav-bar,
+.top-bar {
+  padding: 8px 16px !important;
+}
+
+/* ==========================================================
+   RESPONSIVE COMPACT ADJUSTMENTS
+   ========================================================== */
+
+/* Mobile - slightly more padding for touch */
+@media (max-width: 768px) {
+  .form-section,
+  .dashboard-card,
+  .capture-section {
+    padding: 14px 16px !important;
+  }
+
+  button,
+  .btn,
+  .capture-add-btn {
+    min-height: 44px !important; /* iOS touch target */
+    padding: 10px 16px !important;
+  }
+
+  .page-container,
+  .capture-screen-v2,
+  .dashboard-page {
+    padding: 10px 12px !important;
+  }
+}
+
+/* Large screens - can be slightly more spacious */
+@media (min-width: 1400px) {
+  .form-section,
+  .dashboard-card,
+  .capture-section {
+    padding: 18px 20px !important;
+  }
+}
+
+/* ==========================================================
+   DASHBOARD-SPECIFIC COMPACT ADJUSTMENTS
+   ========================================================== */
+
+/* Tighter sidebar stats */
+.dashboard-v2 .quick-stats {
+  gap: 8px !important;
+}
+
+.dashboard-v2 .stat-item {
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  gap: 10px !important;
+}
+
+.dashboard-v2 .stat-item .stat-indicator {
+  height: 28px !important;
+  width: 4px !important;
+}
+
+.dashboard-v2 .stat-item .stat-value {
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+
+.dashboard-v2 .stat-item .stat-label {
+  font-size: 10px !important;
+}
+
+/* Compact stats panel */
+.dashboard-v2 .stats-panel {
+  gap: 12px !important;
+}
+
+/* Compact efficiency card */
+.dashboard-v2 .efficiency-card {
+  padding: 14px !important;
+}
+
+.dashboard-v2 .efficiency-ring {
+  width: 90px !important;
+  height: 90px !important;
+}
+
+.dashboard-v2 .efficiency-value {
+  font-size: 24px !important;
+}
+
+.dashboard-v2 .efficiency-label {
+  font-size: 9px !important;
+  margin-top: 6px !important;
+}
+
+/* Compact Today's Performance / Metrics Section */
+.dashboard-v2 .metrics-section {
+  padding: 12px !important;
+}
+
+.dashboard-v2 .metrics-section .section-title {
+  font-size: 11px !important;
+  margin-bottom: 10px !important;
+}
+
+.dashboard-v2 .metric-block {
+  padding: 8px 0 !important;
+}
+
+.dashboard-v2 .metric-value {
+  font-size: 16px !important;
+}
+
+.dashboard-v2 .metric-header {
+  font-size: 11px !important;
+}
+
+/* Compact machine tiles */
+.dashboard-v2 .machine-tile {
+  padding: 12px !important;
+  border-radius: 10px !important;
+}
+
+.dashboard-v2 .tile-header {
+  margin-bottom: 6px !important;
+}
+
+.dashboard-v2 .tile-name {
+  font-size: 14px !important;
+}
+
+.dashboard-v2 .tile-status-text {
+  font-size: 11px !important;
+}
+
+/* Compact tile stats */
+.dashboard-v2 .tile-stats {
+  gap: 8px !important;
+  margin: 8px 0 !important;
+  padding: 6px 0 !important;
+}
+
+.dashboard-v2 .tile-stat {
+  padding: 3px 6px !important;
+  gap: 3px !important;
+}
+
+.dashboard-v2 .tile-stat .stat-icon {
+  font-size: 11px !important;
+}
+
+.dashboard-v2 .tile-stat .stat-value {
+  font-size: 13px !important;
+}
+
+.dashboard-v2 .tile-stat .stat-unit {
+  font-size: 9px !important;
+}
+
+/* Machines section header compact */
+.dashboard-v2 .section-header {
+  margin-bottom: 12px !important;
+}
+
+.dashboard-v2 .section-header h2 {
+  font-size: 16px !important;
+}
+
+/* Right sidebar panels */
+.dashboard-v2 .sidebar-panel {
+  padding: 14px !important;
+}
+
+.dashboard-v2 .sidebar-panel h3 {
+  font-size: 11px !important;
+  margin-bottom: 10px !important;
+}
+
+/* Top nav compact */
+.dashboard-v2 .top-nav {
+  padding: 8px 16px !important;
+}
+
+.dashboard-v2 .brand-name {
+  font-size: 16px !important;
+}
+
+.dashboard-v2 .brand-subtitle {
+  font-size: 10px !important;
+}
+
+.dashboard-v2 .clock-time {
+  font-size: 20px !important;
+}
+
+.dashboard-v2 .clock-date {
+  font-size: 11px !important;
+}
+
+.dashboard-v2 .nav-btn {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+}
+
+/* ==========================================================
+   HISTORY PAGE COMPACT
+   ========================================================== */
+
+.history-filters {
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.history-filter-group {
+  gap: 6px !important;
+}
+
+.history-stats {
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+.history-stat-card {
+  padding: 14px 16px !important;
+}
+
+.history-stat-value {
+  font-size: 20px !important;
+}
+
+.history-stat-label {
+  font-size: 10px !important;
+}
+
+/* ==========================================================
+   ADMIN PAGE COMPACT
+   ========================================================== */
+
+.admin-section {
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+}
+
+.admin-section h3 {
+  margin-bottom: 12px !important;
+  font-size: 14px !important;
+}
+
+.admin-grid {
+  gap: 12px !important;
+}
+
+.admin-card {
+  padding: 14px !important;
+}
+
+/* ==========================================================
+   GLOBAL HEADER COMPACT
+   ========================================================== */
+
+.app-header,
+.dashboard-header-v2 {
+  padding: 10px 16px !important;
+}
+
+.header-title h1 {
+  font-size: 18px !important;
+}
+
+.header-subtitle {
+  font-size: 11px !important;
+}
+
+.header-clock {
+  font-size: 22px !important;
+}
+
+.header-date {
+  font-size: 11px !important;
+}
+
+.header-actions {
+  gap: 8px !important;
+}
+
+.header-btn {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
 }

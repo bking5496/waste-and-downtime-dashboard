@@ -702,6 +702,20 @@ const Dashboard: React.FC = () => {
                           <div className="tile-operator">{machine.currentOperator}</div>
                         )}
 
+                        {/* Today's Stats - Waste & Downtime */}
+                        <div className="tile-stats">
+                          <div className="tile-stat waste">
+                            <span className="stat-icon">🗑️</span>
+                            <span className="stat-value">{machine.todayWaste?.toFixed(1) || '0.0'}</span>
+                            <span className="stat-unit">kg</span>
+                          </div>
+                          <div className="tile-stat downtime">
+                            <span className="stat-icon">⏱️</span>
+                            <span className="stat-value">{machine.todayDowntime || 0}</span>
+                            <span className="stat-unit">min</span>
+                          </div>
+                        </div>
+
                         {/* Inline sub-machine selection */}
                         {machine.subMachineCount && machine.subMachineCount > 0 && machine.status !== 'maintenance' ? (
                           <div className="sub-machine-inline-grid">
