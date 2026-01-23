@@ -563,3 +563,80 @@ COMMENT ON TABLE machine_order_queue IS 'Per-machine order queues with priority 
 COMMENT ON TABLE chat_messages IS 'Team chat messages for real-time communication';
 COMMENT ON TABLE shift_sessions IS 'Locked shift session state';
 COMMENT ON TABLE live_sessions IS 'Real-time session sync storage (JSON entries)';
+
+-- ==========================================
+-- ACTIVE SESSIONS (for session locking)
+-- Added: 2026-01-20
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS active_sessions (
+  id BIGSERIAL PRIMARY KEY,
+  machine_name TEXT NOT NULL,
+  operator_name TEXT NOT NULL,
+  shift TEXT NOT NULL CHECK (shift IN ('Day', 'Night')),
+  session_date DATE NOT NULL,
+  browser_id TEXT NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_heartbeat TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Unique constraint to prevent duplicate sessions per browser
+CREATE UNIQUE INDEX IF NOT EXISTS idx_active_sessions_unique
+  ON active_sessions(machine_name, shift, session_date, browser_id);
+
+-- Index for quick lookup of active sessions
+CREATE INDEX IF NOT EXISTS idx_active_sessions_lookup
+  ON active_sessions(machine_name, shift, session_date, is_active);
+
+-- Index for heartbeat cleanup
+CREATE INDEX IF NOT EXISTS idx_active_sessions_heartbeat
+  ON active_sessions(last_heartbeat) WHERE is_active = TRUE;
+
+-- Enable RLS
+ALTER TABLE active_sessions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all operations on active_sessions" ON active_sessions;
+CREATE POLICY "Allow all operations on active_sessions" ON active_sessions
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Add production_timer column to live_sessions
+ALTER TABLE live_sessions ADD COLUMN IF NOT EXISTS production_timer JSONB;
+
+COMMENT ON TABLE active_sessions IS 'Session locking to prevent concurrent edits on same machine/shift';
+COMMENT ON COLUMN active_sessions.browser_id IS 'Unique identifier per browser tab/session';
+COMMENT ON COLUMN active_sessions.last_heartbeat IS 'Updated periodically to detect stale sessions';
+COMMENT ON COLUMN live_sessions.production_timer IS 'Persistent production timer state (JSON)';
+
+-- Enable realtime for active_sessions
+ALTER PUBLICATION supabase_realtime ADD TABLE active_sessions;
+
+-- ==========================================
+-- FACILITY SETTINGS TABLE
+-- Added: 2026-01-20
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS facility_settings (
+  id SERIAL PRIMARY KEY,
+  setting_key TEXT UNIQUE NOT NULL,
+  setting_value JSONB NOT NULL,
+  description TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_by TEXT
+);
+
+-- Enable RLS
+ALTER TABLE facility_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all operations on facility_settings" ON facility_settings;
+CREATE POLICY "Allow all operations on facility_settings" ON facility_settings
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Insert default settings
+INSERT INTO facility_settings (setting_key, setting_value, description) VALUES
+  ('shift_config', '{"dayShiftStart": 6, "dayShiftEnd": 18, "timezoneOffset": 2, "submissionWindowMinutes": 15}', 'Shift timing configuration'),
+  ('facility_info', '{"name": "Production Facility", "location": "South Africa"}', 'Facility information')
+ON CONFLICT (setting_key) DO NOTHING;
+
+COMMENT ON TABLE facility_settings IS 'Configurable facility-wide settings';

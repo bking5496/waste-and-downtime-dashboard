@@ -120,16 +120,39 @@ export interface Machine {
 }
 
 // ==============================================
-// NO DEFAULT DATA - Everything comes from the database
-// Add data via Settings in the app or directly in Supabase
+// DEFAULT DATA
 // ==============================================
 
 export const OPERATORS: string[] = [];
 export const MACHINES: Machine[] = [];
-export const WASTE_TYPES: string[] = [];
-export const PLANNED_DOWNTIME_REASONS: string[] = [];
-export const UNPLANNED_DOWNTIME_REASONS: string[] = [];
-export const DOWNTIME_REASONS: string[] = [];
+
+// Waste Types - common manufacturing waste categories
+export const WASTE_TYPES: string[] = [
+  'Start-up Waste',
+  'Changeover Waste',
+  'Defective Product',
+  'Material Spillage',
+];
+
+// Downtime Reasons - categorized by planned vs unplanned
+export const PLANNED_DOWNTIME_REASONS: string[] = [
+  'Scheduled Maintenance',
+  'Changeover',
+];
+
+export const UNPLANNED_DOWNTIME_REASONS: string[] = [
+  'Machine Breakdown',
+  'Material Shortage',
+];
+
+// Combined downtime reasons for selection
+export const DOWNTIME_REASONS: string[] = [
+  'Machine Breakdown',
+  'Scheduled Maintenance',
+  'Changeover',
+  'Material Shortage',
+];
+
 export const ORDER_NUMBERS: string[] = [];
 export const PRODUCTS: string[] = [];
 export const BATCH_NUMBERS: string[] = [];
