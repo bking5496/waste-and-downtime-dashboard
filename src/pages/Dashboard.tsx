@@ -693,28 +693,72 @@ const Dashboard: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Show current order if running */}
-                        {isRunning && machine.currentOrder && (
-                          <div className="tile-order">Order: {machine.currentOrder}</div>
-                        )}
-
-                        {machine.currentOperator && (
-                          <div className="tile-operator">{machine.currentOperator}</div>
+                        {/* For group machines: show info for each active member */}
+                        {machine.subMachineCount && machine.subMachineCount > 0 && activeSubMachines.size > 0 ? (
+                          <div className="active-members-info">
+                            {Array.from(activeSubMachines).sort((a, b) => a - b).map(num => {
+                              const memberName = `${machine.name} - Machine ${num}`;
+                              const memberSession = activeSessions.find(s => s.machine_name === memberName);
+                              return (
+                                <div key={num} className="member-info">
+                                  <span className="member-label">M{num}:</span>
+                                  {memberSession ? (
+                                    <>
+                                      <span className="member-order">{memberSession.order_number}</span>
+                                      <span className="member-operator">({memberSession.operator_name})</span>
+                                    </>
+                                  ) : (
+                                    <span className="member-order">Active</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <>
+                            {/* Show current order if running (single machine) */}
+                            {isRunning && machine.currentOrder && (
+                              <div className="tile-order">Order: {machine.currentOrder}</div>
+                            )}
+                            {machine.currentOperator && (
+                              <div className="tile-operator">{machine.currentOperator}</div>
+                            )}
+                          </>
                         )}
 
                         {/* Today's Stats - Waste & Downtime */}
-                        <div className="tile-stats">
-                          <div className="tile-stat waste">
-                            <span className="stat-icon">🗑️</span>
-                            <span className="stat-value">{machine.todayWaste?.toFixed(1) || '0.0'}</span>
-                            <span className="stat-unit">kg</span>
+                        {machine.subMachineCount && machine.subMachineCount > 0 && activeSubMachines.size > 0 ? (
+                          <div className="members-stats">
+                            {Array.from(activeSubMachines).sort((a, b) => a - b).map(num => (
+                              <div key={num} className="member-stats-row">
+                                <span className="member-label">M{num}:</span>
+                                <div className="tile-stat waste">
+                                  <span className="stat-icon">🗑️</span>
+                                  <span className="stat-value">0.0</span>
+                                  <span className="stat-unit">kg</span>
+                                </div>
+                                <div className="tile-stat downtime">
+                                  <span className="stat-icon">⏱️</span>
+                                  <span className="stat-value">0</span>
+                                  <span className="stat-unit">min</span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <div className="tile-stat downtime">
-                            <span className="stat-icon">⏱️</span>
-                            <span className="stat-value">{machine.todayDowntime || 0}</span>
-                            <span className="stat-unit">min</span>
+                        ) : (
+                          <div className="tile-stats">
+                            <div className="tile-stat waste">
+                              <span className="stat-icon">🗑️</span>
+                              <span className="stat-value">{machine.todayWaste?.toFixed(1) || '0.0'}</span>
+                              <span className="stat-unit">kg</span>
+                            </div>
+                            <div className="tile-stat downtime">
+                              <span className="stat-icon">⏱️</span>
+                              <span className="stat-value">{machine.todayDowntime || 0}</span>
+                              <span className="stat-unit">min</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Inline sub-machine selection */}
                         {machine.subMachineCount && machine.subMachineCount > 0 && machine.status !== 'maintenance' ? (
