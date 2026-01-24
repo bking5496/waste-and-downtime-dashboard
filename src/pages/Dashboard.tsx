@@ -311,16 +311,57 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Calculate efficiency (mock calculation - running / total * 100)
+  // Calculate efficiency (running / total * 100) - considering group machines with active sub-machines
   const efficiency = useMemo(() => {
-    const running = machines.filter(m => m.status === 'running').length;
-    const total = machines.filter(m => m.status !== 'maintenance').length;
-    return total > 0 ? Math.round((running / total) * 100) : 0;
-  }, [machines]);
+    let running = 0;
+    let total = 0;
 
-  const runningCount = machines.filter(m => m.status === 'running').length;
-  const idleCount = machines.filter(m => m.status === 'idle').length;
-  const maintenanceCount = machines.filter(m => m.status === 'maintenance').length;
+    machines.forEach(machine => {
+      if (machine.status !== 'maintenance') {
+        total++;
+        // Check if group machine has any active sub-machines
+        const hasActiveSubMachines = machine.subMachineCount && machine.subMachineCount > 0
+          ? getActiveSubMachines(machine.name, machine.subMachineCount, machine.id).size > 0
+          : false;
+
+        if (machine.status === 'running' || hasActiveSubMachines) {
+          running++;
+        }
+      }
+    });
+
+    return total > 0 ? Math.round((running / total) * 100) : 0;
+  }, [machines, getActiveSubMachines]);
+
+  // Calculate running/idle counts considering group machines with active sub-machines
+  const machineStatusCounts = useMemo(() => {
+    let running = 0;
+    let idle = 0;
+    let maintenance = 0;
+
+    machines.forEach(machine => {
+      if (machine.status === 'maintenance') {
+        maintenance++;
+      } else {
+        // Check if group machine has any active sub-machines
+        const hasActiveSubMachines = machine.subMachineCount && machine.subMachineCount > 0
+          ? getActiveSubMachines(machine.name, machine.subMachineCount, machine.id).size > 0
+          : false;
+
+        if (machine.status === 'running' || hasActiveSubMachines) {
+          running++;
+        } else {
+          idle++;
+        }
+      }
+    });
+
+    return { running, idle, maintenance };
+  }, [machines, getActiveSubMachines]);
+
+  const runningCount = machineStatusCounts.running;
+  const idleCount = machineStatusCounts.idle;
+  const maintenanceCount = machineStatusCounts.maintenance;
 
   return (
     <div className="dashboard-v2">
@@ -673,28 +714,38 @@ const Dashboard: React.FC = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {machines.map((machine, index) => (
-                  <motion.div
-                    key={machine.id}
-                    className={`machine-row ${machine.status} ${machine.status === 'maintenance' ? 'disabled' : ''}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    onClick={() => handleMachineClick(machine)}
-                  >
-                    <div className="row-indicator" style={{ background: getStatusGradient(machine.status) }} />
-                    <div className="row-name">{machine.name}</div>
-                    <div className="row-status">
-                      <PulseIndicator color={getStatusColor(machine.status)} />
-                      <span>{machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}</span>
-                    </div>
-                    <div className="row-operator">{machine.currentOperator || '—'}</div>
-                    <div className="row-time">{machine.lastSubmission || 'No entries'}</div>
-                    {machine.status !== 'maintenance' && (
-                      <button className="row-action">Record</button>
-                    )}
-                  </motion.div>
-                ))}
+                {machines.map((machine, index) => {
+                  // Calculate actual status considering active sub-machines
+                  const activeSubMachines = machine.subMachineCount && machine.subMachineCount > 0
+                    ? getActiveSubMachines(machine.name, machine.subMachineCount, machine.id)
+                    : new Set<number>();
+                  const hasActiveSubMachines = activeSubMachines.size > 0;
+                  const isRunning = machine.status === 'running' || hasActiveSubMachines;
+                  const displayStatus = isRunning ? 'running' : machine.status;
+
+                  return (
+                    <motion.div
+                      key={machine.id}
+                      className={`machine-row ${displayStatus} ${machine.status === 'maintenance' ? 'disabled' : ''}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      onClick={() => handleMachineClick(machine)}
+                    >
+                      <div className="row-indicator" style={{ background: getStatusGradient(displayStatus) }} />
+                      <div className="row-name">{machine.name}</div>
+                      <div className="row-status">
+                        <PulseIndicator color={getStatusColor(displayStatus)} />
+                        <span>{displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}</span>
+                      </div>
+                      <div className="row-operator">{machine.currentOperator || '—'}</div>
+                      <div className="row-time">{machine.lastSubmission || 'No entries'}</div>
+                      {machine.status !== 'maintenance' && (
+                        <button className="row-action">Record</button>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             )}
           </AnimatePresence>
