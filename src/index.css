@@ -1406,21 +1406,26 @@ hr {
   gap: 14px;
 }
 
+/* Brand - Mission Control Theme */
 .brand-icon {
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  border-radius: 10px;
+  box-shadow:
+    0 0 20px rgba(0, 245, 255, 0.2),
+    inset 0 0 15px rgba(0, 245, 255, 0.1);
 }
 
 .brand-icon svg {
   width: 24px;
   height: 24px;
-  color: white;
+  color: var(--neon-cyan);
+  filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.6));
 }
 
 .brand-text {
@@ -1432,19 +1437,21 @@ hr {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--neon-cyan);
   line-height: 1.2;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+  letter-spacing: 1px;
+  text-shadow:
+    0 0 10px rgba(0, 245, 255, 0.6),
+    0 0 20px rgba(0, 245, 255, 0.3);
 }
 
 .brand-subtitle {
-  font-family: var(--font-mono);
+  font-family: 'Courier New', monospace;
   font-size: 10px;
-  color: var(--neon-cyan);
+  color: rgba(0, 245, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  opacity: 0.8;
+  letter-spacing: 3px;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.3);
 }
 
 .nav-center {
@@ -1453,27 +1460,31 @@ hr {
   transform: translateX(-50%);
 }
 
+/* Live Clock - Mission Control Theme */
 .live-clock {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 20px;
-  background: rgba(30, 41, 59, 0.8);
-  border-radius: 30px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 10px 24px;
+  background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  box-shadow:
+    0 0 20px rgba(0, 245, 255, 0.1),
+    inset 0 1px 0 rgba(0, 245, 255, 0.1);
 }
 
 .clock-time {
-  font-family: var(--font-mono);
+  font-family: 'Courier New', monospace;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--neon-cyan);
+  color: var(--neon-green);
   text-shadow:
-    0 0 10px rgba(0, 245, 255, 0.8),
-    0 0 20px rgba(0, 245, 255, 0.4),
-    0 0 40px rgba(0, 245, 255, 0.2);
-  letter-spacing: 2px;
+    0 0 10px rgba(0, 255, 136, 0.8),
+    0 0 20px rgba(0, 255, 136, 0.4),
+    0 0 40px rgba(0, 255, 136, 0.2);
+  letter-spacing: 3px;
   animation: clock-pulse 2s ease-in-out infinite;
 }
 
@@ -1483,11 +1494,12 @@ hr {
 }
 
 .clock-date {
-  font-family: var(--font-sans);
+  font-family: 'Courier New', monospace;
   font-size: 13px;
-  color: #94a3b8;
+  color: rgba(0, 245, 255, 0.7);
   padding-left: 12px;
-  border-left: 1px solid rgba(148, 163, 184, 0.2);
+  border-left: 1px solid rgba(0, 245, 255, 0.3);
+  letter-spacing: 1px;
 }
 
 /* Pulse Indicator - Enhanced Industrial Style */
@@ -1914,33 +1926,35 @@ hr {
   padding-bottom: 24px;
 }
 
+/* Machine Tile - Mission Control Theme */
 .machine-tile {
   position: relative;
   background:
-    linear-gradient(145deg, rgba(20, 28, 48, 0.9) 0%, rgba(10, 15, 28, 0.95) 100%);
+    linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(148, 163, 184, 0.08);
-  border-radius: 20px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(0, 245, 255, 0.05),
+    inset 0 1px 0 rgba(0, 245, 255, 0.1);
 }
 
-/* Inner highlight effect */
+/* Inner highlight effect - Mission Control scanline */
 .machine-tile::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, var(--neon-cyan) 20%, var(--neon-cyan) 80%, transparent 100%);
   pointer-events: none;
-  border-radius: 20px 20px 0 0;
+  opacity: 0.7;
 }
 
 /* Status-based neon glow borders - Enhanced */
@@ -2023,15 +2037,18 @@ hr {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
-  color: #f8fafc;
-  letter-spacing: 0.5px;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
 }
 
 .tile-status-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #94a3b8;
+  color: rgba(0, 245, 255, 0.6);
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tile-order {
@@ -2058,84 +2075,94 @@ hr {
   justify-content: space-between;
   align-items: center;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  border-top: 1px solid rgba(0, 245, 255, 0.15);
   margin-top: 12px;
 }
 
 .tile-time {
   font-size: 12px;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
+  font-family: 'Courier New', monospace;
 }
 
 .tile-action {
   font-size: 13px;
   font-weight: 600;
-  color: #3b82f6;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
-/* Machine tile stats row */
+/* Machine tile stats row - Mission Control */
 .tile-stats {
   display: flex;
   gap: 12px;
   margin: 10px 0;
   padding: 8px 0;
-  border-top: 1px solid rgba(148, 163, 184, 0.08);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  border-top: 1px solid rgba(0, 245, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
 }
 
 .tile-stat {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  background: rgba(15, 23, 42, 0.5);
+  padding: 6px 10px;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.1);
   border-radius: 6px;
   flex: 1;
 }
 
 .tile-stat .stat-icon {
   font-size: 12px;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .tile-stat .stat-value {
   font-size: 14px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--neon-cyan);
+  font-family: 'Courier New', monospace;
 }
 
 .tile-stat .stat-unit {
   font-size: 10px;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
   font-weight: 500;
 }
 
 .tile-stat.waste .stat-value {
-  color: #ef4444;
+  color: #FF6B6B;
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
 }
 
 .tile-stat.downtime .stat-value {
-  color: #f59e0b;
+  color: #FFD93D;
+  text-shadow: 0 0 8px rgba(255, 217, 61, 0.3);
 }
 
 /* Highlight stats when non-zero */
 .tile-stat.waste:has(.stat-value:not(:empty)) {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(255, 107, 107, 0.08);
+  border-color: rgba(255, 107, 107, 0.2);
 }
 
 .tile-stat.downtime:has(.stat-value:not(:empty)) {
-  background: rgba(245, 158, 11, 0.08);
+  background: rgba(255, 217, 61, 0.08);
+  border-color: rgba(255, 217, 61, 0.2);
 }
 
-/* Sub-machine count badge */
+/* Sub-machine count badge - Mission Control */
 .sub-count-badge {
   margin-left: 8px;
-  padding: 2px 8px;
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border-radius: 10px;
+  padding: 3px 10px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  color: var(--neon-cyan);
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.3);
 }
 
 /* In Use status styling for machine tiles */
@@ -2148,16 +2175,17 @@ hr {
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
-/* Inline sub-machine selection grid */
+/* Inline sub-machine selection grid - Mission Control */
 .sub-machine-inline-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
   gap: 8px;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  border-top: 1px solid rgba(0, 245, 255, 0.15);
   margin-top: 12px;
 }
 
+/* Sub-machine buttons - Mission Control Theme */
 .sub-machine-inline-btn {
   display: flex;
   align-items: center;
@@ -2166,34 +2194,36 @@ hr {
   min-width: 52px;
   height: 52px;
   background:
-    linear-gradient(145deg, rgba(30, 40, 65, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-  border: 2px solid rgba(77, 159, 255, 0.25);
-  border-radius: 14px;
-  color: var(--neon-blue);
-  font-family: var(--font-display);
+    linear-gradient(180deg, rgba(0, 245, 255, 0.1) 0%, rgba(0, 245, 255, 0.05) 100%);
+  border: 2px solid rgba(0, 245, 255, 0.3);
+  border-radius: 10px;
+  color: var(--neon-cyan);
+  font-family: 'Courier New', monospace;
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
-    0 4px 15px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 0 15px rgba(0, 245, 255, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.4);
 }
 
 .sub-machine-inline-btn:hover {
   background:
-    linear-gradient(145deg, rgba(40, 50, 80, 0.95) 0%, rgba(20, 30, 55, 0.95) 100%);
-  border-color: rgba(77, 159, 255, 0.5);
-  color: #93c5fd;
+    linear-gradient(180deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border-color: rgba(0, 245, 255, 0.6);
+  color: #fff;
   box-shadow:
-    0 0 20px rgba(77, 159, 255, 0.3),
+    0 0 30px rgba(0, 245, 255, 0.3),
     0 8px 25px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 0 20px rgba(0, 245, 255, 0.1);
   transform: translateY(-3px) scale(1.05);
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.6);
 }
 
 .sub-machine-inline-btn:active {
-  background: linear-gradient(145deg, rgba(77, 159, 255, 0.2) 0%, rgba(30, 40, 65, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.25) 0%, rgba(0, 245, 255, 0.15) 100%);
   transform: translateY(-1px) scale(1.02);
 }
 
