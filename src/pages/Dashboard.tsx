@@ -4,10 +4,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
 import { fetchActiveSessions, subscribeToSessionChanges, LiveSession } from '../lib/liveSession';
-import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { isSupabaseConfigured, getRecentSubmissions } from '../lib/supabase';
 import { Machine, ShiftData } from '../types';
 import MachineSettingsModal from '../components/MachineSettingsModal';
 import SubMachineModal from '../components/SubMachineModal';
+
+// Type for recent submissions from Supabase
+interface RecentSubmission {
+  id: number;
+  order_number: string;
+  machine: string;
+  sub_machine?: string;
+  total_waste: number;
+  total_downtime: number;
+  created_at: string;
+  waste_records?: { recorded_at: string }[];
+  downtime_records?: { recorded_at: string }[];
+}
 
 // Animated number component
 const AnimatedNumber: React.FC<{ value: number; decimals?: number; suffix?: string }> = ({
@@ -59,6 +72,7 @@ const Dashboard: React.FC = () => {
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
   const [activeSessions, setActiveSessions] = useState<LiveSession[]>([]);
+  const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const LONG_PRESS_DURATION = 500; // ms
 
@@ -141,6 +155,16 @@ const Dashboard: React.FC = () => {
         // Fetch active sessions from Supabase for cross-browser sync
         const sessions = await fetchActiveSessions();
         setActiveSessions(sessions);
+
+        // Fetch recent submissions from Supabase for the activity feed
+        if (isSupabaseConfigured) {
+          try {
+            const submissions = await getRecentSubmissions(10);
+            setRecentSubmissions(submissions || []);
+          } catch (err) {
+            console.warn('Failed to fetch recent submissions:', err);
+          }
+        }
 
         // Retry any failed submissions in background
         const failedCount = getFailedSubmissions().length;
@@ -786,29 +810,75 @@ const Dashboard: React.FC = () => {
           <div className="recent-activity">
             <h3 className="section-title">Recent Submissions</h3>
             <div className="activity-list">
-              {recentHistory.slice(0, 5).map((item, index) => (
-                <motion.div
-                  key={item.id || index}
-                  className="activity-item"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="activity-icon">
-                    <span className="icon-dot"></span>
-                  </div>
-                  <div className="activity-details">
-                    <span className="activity-machine">{item.machine}</span>
-                    <span className="activity-meta">
-                      {item.totalWaste.toFixed(1)}kg waste · {item.totalDowntime}m downtime
-                    </span>
-                  </div>
-                  <div className="activity-time">
-                    {format(new Date(item.submittedAt), 'HH:mm')}
-                  </div>
-                </motion.div>
-              ))}
-              {recentHistory.length === 0 && (
+              {recentSubmissions.length > 0 ? (
+                recentSubmissions.slice(0, 5).map((item, index) => {
+                  // Calculate start time from earliest record
+                  const allTimestamps = [
+                    ...(item.waste_records || []).map(r => r.recorded_at),
+                    ...(item.downtime_records || []).map(r => r.recorded_at),
+                  ].filter(Boolean).map(t => new Date(t).getTime());
+                  const startTime = allTimestamps.length > 0
+                    ? new Date(Math.min(...allTimestamps))
+                    : null;
+                  const finishTime = new Date(item.created_at);
+                  const machineName = item.sub_machine || item.machine;
+
+                  return (
+                    <motion.div
+                      key={item.id}
+                      className="activity-item enhanced"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="activity-header">
+                        <span className="activity-order">#{item.order_number}</span>
+                        <span className="activity-machine-name">{machineName}</span>
+                      </div>
+                      <div className="activity-stats">
+                        <span className="activity-stat waste">
+                          <span className="stat-icon">🗑️</span>
+                          {(item.total_waste || 0).toFixed(1)}kg
+                        </span>
+                        <span className="activity-stat downtime">
+                          <span className="stat-icon">⏱️</span>
+                          {item.total_downtime || 0}m
+                        </span>
+                      </div>
+                      <div className="activity-times">
+                        <span className="time-label">Start:</span>
+                        <span className="time-value">{startTime ? format(startTime, 'HH:mm') : '—'}</span>
+                        <span className="time-label">End:</span>
+                        <span className="time-value">{format(finishTime, 'HH:mm')}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              ) : recentHistory.length > 0 ? (
+                // Fallback to localStorage data if Supabase data not available
+                recentHistory.slice(0, 5).map((item, index) => (
+                  <motion.div
+                    key={item.id || index}
+                    className="activity-item"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="activity-icon">
+                      <span className="icon-dot"></span>
+                    </div>
+                    <div className="activity-details">
+                      <span className="activity-machine">{item.machine}</span>
+                      <span className="activity-meta">
+                        {item.totalWaste.toFixed(1)}kg waste · {item.totalDowntime}m downtime
+                      </span>
+                    </div>
+                    <div className="activity-time">
+                      {format(new Date(item.submittedAt), 'HH:mm')}
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
                 <div className="activity-empty">No recent activity</div>
               )}
             </div>
