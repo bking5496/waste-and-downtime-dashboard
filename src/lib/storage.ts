@@ -589,3 +589,120 @@ export const clearHistory = (): void => {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(MACHINES_KEY);
 };
+
+// ==========================================
+// SHARED LINE SPEED - Syncs across sub-machines
+// ==========================================
+
+const LINE_SPEED_KEY_PREFIX = 'line_speed_';
+
+/**
+ * Extract parent machine name from a sub-machine name
+ * e.g., "Cubes - Machine 1" → "Cubes"
+ * e.g., "Universal 2 - Machine 3" → "Universal 2"
+ */
+export const getParentMachineName = (machineName: string): string => {
+  // Check if it matches the pattern "Parent - Machine N"
+  const match = machineName.match(/^(.+?)\s*-\s*Machine\s*\d+$/i);
+  if (match) {
+    return match[1].trim();
+  }
+  // Return the original name if no sub-machine pattern found
+  return machineName;
+};
+
+/**
+ * Get the storage key for shared line speed
+ */
+const getLineSpeedKey = (parentMachineName: string, shift: string, date: string): string => {
+  return `${LINE_SPEED_KEY_PREFIX}${parentMachineName}_${shift}_${date}`;
+};
+
+/**
+ * Save shared line speed (called when any sub-machine sets speed)
+ */
+export const saveLineSpeed = (
+  machineName: string,
+  shift: string,
+  date: string,
+  speed: number
+): void => {
+  const parentName = getParentMachineName(machineName);
+  const key = getLineSpeedKey(parentName, shift, date);
+
+  const data = {
+    speed,
+    updatedAt: new Date().toISOString(),
+    updatedBy: machineName,
+  };
+
+  localStorage.setItem(key, JSON.stringify(data));
+  console.log(`💾 Saved line speed ${speed} PPM for ${parentName}`);
+};
+
+/**
+ * Get shared line speed (returns the speed set by any sibling machine)
+ */
+export const getLineSpeed = (
+  machineName: string,
+  shift: string,
+  date: string
+): { speed: number; updatedBy: string; updatedAt: string } | null => {
+  const parentName = getParentMachineName(machineName);
+  const key = getLineSpeedKey(parentName, shift, date);
+
+  const stored = localStorage.getItem(key);
+  if (!stored) return null;
+
+  try {
+    const data = JSON.parse(stored);
+    console.log(`📖 Loaded line speed ${data.speed} PPM for ${parentName} (set by ${data.updatedBy})`);
+    return data;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Clear shared line speed (called when session ends)
+ */
+export const clearLineSpeed = (
+  machineName: string,
+  shift: string,
+  date: string
+): void => {
+  const parentName = getParentMachineName(machineName);
+  const key = getLineSpeedKey(parentName, shift, date);
+  localStorage.removeItem(key);
+};
+
+/**
+ * Clean up old line speed entries (called periodically)
+ */
+export const cleanupOldLineSpeeds = (retentionDays: number = 7): number => {
+  const cutoff = Date.now() - (retentionDays * 24 * 60 * 60 * 1000);
+  let removed = 0;
+
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(LINE_SPEED_KEY_PREFIX)) {
+      try {
+        const data = localStorage.getItem(key);
+        if (data) {
+          const parsed = JSON.parse(data);
+          const updatedAt = new Date(parsed.updatedAt).getTime();
+          if (updatedAt < cutoff) {
+            localStorage.removeItem(key);
+            removed++;
+          }
+        }
+      } catch {
+        // Invalid data - remove it
+        localStorage.removeItem(key);
+        removed++;
+      }
+    }
+  }
+
+  return removed;
+};

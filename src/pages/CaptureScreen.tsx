@@ -9,7 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
-import { saveShiftData, addFailedSubmission } from '../lib/storage';
+import { saveShiftData, addFailedSubmission, saveLineSpeed, getLineSpeed } from '../lib/storage';
 import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
 import { getCurrentShift, checkSubmissionWindow, getLocalHours } from '../lib/facilitySettings';
 import {
@@ -249,7 +249,21 @@ const CaptureScreen: React.FC = () => {
           // Restore entry arrays
           if (session.wasteEntries) setWasteEntries(session.wasteEntries);
           if (session.downtimeEntries) setDowntimeEntries(session.downtimeEntries);
-          if (session.speedEntries) setSpeedEntries(session.speedEntries);
+          if (session.speedEntries && session.speedEntries.length > 0) {
+            setSpeedEntries(session.speedEntries);
+          } else {
+            // Check for shared line speed from sibling machines
+            const sharedSpeed = getLineSpeed(machineName, currentShift, currentDate);
+            if (sharedSpeed) {
+              const sharedSpeedEntry: SpeedEntry = {
+                id: uuidv4(),
+                speed: sharedSpeed.speed,
+                timestamp: new Date(sharedSpeed.updatedAt)
+              };
+              setSpeedEntries([sharedSpeedEntry]);
+              console.log(`📡 Loaded shared speed ${sharedSpeed.speed} PPM from ${sharedSpeed.updatedBy}`);
+            }
+          }
           if (session.sachetMassEntries) setSachetMassEntries(session.sachetMassEntries);
           if (session.looseCasesEntries) setLooseCasesEntries(session.looseCasesEntries);
           if (session.palletScanEntries) setPalletScanEntries(session.palletScanEntries);
@@ -272,6 +286,20 @@ const CaptureScreen: React.FC = () => {
         setBatchNumber(liveSession.batch_number);
         setIsSessionLocked(true);
 
+        // Check for shared line speed from sibling machines
+        const sharedSpeed = getLineSpeed(machineName, currentShift, currentDate);
+        let restoredSpeedEntries: SpeedEntry[] = [];
+        if (sharedSpeed) {
+          const sharedSpeedEntry: SpeedEntry = {
+            id: uuidv4(),
+            speed: sharedSpeed.speed,
+            timestamp: new Date(sharedSpeed.updatedAt)
+          };
+          restoredSpeedEntries = [sharedSpeedEntry];
+          setSpeedEntries(restoredSpeedEntries);
+          console.log(`📡 Loaded shared speed ${sharedSpeed.speed} PPM from ${sharedSpeed.updatedBy}`);
+        }
+
         // Save to localStorage for faster future loads
         const localSession: ShiftSession = {
           machineName: liveSession.machine_name,
@@ -284,7 +312,7 @@ const CaptureScreen: React.FC = () => {
           locked: true,
           wasteEntries: [],
           downtimeEntries: [],
-          speedEntries: [],
+          speedEntries: restoredSpeedEntries,
           sachetMassEntries: [],
           looseCasesEntries: [],
           palletScanEntries: [],
@@ -991,6 +1019,10 @@ const CaptureScreen: React.FC = () => {
       setSpeedInput('');
       setShowSpeedModal(false);
       showToast('Machine speed recorded', 'success');
+
+      // Save to shared line storage so other machines can see it
+      const currentDate = new Date().toISOString().split('T')[0];
+      saveLineSpeed(machineName, currentShift, currentDate, Number(speedInput));
     }
   };
 
