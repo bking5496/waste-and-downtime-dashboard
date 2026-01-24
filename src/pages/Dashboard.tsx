@@ -2,10 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import {
-  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip,
-  PieChart, Pie, Cell
-} from 'recharts';
 import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
 import { fetchActiveSessions, subscribeToSessionChanges, LiveSession } from '../lib/liveSession';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -322,21 +318,6 @@ const Dashboard: React.FC = () => {
     return total > 0 ? Math.round((running / total) * 100) : 0;
   }, [machines]);
 
-  // Chart data
-  const trendData = useMemo(() => {
-    return recentHistory.map((item) => ({
-      name: format(new Date(item.date), 'EEE'),
-      waste: item.totalWaste,
-      downtime: item.totalDowntime / 60, // convert to hours
-    })).reverse();
-  }, [recentHistory]);
-
-  const statusData = useMemo(() => [
-    { name: 'Running', value: machines.filter(m => m.status === 'running').length, color: '#10b981' },
-    { name: 'Idle', value: machines.filter(m => m.status === 'idle').length, color: '#f59e0b' },
-    { name: 'Maintenance', value: machines.filter(m => m.status === 'maintenance').length, color: '#ef4444' },
-  ].filter(d => d.value > 0), [machines]);
-
   const runningCount = machines.filter(m => m.status === 'running').length;
   const idleCount = machines.filter(m => m.status === 'idle').length;
   const maintenanceCount = machines.filter(m => m.status === 'maintenance').length;
@@ -452,71 +433,6 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Today's Metrics */}
-          <div className="metrics-section">
-            <h3 className="section-title">Today's Performance</h3>
-            <div className="metric-block waste">
-              <div className="metric-header">
-                <span className="metric-icon">◆</span>
-                <span>Total Waste</span>
-              </div>
-              <div className="metric-value">
-                <AnimatedNumber value={todayStats.totalWaste} decimals={1} suffix=" kg" />
-              </div>
-              <div className="metric-bar">
-                <div className="bar-fill" style={{ width: `${Math.min(todayStats.totalWaste / 100 * 100, 100)}%` }}></div>
-              </div>
-            </div>
-            <div className="metric-block downtime">
-              <div className="metric-header">
-                <span className="metric-icon">◇</span>
-                <span>Total Downtime</span>
-              </div>
-              <div className="metric-value">
-                {Math.floor(todayStats.totalDowntime / 60)}h {todayStats.totalDowntime % 60}m
-              </div>
-              <div className="metric-bar">
-                <div className="bar-fill" style={{ width: `${Math.min(todayStats.totalDowntime / 480 * 100, 100)}%` }}></div>
-              </div>
-            </div>
-            <div className="metric-block entries">
-              <div className="metric-header">
-                <span className="metric-icon">◈</span>
-                <span>Submissions</span>
-              </div>
-              <div className="metric-value">
-                <AnimatedNumber value={todayStats.submissionCount} suffix=" entries" />
-              </div>
-            </div>
-          </div>
-
-          {/* Mini Chart */}
-          {trendData.length > 0 && (
-            <div className="trend-chart">
-              <h3 className="section-title">7-Day Trend</h3>
-              <ResponsiveContainer width="100%" height={120}>
-                <AreaChart data={trendData}>
-                  <defs>
-                    <linearGradient id="wasteGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#1e293b',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Area type="monotone" dataKey="waste" stroke="#ef4444" fill="url(#wasteGradient)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          )}
         </aside>
 
         {/* Main Content - Machine Grid */}
@@ -808,46 +724,8 @@ const Dashboard: React.FC = () => {
           </AnimatePresence>
         </section>
 
-        {/* Right Panel - Status Overview */}
+        {/* Right Panel - Recent Activity */}
         <aside className="overview-panel">
-          <div className="status-donut">
-            <h3 className="section-title">Machine Status</h3>
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: '#1e293b',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="donut-legend">
-              {statusData.map((item, index) => (
-                <div key={index} className="legend-item">
-                  <span className="legend-dot" style={{ backgroundColor: item.color }}></span>
-                  <span className="legend-label">{item.name}</span>
-                  <span className="legend-value">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Recent Activity */}
           <div className="recent-activity">
             <h3 className="section-title">Recent Submissions</h3>

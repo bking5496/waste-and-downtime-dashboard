@@ -1573,20 +1573,37 @@ hr {
 
 .nav-btn {
   padding: 10px 20px;
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
-  color: #f8fafc;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--neon-cyan);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.15) 0%, rgba(0, 245, 255, 0.05) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
 }
 
 .nav-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.25) 0%, rgba(0, 245, 255, 0.1) 100%);
+  box-shadow: 0 0 25px rgba(0, 245, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nav-btn.settings {
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(148, 163, 184, 0.2);
+  box-shadow: none;
+}
+
+.nav-btn.settings:hover {
+  color: #f1f5f9;
+  background: rgba(51, 65, 85, 0.6);
+  border-color: rgba(148, 163, 184, 0.4);
 }
 
 /* Dashboard Main Layout */
@@ -8607,34 +8624,37 @@ body {
   padding-top: 52px;
 }
 
-/* Chat Toggle Button */
+/* Chat Toggle Button - Mission Control */
 .chat-toggle {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 245, 255, 0.4);
   border-radius: 999px;
   padding: 14px 20px;
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .chat-toggle:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.3) 0%, rgba(0, 245, 255, 0.15) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.3), 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .chat-toggle:active {
   transform: translateY(0);
 }
 
-/* Chat Panel */
+/* Chat Panel - Mission Control */
 .chat-panel {
   position: absolute;
   bottom: 60px;
@@ -8643,13 +8663,13 @@ body {
   max-width: calc(100vw - 32px);
   height: 500px;
   max-height: calc(100vh - 140px);
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  background: linear-gradient(165deg, rgba(20, 28, 48, 0.98) 0%, rgba(10, 15, 28, 0.99) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 60px rgba(0, 245, 255, 0.1), 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: chatSlideIn 0.3s ease;
 }
 
@@ -8665,27 +8685,30 @@ body {
   }
 }
 
-/* Chat Header */
+/* Chat Header - Mission Control */
 .chat-header {
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.08) 0%, transparent 100%);
 }
 
 .chat-title {
-  font-weight: 800;
-  font-size: 16px;
-  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .chat-online {
-  font-size: 13px;
-  color: var(--success-color);
-  font-weight: 700;
+  font-size: 12px;
+  color: var(--neon-green);
+  font-weight: 600;
   margin-left: auto;
   display: flex;
   align-items: center;
@@ -8695,8 +8718,9 @@ body {
 .online-dot {
   width: 8px;
   height: 8px;
-  background: var(--success-color);
+  background: var(--neon-green);
   border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
   animation: pulse 2s infinite;
 }
 
