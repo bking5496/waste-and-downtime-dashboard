@@ -295,19 +295,19 @@ const Dashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'running': return '#10b981';
-      case 'idle': return '#f59e0b';
-      case 'maintenance': return '#ef4444';
-      default: return '#64748b';
+      case 'running': return '#00ff88';
+      case 'idle': return '#00f5ff';
+      case 'maintenance': return '#ff4757';
+      default: return '#00f5ff';
     }
   };
 
   const getStatusGradient = (status: string) => {
     switch (status) {
-      case 'running': return 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-      case 'idle': return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
-      case 'maintenance': return 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-      default: return 'linear-gradient(135deg, #64748b 0%, #475569 100%)';
+      case 'running': return 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)';
+      case 'idle': return 'linear-gradient(135deg, #00f5ff 0%, #00c4cc 100%)';
+      case 'maintenance': return 'linear-gradient(135deg, #ff4757 0%, #cc3945 100%)';
+      default: return 'linear-gradient(135deg, #00f5ff 0%, #00c4cc 100%)';
     }
   };
 

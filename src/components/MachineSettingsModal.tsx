@@ -119,9 +119,9 @@ const MachineSettingsModal: React.FC<MachineSettingsModalProps> = ({
 
   const getStatusColor = (status: Machine['status']) => {
     switch (status) {
-      case 'running': return '#10b981';
-      case 'idle': return '#f59e0b';
-      case 'maintenance': return '#ef4444';
+      case 'running': return '#00ff88';
+      case 'idle': return '#00f5ff';
+      case 'maintenance': return '#ff4757';
     }
   };
 

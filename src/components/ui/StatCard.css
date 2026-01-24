@@ -18,7 +18,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background: #64748b;
+  background: var(--neon-cyan);
 }
 
 .mc-stat__content {
@@ -36,9 +36,9 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: var(--neon-cyan);
 }
 
 .mc-stat__icon svg {
@@ -70,7 +70,7 @@
   font-family: 'Oxanium', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
   text-transform: uppercase;
 }
 
@@ -78,9 +78,10 @@
   font-family: 'Oxanium', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--neon-cyan);
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .mc-stat__trend {
@@ -121,8 +122,8 @@
 }
 
 /* Variant colors */
-.mc-stat--default .mc-stat__indicator { background: #64748b; }
-.mc-stat--default .mc-stat__glow { box-shadow: inset 0 0 30px rgba(100, 116, 139, 0.1); }
+.mc-stat--default .mc-stat__indicator { background: var(--neon-cyan); box-shadow: 0 0 10px rgba(0, 245, 255, 0.5); }
+.mc-stat--default .mc-stat__glow { box-shadow: inset 0 0 30px rgba(0, 245, 255, 0.1); }
 
 .mc-stat--success .mc-stat__indicator { background: #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
 .mc-stat--success .mc-stat__value { color: #00ff88; }

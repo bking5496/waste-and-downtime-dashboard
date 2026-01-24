@@ -186,7 +186,7 @@
 .mc-modal__subtitle {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
@@ -198,9 +198,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: var(--neon-cyan);
   cursor: pointer;
   transition: all 0.2s;
   margin-left: 16px;

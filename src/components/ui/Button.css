@@ -159,30 +159,32 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* GHOST - Transparent */
+/* GHOST - Transparent with Cyan accent */
 .mc-btn--ghost {
   background: transparent;
-  border-color: rgba(148, 163, 184, 0.3);
-  color: #94a3b8;
+  border-color: rgba(0, 245, 255, 0.3);
+  color: var(--neon-cyan);
 }
 
 .mc-btn--ghost:hover:not(:disabled) {
-  background: rgba(148, 163, 184, 0.1);
-  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(0, 245, 255, 0.1);
+  border-color: rgba(0, 245, 255, 0.5);
   color: #e2e8f0;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.15);
 }
 
-/* SECONDARY - Muted */
+/* SECONDARY - Muted with subtle cyan */
 .mc-btn--secondary {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(71, 85, 105, 0.5);
+  background: rgba(10, 25, 40, 0.8);
+  border-color: rgba(0, 245, 255, 0.2);
   color: #cbd5e1;
 }
 
 .mc-btn--secondary:hover:not(:disabled) {
-  background: rgba(51, 65, 85, 0.8);
-  border-color: rgba(100, 116, 139, 0.6);
+  background: rgba(0, 245, 255, 0.08);
+  border-color: rgba(0, 245, 255, 0.4);
   color: #f1f5f9;
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
 }
 
 /* =============================================

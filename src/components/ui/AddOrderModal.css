@@ -11,7 +11,7 @@
 .mc-add-order__description {
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
-  color: #94a3b8;
+  color: rgba(0, 245, 255, 0.7);
   line-height: 1.6;
   margin: 0;
 }
@@ -47,7 +47,7 @@
   padding: 12px 16px;
   background: rgba(0, 245, 255, 0.05);
   border: 1px solid rgba(0, 245, 255, 0.15);
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.7);
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   line-height: 1.5;

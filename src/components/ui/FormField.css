@@ -19,9 +19,10 @@
   font-family: 'Oxanium', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--neon-cyan);
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .mc-field__required {
@@ -79,7 +80,7 @@
 
 .mc-field__input::placeholder,
 .mc-field__textarea::placeholder {
-  color: #475569;
+  color: rgba(0, 245, 255, 0.3);
 }
 
 /* Input with icon */
@@ -88,7 +89,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +117,7 @@
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
   pointer-events: none;
   transition: transform 0.2s;
 }
@@ -164,7 +165,7 @@
 .mc-field__hint {
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.5);
 }
 
 /* Mobile adjustments */

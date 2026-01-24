@@ -28,9 +28,9 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #94a3b8;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(71, 85, 105, 0.4);
+  color: var(--neon-cyan);
+  background: rgba(10, 25, 40, 0.6);
+  border: 1px solid rgba(0, 245, 255, 0.3);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -66,7 +66,7 @@
 .mc-header__subtitle {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  color: #64748b;
+  color: rgba(0, 245, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0;

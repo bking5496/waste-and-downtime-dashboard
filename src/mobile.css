@@ -404,11 +404,11 @@
    =================================== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background-color: #0f172a;
-    --card-background: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
+    --background-color: #050810;
+    --card-background: rgba(10, 25, 40, 0.95);
+    --text-primary: #e2e8f0;
+    --text-secondary: rgba(0, 245, 255, 0.6);
+    --border-color: rgba(0, 245, 255, 0.2);
   }
 }
 

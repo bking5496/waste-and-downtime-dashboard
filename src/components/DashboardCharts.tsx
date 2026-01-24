@@ -50,22 +50,22 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ wasteEntries, downtim
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={wasteData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: '#94a3b8', fontSize: 11 }} 
-                  axisLine={{ stroke: 'rgba(148,163,184,0.2)' }}
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,245,255,0.1)" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: '#00f5ff', fontSize: 11 }}
+                  axisLine={{ stroke: 'rgba(0,245,255,0.2)' }}
                   tickLine={false}
                 />
-                <YAxis 
-                  tick={{ fill: '#94a3b8', fontSize: 11 }} 
-                  axisLine={{ stroke: 'rgba(148,163,184,0.2)' }}
+                <YAxis
+                  tick={{ fill: '#00f5ff', fontSize: 11 }}
+                  axisLine={{ stroke: 'rgba(0,245,255,0.2)' }}
                   tickLine={false}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    background: 'rgba(30,41,59,0.95)', 
-                    border: '1px solid rgba(148,163,184,0.2)',
+                <Tooltip
+                  contentStyle={{
+                    background: 'rgba(10,25,40,0.95)',
+                    border: '1px solid rgba(0,245,255,0.2)',
                     borderRadius: '8px',
                     color: '#f8fafc'
                   }}
@@ -103,10 +103,10 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ wasteEntries, downtim
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    background: 'rgba(30,41,59,0.95)', 
-                    border: '1px solid rgba(148,163,184,0.2)',
+                <Tooltip
+                  contentStyle={{
+                    background: 'rgba(10,25,40,0.95)',
+                    border: '1px solid rgba(0,245,255,0.2)',
                     borderRadius: '8px',
                     color: '#f8fafc'
                   }}

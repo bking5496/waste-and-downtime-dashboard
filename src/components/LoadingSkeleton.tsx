@@ -21,7 +21,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       width,
       height,
       borderRadius,
-      background: 'linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%)',
+      background: 'linear-gradient(90deg, rgba(10,25,40,0.9) 25%, rgba(0,245,255,0.15) 50%, rgba(10,25,40,0.9) 75%)',
       backgroundSize: '200% 100%',
       animation: 'skeleton-shimmer 1.5s infinite',
     }}
@@ -156,8 +156,8 @@ const skeletonStyles = `
 }
 
 .skeleton-card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(10, 25, 40, 0.5);
+  border: 1px solid rgba(0, 245, 255, 0.1);
   padding: 1rem;
 }
 
@@ -193,8 +193,9 @@ const skeletonStyles = `
   flex-direction: row;
   align-items: center;
   padding: 0.75rem;
-  background: rgba(30, 41, 59, 0.3);
+  background: rgba(10, 25, 40, 0.3);
   border-radius: 6px;
+  border: 1px solid rgba(0, 245, 255, 0.08);
 }
 
 .grid-skeleton {
