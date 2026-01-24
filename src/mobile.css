@@ -60,9 +60,29 @@
     order: 1;
   }
 
-  /* Hide non-essential panels on mobile */
+  /* Compact overview panel on mobile - show condensed summary */
   .overview-panel {
-    display: none;
+    order: 3;
+    width: 100%;
+    max-height: none;
+    padding: var(--mobile-padding);
+  }
+
+  /* Hide verbose content, show only essential summary */
+  .overview-panel .section-title,
+  .overview-panel .recent-activity-header {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .overview-panel .activity-list {
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .overview-panel .activity-item {
+    padding: 6px 8px;
+    font-size: 12px;
   }
 
   /* Machine Grid */
@@ -125,8 +145,59 @@
     width: 100%;
   }
 
+  /* Compact session summary on mobile - sticky at top */
   .capture-summary-column {
-    display: none; /* Hide on mobile, essential info in main column */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    order: -1;
+    padding: 10px var(--mobile-padding);
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.98) 0%, rgba(5, 15, 30, 0.95) 100%);
+    border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+    margin: calc(-1 * var(--mobile-padding));
+    margin-bottom: var(--mobile-padding);
+    width: calc(100% + var(--mobile-padding) * 2);
+  }
+
+  .capture-summary-column .session-summary-card {
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .capture-summary-column .session-summary-card h3 {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  /* Horizontal layout for session totals on mobile */
+  .capture-summary-column .session-totals {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .capture-summary-column .session-total-item {
+    flex: 1;
+    min-width: 80px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  .capture-summary-column .session-total-item .total-value {
+    font-size: 16px;
+  }
+
+  .capture-summary-column .session-total-item .total-label {
+    font-size: 9px;
+  }
+
+  /* Hide verbose details on mobile summary */
+  .capture-summary-column .recent-entries,
+  .capture-summary-column .session-meta {
+    display: none;
   }
 
   .capture-header-v2 {

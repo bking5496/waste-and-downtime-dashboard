@@ -53,10 +53,10 @@
   --success-hover: #15803d;
   --danger-color: #dc2626;
   --warning-color: #f59e0b;
-  --background-color: #f1f5f9;
-  --card-background: #ffffff;
+  --background-color: #050810;
+  --card-background: rgba(10, 25, 40, 0.95);
   --text-primary: #e2e8f0;
-  --text-secondary: rgba(0, 245, 255, 0.6);
+  --text-secondary: rgba(0, 245, 255, 0.8);
   --border-color: rgba(0, 245, 255, 0.2);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
