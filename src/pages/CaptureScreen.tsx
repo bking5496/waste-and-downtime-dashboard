@@ -60,6 +60,32 @@ const CaptureScreen: React.FC = () => {
 
   const machineName = getMachineName();
 
+  // Get parent machine ID for sub-machines (orders are stored against parent)
+  const getParentMachineId = (): string => {
+    // Check location state first
+    const fromState = (location.state as { parentMachineId?: string })?.parentMachineId;
+    if (fromState) {
+      sessionStorage.setItem(`capture_parent_id_${machineId}`, fromState);
+      return fromState;
+    }
+
+    // Try to restore from sessionStorage
+    const restored = sessionStorage.getItem(`capture_parent_id_${machineId}`);
+    if (restored) {
+      return restored;
+    }
+
+    // Parse from machineId if it's a sub-machine (e.g., machine-xxx-sub-1 -> machine-xxx)
+    if (machineId && machineId.includes('-sub-')) {
+      return machineId.split('-sub-')[0];
+    }
+
+    // Return machineId as-is for non-sub-machines
+    return machineId || '';
+  };
+
+  const parentMachineId = getParentMachineId();
+
   // Track current machine for chat widget location context
   useEffect(() => {
     if (machineName) {
@@ -166,8 +192,8 @@ const CaptureScreen: React.FC = () => {
     setBatchNumber(order.batchNumber);
     setShowOrderSelect(false);
     showToast(`Created and selected order: ${order.orderNumber}`, 'success');
-    // Refresh the order queue
-    fetchMachineOrders(machineId || '').then(orders => setAvailableOrders(orders)).catch(console.error);
+    // Refresh the order queue (use parent machine ID for sub-machines)
+    fetchMachineOrders(parentMachineId || '').then(orders => setAvailableOrders(orders)).catch(console.error);
   };
 
   // Session conflict state
@@ -463,17 +489,17 @@ const CaptureScreen: React.FC = () => {
   // Load available orders from machine queue
   useEffect(() => {
     const loadMachineOrders = async () => {
-      if (!machineId) return;
+      if (!parentMachineId) return;
       try {
-        // Use machineId (from URL) to fetch orders - this matches how AdminConsole stores them
-        const orders = await fetchMachineOrders(machineId);
+        // Use parentMachineId for sub-machines (orders are stored against parent machine group)
+        const orders = await fetchMachineOrders(parentMachineId);
         setAvailableOrders(orders);
       } catch (e) {
         console.error('Failed to load machine orders:', e);
       }
     };
     loadMachineOrders();
-  }, [machineId]);
+  }, [parentMachineId]);
 
   // Auto-save entries when they change (if session is locked)
   useEffect(() => {

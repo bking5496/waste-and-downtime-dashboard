@@ -1973,16 +1973,16 @@ hr {
 }
 
 .machine-tile.idle {
-  border-color: rgba(255, 184, 0, 0.2);
-  border-top: 3px solid var(--neon-amber);
+  border-color: rgba(0, 245, 255, 0.2);
+  border-top: 3px solid var(--neon-cyan);
 }
 
 .machine-tile.idle:hover:not(.disabled) {
-  border-color: rgba(255, 184, 0, 0.4);
+  border-color: rgba(0, 245, 255, 0.4);
   box-shadow:
-    var(--glow-amber),
+    0 0 30px rgba(0, 245, 255, 0.2),
     0 20px 50px rgba(0, 0, 0, 0.5),
-    inset 0 0 30px rgba(255, 184, 0, 0.03);
+    inset 0 0 30px rgba(0, 245, 255, 0.03);
   transform: translateY(-8px) scale(1.02);
 }
 
@@ -2862,6 +2862,7 @@ hr {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 245, 255, 0.05);
 }
 
+/* Back Button - Mission Control */
 .back-btn-v2 {
   display: flex;
   align-items: center;
@@ -2869,28 +2870,31 @@ hr {
   padding: 12px 20px;
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  color: #e2e8f0;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 12px;
+  letter-spacing: 0.5px;
+  color: var(--neon-cyan);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.1) 0%, rgba(0, 245, 255, 0.05) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .back-btn-v2:hover {
-  background: rgba(51, 65, 85, 0.7);
-  border-color: rgba(148, 163, 184, 0.25);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border-color: rgba(0, 245, 255, 0.5);
   transform: translateX(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
 }
 
 .back-btn-v2 svg {
   width: 18px;
   height: 18px;
   stroke-width: 2.5;
+  filter: drop-shadow(0 0 4px rgba(0, 245, 255, 0.4));
 }
 
+/* Capture Title - Mission Control */
 .capture-title-v2 {
   text-align: center;
 }
@@ -2899,43 +2903,49 @@ hr {
   font-size: 26px;
   font-weight: 700;
   margin: 0;
-  color: #f1f5f9;
-  letter-spacing: -0.5px;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
 }
 
 .capture-subtitle {
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0, 245, 255, 0.6);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   margin-top: 4px;
+  font-family: 'Courier New', monospace;
 }
 
+/* Shift Badge - Mission Control Theme */
 .shift-badge-v2 {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 22px;
-  border-radius: 50px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
   text-transform: uppercase;
+  font-family: 'Courier New', monospace;
 }
 
 .shift-badge-v2.day {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
-  color: #fcd34d;
-  border: 1px solid rgba(251, 191, 36, 0.25);
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+  background: linear-gradient(180deg, rgba(255, 200, 50, 0.15) 0%, rgba(255, 180, 0, 0.1) 100%);
+  color: #FFD000;
+  border: 1px solid rgba(255, 200, 50, 0.4);
+  box-shadow: 0 0 15px rgba(255, 200, 50, 0.2);
+  text-shadow: 0 0 10px rgba(255, 200, 50, 0.5);
 }
 
 .shift-badge-v2.night {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.08) 100%);
-  color: #a5b4fc;
-  border: 1px solid rgba(129, 140, 248, 0.25);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+  background: linear-gradient(180deg, rgba(138, 43, 226, 0.2) 0%, rgba(75, 0, 130, 0.15) 100%);
+  color: #BF7FFF;
+  border: 1px solid rgba(138, 43, 226, 0.4);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
 }
 
 .shift-icon {
@@ -10565,32 +10575,46 @@ body {
   grid-template-columns: 1fr 380px;
 }
 
-/* Form sections - Professional glass cards */
+/* Form sections - Mission Control glass cards */
 .capture-screen-v2 .form-section {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
+  position: relative;
+}
+
+.capture-screen-v2 .form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--neon-cyan) 50%, transparent 100%);
+  opacity: 0.6;
+  border-radius: 12px 12px 0 0;
 }
 
 .capture-screen-v2 .form-section:hover {
-  border-color: rgba(148, 163, 184, 0.18);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 245, 255, 0.35);
+  box-shadow: 0 0 40px rgba(0, 245, 255, 0.1), 0 6px 25px rgba(0, 0, 0, 0.35);
 }
 
-/* Section headings - Professional style */
+/* Section headings - Mission Control style */
 .capture-screen-v2 .section-heading {
   font-family: var(--font-display, 'Oxanium', sans-serif);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #e2e8f0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  color: var(--neon-cyan);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
   padding-bottom: 14px;
   margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .capture-screen-v2 .section-icon {
@@ -10623,18 +10647,19 @@ body {
   font-family: var(--font-display, 'Oxanium', sans-serif);
   font-size: 10px !important;
   font-weight: 600;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.3);
 }
 
-/* Form inputs - professional style */
+/* Form inputs - Mission Control style */
 .capture-screen-v2 .form-control,
 .capture-screen-v2 .form-select {
   font-family: var(--font-sans, 'DM Sans', sans-serif) !important;
-  background: rgba(15, 23, 42, 0.6) !important;
-  border: 1px solid rgba(148, 163, 184, 0.15) !important;
-  border-radius: 10px !important;
+  background: rgba(10, 20, 35, 0.8) !important;
+  border: 1px solid rgba(0, 245, 255, 0.2) !important;
+  border-radius: 8px !important;
   color: #f8fafc !important;
   font-size: 15px !important;
   padding: 12px 16px !important;
@@ -10643,28 +10668,35 @@ body {
 
 .capture-screen-v2 .form-control:focus,
 .capture-screen-v2 .form-select:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.2) !important;
+  background: rgba(10, 20, 35, 0.95) !important;
 }
 
-/* Lock session button - professional style */
+/* Lock session button - Mission Control style */
 .lock-session-btn {
   font-family: var(--font-display, 'Oxanium', sans-serif);
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+  color: var(--neon-green);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 8px;
   padding: 14px 24px;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
   width: 100%;
   margin-top: 20px;
+}
+
+.lock-session-btn:hover {
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.2) 100%);
+  border-color: rgba(0, 255, 136, 0.6);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
 }
 
 .lock-session-btn:hover {
