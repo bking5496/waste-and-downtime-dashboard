@@ -2268,20 +2268,22 @@ hr {
   transform: none;
 }
 
-/* Sub-machine button status indicators - Enhanced */
+/* Sub-machine button status indicators - Running = Green, Idle = Cyan */
 .sub-machine-inline-btn.busy {
-  background: linear-gradient(145deg, rgba(255, 71, 87, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
-  border-color: rgba(255, 71, 87, 0.4);
-  color: var(--neon-red);
+  background: linear-gradient(145deg, rgba(0, 255, 136, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: rgba(0, 255, 136, 0.5);
+  color: var(--neon-green);
   box-shadow:
-    0 0 15px rgba(255, 71, 87, 0.15),
+    0 0 20px rgba(0, 255, 136, 0.2),
     0 4px 15px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .sub-machine-inline-btn.busy:hover {
-  background: linear-gradient(145deg, rgba(255, 71, 87, 0.25) 0%, rgba(20, 28, 48, 0.95) 100%);
+  background: linear-gradient(145deg, rgba(0, 255, 136, 0.3) 0%, rgba(20, 28, 48, 0.95) 100%);
+  border-color: rgba(0, 255, 136, 0.7);
   box-shadow:
-    0 0 25px rgba(255, 71, 87, 0.25),
+    0 0 30px rgba(0, 255, 136, 0.3),
     0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
@@ -2316,8 +2318,14 @@ hr {
 }
 
 .sub-machine-inline-btn .status-dot.busy {
-  background: #ef4444;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  background: var(--neon-green, #00ff88);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  animation: pulse-green 2s ease-in-out infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
 }
 
 .sub-machine-inline-btn .check-mark {
