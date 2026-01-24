@@ -1022,7 +1022,8 @@ const CaptureScreen: React.FC = () => {
 
       // Save to shared line storage so other machines can see it
       const currentDate = new Date().toISOString().split('T')[0];
-      saveLineSpeed(machineName, currentShift, currentDate, Number(speedInput));
+      const shift = getCurrentShift();
+      saveLineSpeed(machineName, shift, currentDate, Number(speedInput));
     }
   };
 
@@ -1276,15 +1277,25 @@ const CaptureScreen: React.FC = () => {
             </div>
 
             {!isSessionLocked && operatorName && orderNumber && product && batchNumber && (
-              <button
-                className="lock-session-btn"
-                onClick={() => {
-                  saveSession(true);
-                  handleStartProduction();
-                }}
-              >
-                🔒 Lock Shift Details & Start Production
-              </button>
+              speedEntries.length > 0 ? (
+                <button
+                  className="lock-session-btn"
+                  onClick={() => {
+                    saveSession(true);
+                    handleStartProduction();
+                  }}
+                >
+                  🔒 Lock Shift Details & Start Production
+                </button>
+              ) : (
+                <button
+                  className="lock-session-btn disabled"
+                  onClick={() => setShowSpeedModal(true)}
+                  title="Set machine speed to continue"
+                >
+                  ⚡ Set Machine Speed to Start
+                </button>
+              )
             )}
           </section>
 

@@ -10828,6 +10828,22 @@ body {
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
+/* Lock session button - requires speed to be set */
+.lock-session-btn.disabled {
+  background: linear-gradient(180deg, rgba(255, 184, 0, 0.2) 0%, rgba(255, 184, 0, 0.1) 100%);
+  color: var(--neon-amber);
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  box-shadow: 0 0 20px rgba(255, 184, 0, 0.15);
+  text-shadow: 0 0 10px rgba(255, 184, 0, 0.4);
+  cursor: pointer;
+}
+
+.lock-session-btn.disabled:hover {
+  background: linear-gradient(180deg, rgba(255, 184, 0, 0.3) 0%, rgba(255, 184, 0, 0.2) 100%);
+  border-color: rgba(255, 184, 0, 0.6);
+  box-shadow: 0 0 30px rgba(255, 184, 0, 0.25);
+}
+
 /* =============================================
    ACTION BUTTONS - MISSION CONTROL REDESIGN
    ============================================= */

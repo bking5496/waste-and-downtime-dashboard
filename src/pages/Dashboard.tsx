@@ -490,13 +490,18 @@ const Dashboard: React.FC = () => {
                 exit={{ opacity: 0 }}
               >
                 {machines.map((machine, index) => {
-                  // Machine is running if status is 'running' OR has a current order
-                  const isRunning = machine.status === 'running' || !!machine.currentOrder;
-                  const isBlocked = isRunning || machine.status === 'maintenance';
-                  const displayStatus = isRunning ? 'running' : machine.status;
+                  // Get active sub-machines first (needed for status calculation)
                   const activeSubMachines = machine.subMachineCount && machine.subMachineCount > 0
                     ? getActiveSubMachines(machine.name, machine.subMachineCount, machine.id)
                     : new Set<number>();
+
+                  // Machine is running if:
+                  // - status is 'running' OR has a current order
+                  // - OR for group machines: any sub-machine is active
+                  const hasActiveSubMachines = activeSubMachines.size > 0;
+                  const isRunning = machine.status === 'running' || !!machine.currentOrder || hasActiveSubMachines;
+                  const isBlocked = isRunning || machine.status === 'maintenance';
+                  const displayStatus = isRunning ? 'running' : machine.status;
 
                   const handleTileClick = () => {
                     if (machine.subMachineCount && machine.subMachineCount > 0) return;
