@@ -2817,8 +2817,36 @@ hr {
   color: var(--neon-red, #ff4757);
 }
 
+.activity-stat.runtime {
+  color: var(--neon-cyan, #00f5ff);
+}
+
 .activity-stat .stat-icon {
   font-size: 12px;
+}
+
+.activity-product-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 11px;
+  padding: 4px 0;
+}
+
+.product-name {
+  color: var(--text-primary, rgba(0, 245, 255, 0.95));
+  font-weight: 600;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-number {
+  color: var(--text-muted, rgba(0, 245, 255, 0.5));
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
 }
 
 .activity-times {

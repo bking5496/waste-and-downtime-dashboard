@@ -15,6 +15,8 @@ interface RecentSubmission {
   order_number: string;
   machine: string;
   sub_machine?: string;
+  product: string;
+  batch_number: string;
   total_waste: number;
   total_downtime: number;
   created_at: string;
@@ -823,6 +825,16 @@ const Dashboard: React.FC = () => {
                   const finishTime = new Date(item.created_at);
                   const machineName = item.sub_machine || item.machine;
 
+                  // Calculate runtime in minutes
+                  const runtimeMinutes = startTime
+                    ? Math.round((finishTime.getTime() - startTime.getTime()) / 60000)
+                    : null;
+                  const runtimeHours = runtimeMinutes ? Math.floor(runtimeMinutes / 60) : 0;
+                  const runtimeMins = runtimeMinutes ? runtimeMinutes % 60 : 0;
+                  const runtimeDisplay = runtimeMinutes
+                    ? (runtimeHours > 0 ? `${runtimeHours}h ${runtimeMins}m` : `${runtimeMins}m`)
+                    : '—';
+
                   return (
                     <motion.div
                       key={item.id}
@@ -835,6 +847,10 @@ const Dashboard: React.FC = () => {
                         <span className="activity-order">#{item.order_number}</span>
                         <span className="activity-machine-name">{machineName}</span>
                       </div>
+                      <div className="activity-product-info">
+                        <span className="product-name">{item.product}</span>
+                        <span className="batch-number">Batch: {item.batch_number}</span>
+                      </div>
                       <div className="activity-stats">
                         <span className="activity-stat waste">
                           <span className="stat-icon">🗑️</span>
@@ -843,6 +859,10 @@ const Dashboard: React.FC = () => {
                         <span className="activity-stat downtime">
                           <span className="stat-icon">⏱️</span>
                           {item.total_downtime || 0}m
+                        </span>
+                        <span className="activity-stat runtime">
+                          <span className="stat-icon">⏲️</span>
+                          {runtimeDisplay}
                         </span>
                       </div>
                       <div className="activity-times">
