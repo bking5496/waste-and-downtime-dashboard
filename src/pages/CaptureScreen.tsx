@@ -1151,15 +1151,7 @@ const CaptureScreen: React.FC = () => {
             {/* Order Queue Selection */}
             {!isSessionLocked && (
               <div className="order-queue-select">
-                {availableOrders.length > 0 ? (
-                  <button
-                    className="select-order-btn"
-                    onClick={() => setShowOrderSelect(true)}
-                  >
-                    <span className="btn-icon">📋</span>
-                    Select from Order Queue ({availableOrders.length} available)
-                  </button>
-                ) : (
+                <div className="order-buttons-row">
                   <button
                     className="select-order-btn add-new"
                     onClick={() => setShowAddOrderModal(true)}
@@ -1167,7 +1159,15 @@ const CaptureScreen: React.FC = () => {
                     <span className="btn-icon">+</span>
                     Add New Order
                   </button>
-                )}
+                  <button
+                    className="select-order-btn existing"
+                    onClick={() => setShowOrderSelect(true)}
+                    disabled={availableOrders.length === 0}
+                  >
+                    <span className="btn-icon">📋</span>
+                    Select Existing{availableOrders.length > 0 ? ` (${availableOrders.length})` : ''}
+                  </button>
+                </div>
                 {orderNumber && (
                   <span className="current-order-badge">
                     Current: {orderNumber}

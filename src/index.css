@@ -4100,36 +4100,46 @@ hr {
   transform: translateY(-1px);
 }
 
-/* Order Queue Selection */
+/* Order Queue Selection - Mission Control */
 .order-queue-select {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 16px;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(10, 15, 28, 0.9) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  border-radius: 12px;
+}
+
+.order-buttons-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .select-order-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 12px 18px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.select-order-btn:hover {
-  background: rgba(16, 185, 129, 0.25);
-  transform: translateY(-1px);
+.select-order-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.select-order-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .select-order-btn .btn-icon {
@@ -4137,14 +4147,27 @@ hr {
 }
 
 .select-order-btn.add-new {
-  color: #00ff88;
-  background: rgba(0, 255, 136, 0.15);
-  border-color: rgba(0, 255, 136, 0.3);
+  color: var(--neon-green);
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
 }
 
-.select-order-btn.add-new:hover {
-  background: rgba(0, 255, 136, 0.25);
-  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+.select-order-btn.add-new:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.15) 100%);
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.2), 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.select-order-btn.existing {
+  color: var(--neon-cyan);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
+}
+
+.select-order-btn.existing:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.3) 0%, rgba(0, 245, 255, 0.15) 100%);
+  box-shadow: 0 0 25px rgba(0, 245, 255, 0.2), 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .current-order-badge {
