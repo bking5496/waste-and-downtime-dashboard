@@ -1,0 +1,287 @@
+/* =============================================
+   MISSION CONTROL - MODAL SYSTEM
+   Industrial command center aesthetic
+   ============================================= */
+
+.mc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+/* CRT Scanline effect */
+.mc-modal-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.mc-modal {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.98) 0%,
+    rgba(10, 15, 30, 0.98) 100%
+  );
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  box-shadow:
+    0 0 40px rgba(0, 245, 255, 0.1),
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Size variants */
+.mc-modal--sm {
+  width: 100%;
+  max-width: 400px;
+}
+
+.mc-modal--md {
+  width: 100%;
+  max-width: 560px;
+}
+
+.mc-modal--lg {
+  width: 100%;
+  max-width: 800px;
+}
+
+.mc-modal--full {
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+}
+
+/* Corner accent decorations */
+.mc-modal__corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.mc-modal__corner::before,
+.mc-modal__corner::after {
+  content: '';
+  position: absolute;
+  background: rgba(0, 245, 255, 0.6);
+}
+
+.mc-modal__corner--tl {
+  top: 0;
+  left: 0;
+}
+.mc-modal__corner--tl::before {
+  width: 20px;
+  height: 2px;
+  top: 0;
+  left: 0;
+}
+.mc-modal__corner--tl::after {
+  width: 2px;
+  height: 20px;
+  top: 0;
+  left: 0;
+}
+
+.mc-modal__corner--tr {
+  top: 0;
+  right: 0;
+}
+.mc-modal__corner--tr::before {
+  width: 20px;
+  height: 2px;
+  top: 0;
+  right: 0;
+}
+.mc-modal__corner--tr::after {
+  width: 2px;
+  height: 20px;
+  top: 0;
+  right: 0;
+}
+
+.mc-modal__corner--bl {
+  bottom: 0;
+  left: 0;
+}
+.mc-modal__corner--bl::before {
+  width: 20px;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+}
+.mc-modal__corner--bl::after {
+  width: 2px;
+  height: 20px;
+  bottom: 0;
+  left: 0;
+}
+
+.mc-modal__corner--br {
+  bottom: 0;
+  right: 0;
+}
+.mc-modal__corner--br::before {
+  width: 20px;
+  height: 2px;
+  bottom: 0;
+  right: 0;
+}
+.mc-modal__corner--br::after {
+  width: 2px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+}
+
+/* Header */
+.mc-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+  background: rgba(0, 245, 255, 0.02);
+}
+
+.mc-modal__header-content {
+  flex: 1;
+}
+
+.mc-modal__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-modal__title {
+  font-family: 'Oxanium', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.mc-modal__subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.mc-modal__close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 16px;
+  flex-shrink: 0;
+}
+
+.mc-modal__close:hover {
+  background: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.3);
+  color: #ff4757;
+}
+
+.mc-modal__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Body */
+.mc-modal__body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.mc-modal__message {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Footer */
+.mc-modal__footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(0, 245, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.mc-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .mc-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .mc-modal {
+    max-height: 85vh;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+  }
+
+  .mc-modal--sm,
+  .mc-modal--md,
+  .mc-modal--lg {
+    max-width: 100%;
+  }
+
+  .mc-modal__header {
+    padding: 16px 20px;
+  }
+
+  .mc-modal__body {
+    padding: 20px;
+  }
+
+  .mc-modal__footer {
+    padding: 16px 20px;
+  }
+
+  .mc-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .mc-modal__actions .mc-btn {
+    width: 100%;
+  }
+}

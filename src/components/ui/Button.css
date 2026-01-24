@@ -1,0 +1,240 @@
+/* =============================================
+   MISSION CONTROL - BUTTON SYSTEM
+   Industrial command center aesthetic
+   ============================================= */
+
+.mc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Oxanium', 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mc-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mc-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Scanline overlay effect */
+.mc-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.mc-btn:hover::before {
+  opacity: 1;
+}
+
+/* =============================================
+   SIZE VARIANTS
+   ============================================= */
+
+.mc-btn--sm {
+  padding: 6px 12px;
+  font-size: 11px;
+  min-height: 32px;
+}
+
+.mc-btn--md {
+  padding: 10px 18px;
+  font-size: 13px;
+  min-height: 44px;
+}
+
+.mc-btn--lg {
+  padding: 14px 24px;
+  font-size: 15px;
+  min-height: 52px;
+}
+
+.mc-btn--full {
+  width: 100%;
+}
+
+/* =============================================
+   COLOR VARIANTS - Status-Driven
+   ============================================= */
+
+/* PRIMARY - Cyan (Information/Action) */
+.mc-btn--primary {
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.15) 0%, rgba(0, 245, 255, 0.05) 100%);
+  border-color: rgba(0, 245, 255, 0.4);
+  color: #00f5ff;
+  box-shadow:
+    0 0 20px rgba(0, 245, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.mc-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.25) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border-color: rgba(0, 245, 255, 0.6);
+  box-shadow:
+    0 0 30px rgba(0, 245, 255, 0.2),
+    0 0 60px rgba(0, 245, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* SUCCESS - Green (Running/Positive) */
+.mc-btn--success {
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 136, 0.05) 100%);
+  border-color: rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.mc-btn--success:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.25) 0%, rgba(0, 255, 136, 0.1) 100%);
+  border-color: rgba(0, 255, 136, 0.6);
+  box-shadow:
+    0 0 30px rgba(0, 255, 136, 0.2),
+    0 0 60px rgba(0, 255, 136, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* WARNING - Amber (Caution/Pause) */
+.mc-btn--warning {
+  background: linear-gradient(180deg, rgba(255, 184, 0, 0.15) 0%, rgba(255, 184, 0, 0.05) 100%);
+  border-color: rgba(255, 184, 0, 0.4);
+  color: #ffb800;
+  box-shadow:
+    0 0 20px rgba(255, 184, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.mc-btn--warning:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(255, 184, 0, 0.25) 0%, rgba(255, 184, 0, 0.1) 100%);
+  border-color: rgba(255, 184, 0, 0.6);
+  box-shadow:
+    0 0 30px rgba(255, 184, 0, 0.2),
+    0 0 60px rgba(255, 184, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* DANGER - Red (Critical/Stop) */
+.mc-btn--danger {
+  background: linear-gradient(180deg, rgba(255, 71, 87, 0.15) 0%, rgba(255, 71, 87, 0.05) 100%);
+  border-color: rgba(255, 71, 87, 0.4);
+  color: #ff4757;
+  box-shadow:
+    0 0 20px rgba(255, 71, 87, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.mc-btn--danger:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(255, 71, 87, 0.25) 0%, rgba(255, 71, 87, 0.1) 100%);
+  border-color: rgba(255, 71, 87, 0.6);
+  box-shadow:
+    0 0 30px rgba(255, 71, 87, 0.2),
+    0 0 60px rgba(255, 71, 87, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* GHOST - Transparent */
+.mc-btn--ghost {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+}
+
+.mc-btn--ghost:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #e2e8f0;
+}
+
+/* SECONDARY - Muted */
+.mc-btn--secondary {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(71, 85, 105, 0.5);
+  color: #cbd5e1;
+}
+
+.mc-btn--secondary:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(100, 116, 139, 0.6);
+  color: #f1f5f9;
+}
+
+/* =============================================
+   BUTTON ELEMENTS
+   ============================================= */
+
+.mc-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+}
+
+.mc-btn__icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+.mc-btn__text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Loading animation */
+.mc-btn__loader {
+  display: flex;
+  gap: 4px;
+}
+
+.mc-btn__loader-dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: mc-btn-pulse 1.4s ease-in-out infinite;
+}
+
+.mc-btn__loader-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.mc-btn__loader-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes mc-btn-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

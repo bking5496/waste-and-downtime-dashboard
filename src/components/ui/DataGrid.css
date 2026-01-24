@@ -1,0 +1,224 @@
+/* =============================================
+   MISSION CONTROL - DATA GRID
+   ============================================= */
+
+.mc-grid-container {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  overflow: hidden;
+}
+
+.mc-grid-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mc-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+/* Header */
+.mc-grid__head {
+  background: rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mc-grid__th {
+  padding: 14px 16px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+  white-space: nowrap;
+}
+
+.mc-grid__th--left { text-align: left; }
+.mc-grid__th--center { text-align: center; }
+.mc-grid__th--right { text-align: right; }
+
+.mc-grid__th--sortable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mc-grid__th--sortable:hover {
+  color: #00f5ff;
+}
+
+.mc-grid__th-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-grid__th--center .mc-grid__th-content {
+  justify-content: center;
+}
+
+.mc-grid__th--right .mc-grid__th-content {
+  justify-content: flex-end;
+}
+
+.mc-grid__sort-icon {
+  color: #00f5ff;
+  font-size: 12px;
+}
+
+/* Body */
+.mc-grid__body {
+  background: transparent;
+}
+
+.mc-grid__row {
+  border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+  transition: background 0.2s;
+}
+
+.mc-grid__row:last-child {
+  border-bottom: none;
+}
+
+.mc-grid__row:hover {
+  background: rgba(0, 245, 255, 0.03);
+}
+
+.mc-grid__row--clickable {
+  cursor: pointer;
+}
+
+.mc-grid__row--clickable:hover {
+  background: rgba(0, 245, 255, 0.08);
+}
+
+.mc-grid__td {
+  padding: 14px 16px;
+  color: #e2e8f0;
+  vertical-align: middle;
+}
+
+.mc-grid__td--left { text-align: left; }
+.mc-grid__td--center { text-align: center; }
+.mc-grid__td--right { text-align: right; }
+
+/* Empty state */
+.mc-grid__empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #64748b;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+/* Loading state */
+.mc-grid__loading {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.mc-grid__loader {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.mc-grid__loader span {
+  width: 8px;
+  height: 8px;
+  background: #00f5ff;
+  animation: mc-grid-loader 1.4s ease-in-out infinite;
+}
+
+.mc-grid__loader span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.mc-grid__loader span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes mc-grid-loader {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* Pagination */
+.mc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(71, 85, 105, 0.2);
+}
+
+.mc-pagination__info {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.mc-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mc-pagination__btn {
+  padding: 8px 14px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mc-pagination__btn:hover:not(:disabled) {
+  color: #00f5ff;
+  border-color: rgba(0, 245, 255, 0.4);
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.mc-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mc-pagination__page {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: #e2e8f0;
+  padding: 0 8px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .mc-grid {
+    font-size: 12px;
+  }
+
+  .mc-grid__th,
+  .mc-grid__td {
+    padding: 12px 10px;
+  }
+
+  .mc-pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mc-pagination__info {
+    text-align: center;
+  }
+}

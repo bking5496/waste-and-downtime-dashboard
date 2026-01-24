@@ -25,6 +25,7 @@ import {
   ProductionTimerState
 } from '../lib/sessionManager';
 import { logError, showWarning, showSuccess, showError } from '../lib/errorMonitoring';
+import { AddOrderModal } from '../components/ui';
 
 // Storage key for shift session
 const getSessionKey = (machineName: string, shift: string, date: string) =>
@@ -119,6 +120,7 @@ const CaptureScreen: React.FC = () => {
   // Order queue state
   const [availableOrders, setAvailableOrders] = useState<MachineOrderQueueRecord[]>([]);
   const [showOrderSelect, setShowOrderSelect] = useState(false);
+  const [showAddOrderModal, setShowAddOrderModal] = useState(false);
 
   // Shift change detection
   const [lastKnownShift, setLastKnownShift] = useState<string | null>(null);
@@ -155,6 +157,17 @@ const CaptureScreen: React.FC = () => {
     setBatchNumber(order.batch_number);
     setShowOrderSelect(false);
     showToast(`Selected order: ${order.order_number}`, 'success');
+  };
+
+  // Handle new order added from AddOrderModal
+  const handleOrderAdded = (order: { orderNumber: string; product: string; batchNumber: string }) => {
+    setOrderNumber(order.orderNumber);
+    setProduct(order.product);
+    setBatchNumber(order.batchNumber);
+    setShowOrderSelect(false);
+    showToast(`Created and selected order: ${order.orderNumber}`, 'success');
+    // Refresh the order queue
+    fetchMachineOrders(machineId || '').then(orders => setAvailableOrders(orders)).catch(console.error);
   };
 
   // Session conflict state
@@ -334,6 +347,10 @@ const CaptureScreen: React.FC = () => {
 
     localStorage.setItem(sessionKey, JSON.stringify(session));
 
+    // Calculate totals for cross-browser sync
+    const totalWaste = wasteEntries.reduce((sum, e) => sum + e.waste, 0);
+    const totalDowntime = downtimeEntries.reduce((sum, e) => sum + e.downtime, 0);
+
     // Sync to Supabase for cross-browser visibility
     upsertLiveSession({
       machineName,
@@ -344,6 +361,8 @@ const CaptureScreen: React.FC = () => {
       shift: currentShift,
       date: currentDate,
       locked: true,
+      totalWaste,
+      totalDowntime,
     });
 
     if (!isSessionLocked) {
@@ -527,6 +546,34 @@ const CaptureScreen: React.FC = () => {
 
     return () => clearInterval(timerInterval);
   }, [productionState.isRunning, productionState.lastResumedAt, productionState.totalRunTimeMs]);
+
+  // Sync entry totals to Supabase when waste or downtime entries change
+  useEffect(() => {
+    if (!isSessionLocked) return;
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const currentShift = getCurrentShift();
+
+    // Calculate totals
+    const totalWaste = wasteEntries.reduce((sum, e) => sum + e.waste, 0);
+    const totalDowntime = downtimeEntries.reduce((sum, e) => sum + e.downtime, 0);
+
+    // Sync to Supabase
+    upsertLiveSession({
+      machineName,
+      operatorName,
+      orderNumber,
+      product,
+      batchNumber,
+      shift: currentShift,
+      date: currentDate,
+      locked: true,
+      totalWaste,
+      totalDowntime,
+    });
+
+    console.log('📊 Synced entry totals to Supabase:', { totalWaste, totalDowntime });
+  }, [wasteEntries, downtimeEntries, isSessionLocked, machineName, operatorName, orderNumber, product, batchNumber]);
 
   // Helper to persist timer state
   const persistTimerState = useCallback((state: ProductionState) => {
@@ -1102,15 +1149,25 @@ const CaptureScreen: React.FC = () => {
             </h2>
 
             {/* Order Queue Selection */}
-            {!isSessionLocked && availableOrders.length > 0 && (
+            {!isSessionLocked && (
               <div className="order-queue-select">
-                <button
-                  className="select-order-btn"
-                  onClick={() => setShowOrderSelect(true)}
-                >
-                  <span className="btn-icon">📋</span>
-                  Select from Order Queue ({availableOrders.length} available)
-                </button>
+                {availableOrders.length > 0 ? (
+                  <button
+                    className="select-order-btn"
+                    onClick={() => setShowOrderSelect(true)}
+                  >
+                    <span className="btn-icon">📋</span>
+                    Select from Order Queue ({availableOrders.length} available)
+                  </button>
+                ) : (
+                  <button
+                    className="select-order-btn add-new"
+                    onClick={() => setShowAddOrderModal(true)}
+                  >
+                    <span className="btn-icon">+</span>
+                    Add New Order
+                  </button>
+                )}
                 {orderNumber && (
                   <span className="current-order-badge">
                     Current: {orderNumber}
@@ -2162,6 +2219,15 @@ const CaptureScreen: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button
+                  className="modal-btn add-order"
+                  onClick={() => {
+                    setShowOrderSelect(false);
+                    setShowAddOrderModal(true);
+                  }}
+                >
+                  + Add New Order
+                </button>
+                <button
                   className="modal-btn cancel"
                   onClick={() => setShowOrderSelect(false)}
                 >
@@ -2172,6 +2238,15 @@ const CaptureScreen: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Add Order Modal */}
+      <AddOrderModal
+        isOpen={showAddOrderModal}
+        onClose={() => setShowAddOrderModal(false)}
+        machineId={machineId || ''}
+        machineName={machineName}
+        onOrderAdded={handleOrderAdded}
+      />
     </motion.div>
   );
 };

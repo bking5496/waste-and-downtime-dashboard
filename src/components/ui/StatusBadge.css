@@ -1,0 +1,156 @@
+/* =============================================
+   MISSION CONTROL - STATUS BADGES
+   ============================================= */
+
+.mc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-family: 'Oxanium', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+}
+
+/* Size variants */
+.mc-status--sm {
+  padding: 4px 8px;
+  font-size: 10px;
+  gap: 6px;
+}
+
+.mc-status--md {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.mc-status--lg {
+  padding: 8px 16px;
+  font-size: 13px;
+  gap: 10px;
+}
+
+/* Status dot */
+.mc-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mc-status--sm .mc-status__dot { width: 6px; height: 6px; }
+.mc-status--lg .mc-status__dot { width: 10px; height: 10px; }
+
+/* Pulse animation */
+.mc-status__dot--pulse {
+  animation: mc-status-pulse 2s ease-in-out infinite;
+}
+
+@keyframes mc-status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
+}
+
+/* Status variants */
+.mc-status--running {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+.mc-status--running .mc-status__dot {
+  background: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+}
+
+.mc-status--idle {
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.1);
+  border-color: rgba(100, 116, 139, 0.3);
+}
+.mc-status--idle .mc-status__dot {
+  background: #64748b;
+}
+
+.mc-status--maintenance {
+  color: #ffb800;
+  background: rgba(255, 184, 0, 0.1);
+  border-color: rgba(255, 184, 0, 0.3);
+}
+.mc-status--maintenance .mc-status__dot {
+  background: #ffb800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.8);
+}
+
+.mc-status--offline {
+  color: #475569;
+  background: rgba(71, 85, 105, 0.1);
+  border-color: rgba(71, 85, 105, 0.3);
+}
+.mc-status--offline .mc-status__dot {
+  background: #475569;
+}
+
+.mc-status--warning {
+  color: #ffb800;
+  background: rgba(255, 184, 0, 0.1);
+  border-color: rgba(255, 184, 0, 0.3);
+}
+.mc-status--warning .mc-status__dot {
+  background: #ffb800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.8);
+}
+
+.mc-status--error {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.3);
+}
+.mc-status--error .mc-status__dot {
+  background: #ff4757;
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+}
+
+/* Standalone status dot */
+.mc-status-dot {
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mc-status-dot--sm { width: 6px; height: 6px; }
+.mc-status-dot--md { width: 8px; height: 8px; }
+.mc-status-dot--lg { width: 12px; height: 12px; }
+
+.mc-status-dot--pulse {
+  animation: mc-status-pulse 2s ease-in-out infinite;
+}
+
+.mc-status-dot--running {
+  background: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+}
+
+.mc-status-dot--idle {
+  background: #64748b;
+}
+
+.mc-status-dot--maintenance {
+  background: #ffb800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.8);
+}
+
+.mc-status-dot--offline {
+  background: #475569;
+}
+
+.mc-status-dot--warning {
+  background: #ffb800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.8);
+}
+
+.mc-status-dot--error {
+  background: #ff4757;
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+}

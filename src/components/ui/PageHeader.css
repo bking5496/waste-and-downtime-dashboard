@@ -1,0 +1,151 @@
+/* =============================================
+   MISSION CONTROL - PAGE HEADER
+   ============================================= */
+
+.mc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.05) 0%, transparent 50%);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+  position: relative;
+}
+
+.mc-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mc-header__back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mc-header__back:hover {
+  color: #00f5ff;
+  border-color: rgba(0, 245, 255, 0.4);
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.mc-header__back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mc-header__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mc-header__title {
+  font-family: 'Oxanium', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(0, 245, 255, 0.3);
+}
+
+.mc-header__subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.mc-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mc-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mc-header__border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.5), transparent 50%);
+}
+
+/* Shift Badge */
+.mc-shift-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+}
+
+.mc-shift-badge--day {
+  color: #ffb800;
+  background: rgba(255, 184, 0, 0.1);
+  border-color: rgba(255, 184, 0, 0.3);
+}
+
+.mc-shift-badge--night {
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+.mc-shift-badge__icon {
+  font-size: 14px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .mc-header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .mc-header__back {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .mc-header__back span {
+    display: none;
+  }
+
+  .mc-header__title {
+    font-size: 18px;
+  }
+
+  .mc-shift-badge {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

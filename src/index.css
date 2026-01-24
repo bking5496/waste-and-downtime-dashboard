@@ -4026,6 +4026,17 @@ hr {
   font-size: 16px;
 }
 
+.select-order-btn.add-new {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.15);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.select-order-btn.add-new:hover {
+  background: rgba(0, 255, 136, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+}
+
 .current-order-badge {
   font-size: 13px;
   font-weight: 600;
@@ -10776,6 +10787,19 @@ body {
   cursor: not-allowed;
 }
 
+.capture-modal .modal-btn.add-order {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  border: none;
+  color: #0a0f1a;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+}
+
+.capture-modal .modal-btn.add-order:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
+}
+
 /* Waste modal specific */
 .capture-modal.waste-modal .modal-btn.waste-confirm {
   background: linear-gradient(135deg, #ff4757 0%, #c0392b 100%);
@@ -11872,4 +11896,1400 @@ nav,
 .header-btn {
   padding: 6px 12px !important;
   font-size: 12px !important;
+}
+
+/* ==========================================================
+   ENHANCED MOBILE RESPONSIVE (< 480px)
+   Better phone layout with improved usability
+   ========================================================== */
+
+@media (max-width: 480px) {
+  /* Dashboard Header - Mobile Optimized */
+  .dashboard-v2 .top-nav {
+    padding: 10px 12px !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dashboard-v2 .nav-brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-v2 .brand-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .dashboard-v2 .brand-name {
+    font-size: 14px !important;
+  }
+
+  .dashboard-v2 .brand-subtitle {
+    display: none !important;
+  }
+
+  /* Show clock and date in a row */
+  .dashboard-v2 .nav-center {
+    width: 100%;
+    order: 3;
+  }
+
+  .dashboard-v2 .live-clock {
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 8px;
+  }
+
+  .dashboard-v2 .clock-time {
+    font-size: 18px !important;
+  }
+
+  .dashboard-v2 .clock-date {
+    display: inline !important;
+    font-size: 12px !important;
+    color: #94a3b8;
+  }
+
+  /* Shift indicator in header */
+  .dashboard-v2 .nav-actions {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+  }
+
+  .dashboard-v2 .shift-indicator {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .dashboard-v2 .shift-icon {
+    font-size: 12px;
+  }
+
+  .dashboard-v2 .shift-text {
+    font-size: 10px;
+  }
+
+  /* Main content - full width */
+  .dashboard-v2 .dashboard-main {
+    padding: 10px !important;
+    gap: 10px;
+  }
+
+  /* Mobile Stats Summary Bar - Horizontal */
+  .dashboard-v2 .stats-panel {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    background: none !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-v2 .efficiency-card {
+    display: none !important;
+  }
+
+  .dashboard-v2 .quick-stats {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    flex: 1;
+  }
+
+  .dashboard-v2 .stat-item {
+    flex: 1;
+    min-width: 60px;
+    padding: 8px !important;
+    flex-direction: column;
+    text-align: center;
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-radius: 8px !important;
+  }
+
+  .dashboard-v2 .stat-item .stat-indicator {
+    display: none !important;
+  }
+
+  .dashboard-v2 .stat-item .stat-info {
+    text-align: center;
+  }
+
+  .dashboard-v2 .stat-item .stat-value {
+    font-size: 18px !important;
+    margin-bottom: 2px;
+  }
+
+  .dashboard-v2 .stat-item .stat-label {
+    font-size: 9px !important;
+  }
+
+  /* Hide metrics and trend chart on mobile */
+  .dashboard-v2 .metrics-section,
+  .dashboard-v2 .trend-chart {
+    display: none !important;
+  }
+
+  /* Machine Grid - Full Width Tiles */
+  .dashboard-v2 .machines-section {
+    width: 100%;
+  }
+
+  .dashboard-v2 .section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px !important;
+  }
+
+  .dashboard-v2 .section-header h2 {
+    font-size: 14px !important;
+    width: 100%;
+  }
+
+  .dashboard-v2 .view-toggle {
+    display: none;
+  }
+
+  .dashboard-v2 .machines-grid-v2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Machine Tiles - Touch Friendly */
+  .dashboard-v2 .machine-tile {
+    padding: 14px !important;
+    min-height: 120px;
+  }
+
+  .dashboard-v2 .tile-name {
+    font-size: 16px !important;
+    font-weight: 600;
+  }
+
+  .dashboard-v2 .tile-status-text {
+    font-size: 13px !important;
+    margin: 4px 0;
+  }
+
+  .dashboard-v2 .sub-count-badge {
+    font-size: 11px !important;
+  }
+
+  /* Sub-machine buttons - larger touch targets */
+  .dashboard-v2 .sub-machine-inline-grid {
+    gap: 8px !important;
+    margin-top: 10px;
+  }
+
+  .dashboard-v2 .sub-machine-inline-btn {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Tile stats row */
+  .dashboard-v2 .tile-stats {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .dashboard-v2 .tile-stat {
+    padding: 4px 8px !important;
+    flex: 1;
+    min-width: 70px;
+    justify-content: center;
+  }
+
+  .dashboard-v2 .tile-footer {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .dashboard-v2 .tile-action {
+    font-size: 13px !important;
+    padding: 8px 14px;
+  }
+
+  /* Active members info - compact */
+  .active-members-info {
+    padding: 6px !important;
+    margin: 6px 0 !important;
+  }
+
+  .member-info {
+    font-size: 11px !important;
+  }
+
+  .members-stats {
+    gap: 4px !important;
+    margin: 6px 0 !important;
+  }
+
+  .member-stats-row {
+    padding: 3px 6px !important;
+    gap: 6px !important;
+  }
+
+  /* Multi-select bar - mobile friendly */
+  .multi-select-bar {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .selection-info {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .selection-parent-group {
+    font-size: 14px !important;
+  }
+
+  .selection-machines {
+    font-size: 14px !important;
+    padding: 2px 8px;
+  }
+
+  .start-capture-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+}
+
+/* ==========================================================
+   ENHANCED IPAD/TABLET RESPONSIVE (768px - 1024px)
+   Better use of horizontal space with 2-column layout
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Dashboard Header - Show more elements */
+  .dashboard-v2 .top-nav {
+    padding: 12px 20px !important;
+    flex-wrap: nowrap;
+  }
+
+  .dashboard-v2 .brand-subtitle {
+    display: none !important;
+  }
+
+  .dashboard-v2 .brand-name {
+    font-size: 16px !important;
+  }
+
+  .dashboard-v2 .nav-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .dashboard-v2 .live-clock {
+    gap: 10px;
+  }
+
+  .dashboard-v2 .clock-time {
+    font-size: 22px !important;
+  }
+
+  .dashboard-v2 .clock-date {
+    display: inline !important;
+    font-size: 12px !important;
+  }
+
+  /* Hide Admin and Settings buttons on iPad - desktop only */
+  .dashboard-v2 .nav-actions .nav-btn.admin-btn,
+  .dashboard-v2 .nav-actions .nav-btn.settings-btn {
+    display: none !important;
+  }
+
+  .dashboard-v2 .shift-indicator {
+    padding: 6px 12px !important;
+  }
+
+  /* Main Layout - Include compact stats bar */
+  .dashboard-v2 .dashboard-main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px;
+    padding: 16px 20px !important;
+  }
+
+  /* Show a horizontal stats bar on iPad */
+  .dashboard-v2 .stats-panel {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px !important;
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    order: -1;
+  }
+
+  .dashboard-v2 .efficiency-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+  }
+
+  .dashboard-v2 .efficiency-ring {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .dashboard-v2 .efficiency-value {
+    font-size: 16px !important;
+  }
+
+  .dashboard-v2 .efficiency-label {
+    display: none !important;
+  }
+
+  .dashboard-v2 .quick-stats {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    flex: 1;
+  }
+
+  .dashboard-v2 .stat-item {
+    flex: 1;
+    padding: 8px 12px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 8px !important;
+  }
+
+  .dashboard-v2 .stat-item .stat-indicator {
+    height: 24px !important;
+    width: 3px !important;
+  }
+
+  .dashboard-v2 .stat-item .stat-value {
+    font-size: 18px !important;
+  }
+
+  .dashboard-v2 .stat-item .stat-label {
+    font-size: 9px !important;
+  }
+
+  /* Hide detailed metrics on iPad */
+  .dashboard-v2 .metrics-section,
+  .dashboard-v2 .trend-chart {
+    display: none !important;
+  }
+
+  /* Machine Grid - 2 columns on iPad */
+  .dashboard-v2 .machines-section {
+    flex: 1;
+  }
+
+  .dashboard-v2 .machines-grid-v2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Machine tiles optimized for iPad */
+  .dashboard-v2 .machine-tile {
+    padding: 14px !important;
+  }
+
+  .dashboard-v2 .tile-name {
+    font-size: 15px !important;
+  }
+
+  .dashboard-v2 .tile-status-text {
+    font-size: 12px !important;
+  }
+
+  /* Sub-machine buttons - good touch targets */
+  .dashboard-v2 .sub-machine-inline-btn {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 14px !important;
+  }
+
+  /* List view - show more columns */
+  .dashboard-v2 .machine-row {
+    grid-template-columns: 6px 1fr 100px 120px auto !important;
+  }
+
+  .dashboard-v2 .row-operator {
+    display: block !important;
+  }
+
+  .dashboard-v2 .row-time {
+    display: none !important;
+  }
+}
+
+/* ==========================================================
+   CAPTURE SCREEN - ENHANCED MOBILE (< 480px)
+   Single column with better touch targets
+   ========================================================== */
+
+@media (max-width: 480px) {
+  .capture-screen-v2 {
+    min-height: 100vh;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .capture-header-v2 {
+    padding: 10px 12px !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .back-btn-v2 {
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+    gap: 6px;
+  }
+
+  .back-btn-v2 svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .capture-title-v2 {
+    flex: 1;
+    text-align: center;
+  }
+
+  .capture-title-v2 h1 {
+    font-size: 15px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .capture-subtitle {
+    font-size: 9px !important;
+  }
+
+  .shift-badge-v2 {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    gap: 6px;
+  }
+
+  .capture-main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .capture-form-column,
+  .capture-summary-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Form sections - full width */
+  .form-section {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .section-heading {
+    font-size: 13px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Form fields - larger touch targets */
+  .form-field {
+    margin-bottom: 12px !important;
+  }
+
+  .form-label {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .form-control,
+  .form-select,
+  .form-input {
+    font-size: 16px !important; /* Prevents iOS zoom */
+    padding: 12px 14px !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+  }
+
+  .main-form-fields {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Waste/Downtime input groups */
+  .waste-input-group,
+  .downtime-input-group {
+    gap: 8px !important;
+  }
+
+  .waste-input-group .form-control,
+  .downtime-input-group .form-control {
+    flex: 0 0 70px !important;
+    min-height: 48px !important;
+    font-size: 16px !important;
+  }
+
+  .waste-input-group .form-select,
+  .downtime-input-group .form-select {
+    min-height: 48px !important;
+    font-size: 14px !important;
+  }
+
+  .waste-input-group .btn,
+  .downtime-input-group .btn {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 20px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Capture sections (Sachet, Speed, etc.) */
+  .capture-section {
+    padding: 14px !important;
+  }
+
+  .capture-add-btn {
+    min-height: 48px !important;
+    font-size: 14px !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Entry lists */
+  .capture-entries-list,
+  .entries-list {
+    max-height: 150px !important;
+    gap: 6px !important;
+  }
+
+  .capture-entry-item,
+  .entry-row {
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .capture-entry-item .entry-value {
+    font-size: 18px !important;
+  }
+
+  .capture-entry-item .entry-delete-btn,
+  .entry-row .entry-delete {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+  }
+
+  /* Submission card */
+  .submission-card {
+    padding: 16px !important;
+  }
+
+  .submission-card h3 {
+    font-size: 15px !important;
+  }
+
+  .detail-row {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .submit-btn-v2 {
+    min-height: 52px !important;
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+  }
+
+  /* Lock session button */
+  .lock-session-btn {
+    min-height: 48px !important;
+    font-size: 14px !important;
+    margin-top: 12px !important;
+  }
+
+  /* Speed setting */
+  .speed-setting {
+    padding: 10px 14px !important;
+  }
+
+  .speed-change-btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ==========================================================
+   CAPTURE SCREEN - ENHANCED IPAD (768px - 1024px)
+   Optimized two-column layout
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .capture-screen-v2 {
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  .capture-header-v2 {
+    padding: 12px 20px !important;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .back-btn-v2 {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .capture-title-v2 h1 {
+    font-size: 20px !important;
+  }
+
+  .capture-subtitle {
+    font-size: 10px !important;
+  }
+
+  .shift-badge-v2 {
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+  }
+
+  .capture-main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+    padding: 16px 20px !important;
+    align-items: start !important;
+  }
+
+  .capture-form-column {
+    display: contents !important;
+  }
+
+  /* Shift Details - Left column */
+  .capture-form-column > section:first-child {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+  }
+
+  /* Waste section - Right column top */
+  .waste-section {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  /* Downtime section - Right column second */
+  .downtime-section {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  /* Form sections */
+  .form-section {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .section-heading {
+    font-size: 13px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Form inputs - good touch targets */
+  .form-control,
+  .form-select,
+  .form-input {
+    font-size: 15px !important;
+    padding: 10px 12px !important;
+    min-height: 44px !important;
+  }
+
+  .main-form-fields {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Capture sections */
+  .capture-section {
+    padding: 14px 16px !important;
+  }
+
+  .capture-add-btn {
+    min-height: 44px !important;
+    font-size: 13px !important;
+  }
+
+  /* Entry lists - more space */
+  .capture-entries-list,
+  .entries-list {
+    max-height: 120px !important;
+  }
+
+  /* Submission card - bottom spanning */
+  .capture-summary-column {
+    display: contents !important;
+  }
+
+  .submission-card {
+    grid-column: 1 / -1 !important;
+    grid-row: 4 !important;
+    padding: 16px !important;
+  }
+
+  .submit-btn-v2 {
+    min-height: 48px !important;
+    font-size: 15px !important;
+  }
+
+  /* Hide session totals and charts on iPad - already done in base */
+  .live-stats-card,
+  .charts-card,
+  .shift-info-card {
+    display: none !important;
+  }
+}
+
+/* ==========================================================
+   LANDSCAPE ORIENTATION FIXES
+   ========================================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Compact header in landscape */
+  .dashboard-v2 .top-nav {
+    padding: 6px 16px !important;
+  }
+
+  .capture-header-v2 {
+    padding: 6px 12px !important;
+  }
+
+  /* Smaller form elements */
+  .form-section {
+    padding: 10px !important;
+  }
+
+  .form-control,
+  .form-select {
+    min-height: 36px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Scrollable main content */
+  .dashboard-main {
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
+  }
+
+  .capture-main {
+    max-height: calc(100vh - 45px);
+    overflow-y: auto;
+  }
+}
+
+/* ==========================================================
+   HISTORY PAGE - ENHANCED MOBILE (< 480px)
+   ========================================================== */
+
+@media (max-width: 480px) {
+  .history-page-v2 {
+    padding: 0 !important;
+  }
+
+  .history-header-v2 {
+    padding: 12px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .history-page-v2 .back-btn-v2 {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .history-page-v2 h1 {
+    font-size: 18px !important;
+  }
+
+  .history-page-v2 .export-btn {
+    width: 100% !important;
+    margin-top: 8px;
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .history-main {
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* Filters - stack vertically */
+  .history-filters-v2 {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .history-filters-v2 .filter-group {
+    width: 100% !important;
+  }
+
+  .history-filters-v2 .filter-label {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .history-filters-v2 .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  .history-filters-v2 .filter-btn {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    flex: 1;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .history-filters-v2 .search-input {
+    min-height: 48px !important;
+    font-size: 16px !important;
+    padding: 12px 14px 12px 40px !important;
+  }
+
+  /* Stats - 2x2 grid */
+  .history-stats-v2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .history-stats-v2 .stat-card {
+    padding: 14px !important;
+  }
+
+  .history-stats-v2 .stat-value {
+    font-size: 22px !important;
+  }
+
+  .history-stats-v2 .stat-label {
+    font-size: 10px !important;
+  }
+
+  /* Table container - horizontal scroll */
+  .history-table-container-v2 {
+    border-radius: 10px !important;
+    margin: 0 -12px;
+    width: calc(100% + 24px);
+  }
+
+  .history-table-v2 {
+    font-size: 12px !important;
+    min-width: 600px;
+  }
+
+  .history-table-v2 th {
+    padding: 10px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .history-table-v2 td {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+
+  .history-table-v2 .shift-tag {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Pagination */
+  .history-pagination {
+    flex-wrap: wrap;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  .history-pagination .page-btn {
+    min-height: 44px !important;
+    padding: 10px 16px !important;
+  }
+}
+
+/* ==========================================================
+   HISTORY PAGE - ENHANCED IPAD (768px - 1024px)
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .history-page-v2 {
+    padding: 0 !important;
+  }
+
+  .history-header-v2 {
+    padding: 16px 20px !important;
+  }
+
+  .history-page-v2 h1 {
+    font-size: 22px !important;
+  }
+
+  .history-main {
+    padding: 16px 20px !important;
+  }
+
+  /* Filters - horizontal on iPad */
+  .history-filters-v2 {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 12px !important;
+  }
+
+  .history-filters-v2 .filter-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .history-filters-v2 .filter-btn {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Stats - 4 columns on iPad */
+  .history-stats-v2 {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .history-stats-v2 .stat-card {
+    padding: 16px !important;
+  }
+
+  /* Table - show all columns */
+  .history-table-v2 th,
+  .history-table-v2 td {
+    padding: 12px 10px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ==========================================================
+   ADMIN CONSOLE - ENHANCED MOBILE (< 480px)
+   ========================================================== */
+
+@media (max-width: 480px) {
+  .admin-console {
+    padding: 0 !important;
+  }
+
+  .admin-console .admin-header {
+    padding: 12px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .admin-console .back-btn-v2 {
+    padding: 10px 14px !important;
+  }
+
+  .admin-console h1 {
+    font-size: 18px !important;
+    flex: 1;
+  }
+
+  .admin-console .admin-main {
+    padding: 12px !important;
+    gap: 16px !important;
+  }
+
+  /* Tab buttons */
+  .admin-console .tab-buttons {
+    display: flex;
+    gap: 8px !important;
+    margin-bottom: 12px;
+  }
+
+  .admin-console .tab-btn {
+    flex: 1;
+    padding: 12px !important;
+    font-size: 13px !important;
+    min-height: 48px !important;
+  }
+
+  /* Bulk import textarea */
+  .admin-console .bulk-import-section textarea {
+    min-height: 120px !important;
+    font-size: 14px !important;
+    padding: 12px !important;
+  }
+
+  .admin-console .import-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    min-height: 52px !important;
+  }
+
+  /* Single order form */
+  .admin-console .order-form {
+    gap: 12px !important;
+  }
+
+  .admin-console .form-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .admin-console .form-field {
+    width: 100% !important;
+  }
+
+  .admin-console .form-input,
+  .admin-console .form-select {
+    min-height: 48px !important;
+    font-size: 16px !important;
+    padding: 12px !important;
+  }
+
+  /* Machine queue cards */
+  .admin-console .machine-queue-card {
+    padding: 14px !important;
+    border-radius: 10px !important;
+  }
+
+  .admin-console .machine-queue-card h3 {
+    font-size: 16px !important;
+  }
+
+  .admin-console .order-count {
+    font-size: 12px !important;
+  }
+
+  .admin-console .order-item {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .admin-console .order-item .order-actions button {
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+
+  /* Facility settings */
+  .admin-console .settings-section {
+    padding: 14px !important;
+  }
+
+  .admin-console .settings-section h2 {
+    font-size: 16px !important;
+  }
+
+  .admin-console .setting-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
+
+  .admin-console .setting-label {
+    font-size: 13px !important;
+  }
+
+  .admin-console .setting-input {
+    width: 100% !important;
+    min-height: 48px !important;
+  }
+
+  /* Info box */
+  .admin-console .info-box {
+    padding: 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ==========================================================
+   ADMIN CONSOLE - ENHANCED IPAD (768px - 1024px)
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .admin-console {
+    padding: 0 !important;
+  }
+
+  .admin-console .admin-header {
+    padding: 16px 20px !important;
+  }
+
+  .admin-console h1 {
+    font-size: 22px !important;
+  }
+
+  .admin-console .admin-main {
+    padding: 16px 20px !important;
+  }
+
+  /* Tab buttons */
+  .admin-console .tab-btn {
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+  }
+
+  /* Form rows - 2 columns */
+  .admin-console .form-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .admin-console .form-input,
+  .admin-console .form-select {
+    min-height: 44px !important;
+  }
+
+  /* Machine queues - 2 columns */
+  .admin-console .machine-queues-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+}
+
+/* ==========================================================
+   MULTI-CAPTURE SCREEN - ENHANCED MOBILE (< 480px)
+   ========================================================== */
+
+@media (max-width: 480px) {
+  .multi-capture-screen {
+    padding: 0 !important;
+  }
+
+  .multi-capture-header {
+    padding: 12px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .multi-capture-header .back-btn-v2 {
+    padding: 10px 14px !important;
+  }
+
+  .multi-capture-header h1 {
+    font-size: 16px !important;
+    flex: 1;
+    text-align: center;
+  }
+
+  .multi-capture-main {
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  /* Machine selection grid - single column */
+  .multi-machine-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .multi-machine-card {
+    padding: 14px !important;
+  }
+
+  .multi-machine-card .machine-name {
+    font-size: 15px !important;
+  }
+
+  .multi-machine-card .machine-status {
+    font-size: 12px !important;
+  }
+
+  /* Form sections */
+  .multi-capture-form .form-section {
+    padding: 14px !important;
+  }
+
+  .multi-capture-form .form-input,
+  .multi-capture-form .form-select {
+    min-height: 48px !important;
+    font-size: 16px !important;
+  }
+
+  /* Shared entries display */
+  .shared-entries-section {
+    padding: 14px !important;
+  }
+
+  .shared-entries-section h3 {
+    font-size: 15px !important;
+  }
+
+  /* Submit button */
+  .multi-submit-btn {
+    min-height: 52px !important;
+    font-size: 16px !important;
+    padding: 14px 20px !important;
+  }
+}
+
+/* ==========================================================
+   MULTI-CAPTURE SCREEN - ENHANCED IPAD (768px - 1024px)
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .multi-capture-header {
+    padding: 16px 20px !important;
+  }
+
+  .multi-capture-header h1 {
+    font-size: 20px !important;
+  }
+
+  .multi-capture-main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+    padding: 16px 20px !important;
+  }
+
+  /* Machine selection grid - 2 columns */
+  .multi-machine-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .multi-machine-card {
+    padding: 16px !important;
+  }
+
+  /* Form takes left column, machines right */
+  .multi-capture-form {
+    grid-column: 1 !important;
+  }
+
+  .multi-capture-machines {
+    grid-column: 2 !important;
+  }
+}
+
+/* ==========================================================
+   GLOBAL MOBILE IMPROVEMENTS
+   ========================================================== */
+
+@media (max-width: 480px) {
+  /* All page headers - consistent styling */
+  .page-header,
+  .admin-header,
+  .history-header-v2,
+  .capture-header-v2,
+  .multi-capture-header {
+    background: linear-gradient(90deg, rgba(20, 184, 166, 0.08) 0%, rgba(15, 23, 42, 0.9) 30%);
+    border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+  }
+
+  /* All back buttons - consistent */
+  .back-btn-v2,
+  .back-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* All form inputs - prevent iOS zoom */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* All primary action buttons */
+  .submit-btn-v2,
+  .import-btn,
+  .export-btn,
+  .primary-btn,
+  .action-btn {
+    min-height: 52px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Modal improvements */
+  .modal-overlay,
+  .modal-overlay-v2 {
+    padding: 12px !important;
+    align-items: flex-end !important;
+  }
+
+  .modal-content,
+  .modal-content-v2 {
+    max-height: 85vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  /* Chat widget positioning */
+  .chat-widget {
+    bottom: 12px !important;
+    right: 12px !important;
+  }
+
+  .chat-toggle-btn {
+    min-width: 52px !important;
+    min-height: 52px !important;
+  }
+}
+
+/* ==========================================================
+   GLOBAL IPAD IMPROVEMENTS
+   ========================================================== */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Better touch targets on iPad */
+  button,
+  .btn,
+  [role="button"] {
+    min-height: 44px !important;
+  }
+
+  /* Form inputs */
+  input,
+  textarea,
+  select {
+    min-height: 44px !important;
+  }
+
+  /* Page containers - better padding */
+  .page-container,
+  .admin-console,
+  .history-page-v2,
+  .capture-screen-v2 {
+    padding: 0 !important;
+  }
+
+  /* Cards and sections */
+  .form-section,
+  .card,
+  .panel {
+    border-radius: 12px !important;
+  }
 }
