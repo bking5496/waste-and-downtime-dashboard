@@ -1578,13 +1578,13 @@ hr {
 }
 
 .shift-indicator.night {
-  background: linear-gradient(180deg, rgba(138, 43, 226, 0.2) 0%, rgba(75, 0, 130, 0.15) 100%);
+  background: linear-gradient(180deg, rgba(138, 43, 226, 0.4) 0%, rgba(75, 0, 130, 0.35) 100%);
   color: #BF7FFF;
-  border: 1px solid rgba(138, 43, 226, 0.4);
+  border: 1px solid rgba(138, 43, 226, 0.6);
   box-shadow:
-    0 0 15px rgba(138, 43, 226, 0.2),
-    inset 0 1px 0 rgba(138, 43, 226, 0.2);
-  text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+    0 0 15px rgba(138, 43, 226, 0.3),
+    inset 0 1px 0 rgba(138, 43, 226, 0.3);
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.6);
 }
 
 .shift-icon {
@@ -12443,30 +12443,65 @@ nav,
     padding: 10px 12px !important;
     flex-direction: column;
     gap: 8px;
+    position: relative;
   }
 
+  /* First row: brand + shift indicator */
   .dashboard-v2 .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    justify-content: space-between;
   }
 
   .dashboard-v2 .brand-icon {
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
+  }
+
+  .dashboard-v2 .brand-text {
+    flex: 1;
+    min-width: 0;
   }
 
   .dashboard-v2 .brand-name {
     font-size: 14px !important;
+    white-space: nowrap;
+    text-shadow: 0 0 8px rgba(0, 245, 255, 0.4) !important;
   }
 
   .dashboard-v2 .brand-subtitle {
     display: none !important;
   }
 
-  /* Show clock and date in a row */
+  /* Shift indicator on same row, far right */
+  .dashboard-v2 .nav-actions {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+  }
+
+  .dashboard-v2 .shift-indicator {
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+  }
+
+  .dashboard-v2 .shift-icon {
+    font-size: 10px;
+  }
+
+  .dashboard-v2 .shift-text {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Clock row - full width below */
   .dashboard-v2 .nav-center {
     width: 100%;
-    order: 3;
+    position: static;
+    transform: none;
+    left: auto;
   }
 
   .dashboard-v2 .live-clock {
@@ -12474,8 +12509,9 @@ nav,
     justify-content: center;
     gap: 12px;
     padding: 8px 12px;
-    background: rgba(16, 185, 129, 0.1);
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
     border-radius: 8px;
+    border: 1px solid rgba(0, 245, 255, 0.2);
   }
 
   .dashboard-v2 .clock-time {
@@ -12486,26 +12522,6 @@ nav,
     display: inline !important;
     font-size: 12px !important;
     color: rgba(0, 245, 255, 0.7);
-  }
-
-  /* Shift indicator in header */
-  .dashboard-v2 .nav-actions {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-  }
-
-  .dashboard-v2 .shift-indicator {
-    padding: 4px 10px !important;
-    font-size: 11px !important;
-  }
-
-  .dashboard-v2 .shift-icon {
-    font-size: 12px;
-  }
-
-  .dashboard-v2 .shift-text {
-    font-size: 10px;
   }
 
   /* Main content - full width */
