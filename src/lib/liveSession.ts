@@ -317,3 +317,120 @@ export const syncPendingSessions = async (): Promise<void> => {
         }
     }
 };
+
+// ==========================================
+// ACTIVITY FEED - Real-time machine events
+// ==========================================
+
+export type ActivityEventType =
+    | 'machine_start'
+    | 'machine_pause'
+    | 'machine_resume'
+    | 'waste_recorded'
+    | 'downtime_recorded'
+    | 'pallet_scanned'
+    | 'cases_added'
+    | 'sachet_mass_added'
+    | 'shift_submitted'
+    | 'speed_recorded';
+
+export interface ActivityEvent {
+    id: string;
+    type: ActivityEventType;
+    machine_name: string;
+    operator_name?: string;
+    message: string;
+    details?: string;
+    timestamp: Date;
+}
+
+// In-memory activity log (most recent first)
+let activityLog: ActivityEvent[] = [];
+const MAX_ACTIVITY_ITEMS = 50;
+let activityListeners: ((events: ActivityEvent[]) => void)[] = [];
+
+// Add an activity event
+export const addActivityEvent = (event: Omit<ActivityEvent, 'id' | 'timestamp'>) => {
+    const newEvent: ActivityEvent = {
+        ...event,
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date(),
+    };
+
+    activityLog = [newEvent, ...activityLog].slice(0, MAX_ACTIVITY_ITEMS);
+
+    // Notify listeners
+    activityListeners.forEach(listener => listener([...activityLog]));
+
+    // Also broadcast to Supabase for cross-device sync
+    if (isSupabaseConfigured) {
+        broadcastActivityEvent(newEvent);
+    }
+};
+
+// Broadcast activity to other clients via Supabase Realtime
+const broadcastActivityEvent = async (event: ActivityEvent) => {
+    try {
+        const channel = supabase.channel('activity-broadcast');
+        await channel.send({
+            type: 'broadcast',
+            event: 'activity',
+            payload: {
+                ...event,
+                timestamp: event.timestamp.toISOString(),
+            },
+        });
+    } catch (e) {
+        // Silently fail - activity feed is non-critical
+    }
+};
+
+// Subscribe to activity events
+export const subscribeToActivityFeed = (
+    onUpdate: (events: ActivityEvent[]) => void
+) => {
+    // Add listener
+    activityListeners.push(onUpdate);
+
+    // Send current log immediately
+    onUpdate([...activityLog]);
+
+    // Subscribe to Supabase broadcast for cross-device events
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    if (isSupabaseConfigured) {
+        channel = supabase
+            .channel('activity-broadcast')
+            .on('broadcast', { event: 'activity' }, (payload) => {
+                const eventData = payload.payload as ActivityEvent & { timestamp: string };
+                const event: ActivityEvent = {
+                    ...eventData,
+                    timestamp: new Date(eventData.timestamp),
+                };
+
+                // Avoid duplicates
+                if (!activityLog.some(e => e.id === event.id)) {
+                    activityLog = [event, ...activityLog].slice(0, MAX_ACTIVITY_ITEMS);
+                    activityListeners.forEach(listener => listener([...activityLog]));
+                }
+            })
+            .subscribe();
+    }
+
+    // Return unsubscribe function
+    return () => {
+        activityListeners = activityListeners.filter(l => l !== onUpdate);
+        if (channel) {
+            supabase.removeChannel(channel);
+        }
+    };
+};
+
+// Get current activity log
+export const getActivityLog = (): ActivityEvent[] => [...activityLog];
+
+// Clear activity log
+export const clearActivityLog = () => {
+    activityLog = [];
+    activityListeners.forEach(listener => listener([]));
+};

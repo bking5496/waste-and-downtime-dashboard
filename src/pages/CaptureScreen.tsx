@@ -10,7 +10,7 @@ import QRScanner from '../components/QRScanner';
 import { WasteEntry, DowntimeEntry, ShiftData, SpeedEntry, SachetMassEntry, LooseCasesEntry, PalletScanEntry, ShiftSession, ProductionState, WASTE_TYPES, DOWNTIME_REASONS } from '../types';
 import { submitShiftData, fetchMachineOrders, MachineOrderQueueRecord, updateMachineStatus } from '../lib/supabase';
 import { saveShiftData, addFailedSubmission, saveLineSpeed, getLineSpeed } from '../lib/storage';
-import { upsertLiveSession, deleteLiveSession } from '../lib/liveSession';
+import { upsertLiveSession, deleteLiveSession, addActivityEvent } from '../lib/liveSession';
 import { getCurrentShift, checkSubmissionWindow, getLocalHours } from '../lib/facilitySettings';
 import {
   checkForActiveSession,
@@ -657,7 +657,16 @@ const CaptureScreen: React.FC = () => {
     setProductionState(newState);
     setDisplayRunTime('00:00:00');
     persistTimerState(newState);
-  }, [persistTimerState]);
+
+    // Add activity event
+    addActivityEvent({
+      type: 'machine_start',
+      machine_name: machineName,
+      operator_name: operatorName,
+      message: 'Production started',
+      details: `Order: ${orderNumber} | Product: ${product}`,
+    });
+  }, [persistTimerState, machineName, operatorName, orderNumber, product]);
 
   // Pause production - record pause start time
   const handlePauseProduction = useCallback(() => {
@@ -678,7 +687,15 @@ const CaptureScreen: React.FC = () => {
     setProductionState(newState);
     persistTimerState(newState);
     showToast('Production paused - timer stopped', 'success');
-  }, [productionState, persistTimerState, showToast]);
+
+    // Add activity event
+    addActivityEvent({
+      type: 'machine_pause',
+      machine_name: machineName,
+      operator_name: operatorName,
+      message: 'Production paused',
+    });
+  }, [productionState, persistTimerState, showToast, machineName, operatorName]);
 
   // Continue production - show modal to get reason, then record downtime
   const handleContinueProduction = useCallback(() => {
@@ -717,7 +734,23 @@ const CaptureScreen: React.FC = () => {
     setShowContinueModal(false);
     setPauseDowntimeReason('');
     showToast(`Production resumed. ${pauseDurationMinutes} min downtime recorded.`, 'success');
-  }, [pauseDowntimeReason, productionState, persistTimerState, showToast]);
+
+    // Add activity events
+    addActivityEvent({
+      type: 'machine_resume',
+      machine_name: machineName,
+      operator_name: operatorName,
+      message: 'Production resumed',
+      details: `Reason: ${pauseDowntimeReason}`,
+    });
+    addActivityEvent({
+      type: 'downtime_recorded',
+      machine_name: machineName,
+      operator_name: operatorName,
+      message: `Downtime recorded: ${pauseDurationMinutes} min`,
+      details: pauseDowntimeReason,
+    });
+  }, [pauseDowntimeReason, productionState, persistTimerState, showToast, machineName, operatorName]);
 
   // Handle Waste Entry from Modal
   const handleWasteSubmit = () => {
@@ -733,6 +766,15 @@ const CaptureScreen: React.FC = () => {
       setWasteType('');
       setShowWasteModal(false);
       showToast('Waste entry added', 'success');
+
+      // Add activity event
+      addActivityEvent({
+        type: 'waste_recorded',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: `Waste recorded: ${Number(waste).toFixed(1)} kg`,
+        details: wasteType,
+      });
     }
   };
 
@@ -761,6 +803,15 @@ const CaptureScreen: React.FC = () => {
       setDowntimeReason('');
       setShowDowntimeModal(false);
       showToast('Downtime entry added', 'success');
+
+      // Add activity event
+      addActivityEvent({
+        type: 'downtime_recorded',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: `Downtime recorded: ${Number(downtime)} min`,
+        details: downtimeReason,
+      });
     }
   };
 
@@ -913,6 +964,15 @@ const CaptureScreen: React.FC = () => {
         showToast('Shift data submitted successfully', 'success');
       }
 
+      // Add activity event for shift submission
+      addActivityEvent({
+        type: 'shift_submitted',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: 'Shift submitted',
+        details: `Order: ${orderNumber} | Waste: ${shiftData.totalWaste.toFixed(1)}kg | Downtime: ${shiftData.totalDowntime}min`,
+      });
+
       // Reset form for new submission
       // Unlock shift details
       setIsSessionLocked(false);
@@ -1024,6 +1084,14 @@ const CaptureScreen: React.FC = () => {
       const currentDate = new Date().toISOString().split('T')[0];
       const shift = getCurrentShift();
       saveLineSpeed(machineName, shift, currentDate, Number(speedInput));
+
+      // Add activity event
+      addActivityEvent({
+        type: 'speed_recorded',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: `Speed recorded: ${Number(speedInput)} units/hr`,
+      });
     }
   };
 
@@ -1047,6 +1115,14 @@ const CaptureScreen: React.FC = () => {
       setSachetMassInput('');
       setShowSachetModal(false);
       showToast('Sachet mass recorded', 'success');
+
+      // Add activity event
+      addActivityEvent({
+        type: 'sachet_mass_added',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: `Sachet mass recorded: ${Number(sachetMassInput)}g`,
+      });
     }
   };
 
@@ -1070,6 +1146,15 @@ const CaptureScreen: React.FC = () => {
       setLooseCasesQuantityInput('');
       setShowLooseCasesModal(false);
       showToast('Loose cases recorded', 'success');
+
+      // Add activity event
+      addActivityEvent({
+        type: 'cases_added',
+        machine_name: machineName,
+        operator_name: operatorName,
+        message: `Loose cases added: ${Number(looseCasesQuantityInput)} cases`,
+        details: `Batch: ${looseCasesBatchInput}`,
+      });
     } else if (looseCasesBatchInput.length !== 5) {
       showToast('Batch number must be 5 digits', 'error');
     }
@@ -1132,6 +1217,15 @@ const CaptureScreen: React.FC = () => {
     };
     setPalletScanEntries([...palletScanEntries, newEntry]);
     showToast(`Pallet ${parsed.palletNumber} scanned (${parsed.casesCount} cases)`, 'success');
+
+    // Add activity event
+    addActivityEvent({
+      type: 'pallet_scanned',
+      machine_name: machineName,
+      operator_name: operatorName,
+      message: `Pallet scanned: ${parsed.casesCount} cases`,
+      details: `Pallet #${parsed.palletNumber} | Batch: ${parsed.batchNumber}`,
+    });
   };
 
   const handleTogglePalletIgnore = (id: string) => {

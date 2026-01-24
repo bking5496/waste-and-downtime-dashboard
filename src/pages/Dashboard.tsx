@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
-import { fetchActiveSessions, subscribeToSessionChanges, LiveSession } from '../lib/liveSession';
+import { fetchActiveSessions, subscribeToSessionChanges, LiveSession, subscribeToActivityFeed, ActivityEvent } from '../lib/liveSession';
 import { isSupabaseConfigured, getRecentSubmissions } from '../lib/supabase';
 import { Machine, ShiftData } from '../types';
 import MachineSettingsModal from '../components/MachineSettingsModal';
@@ -75,6 +75,7 @@ const Dashboard: React.FC = () => {
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
   const [activeSessions, setActiveSessions] = useState<LiveSession[]>([]);
   const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const LONG_PRESS_DURATION = 500; // ms
 
@@ -203,9 +204,15 @@ const Dashboard: React.FC = () => {
       setActiveSessions(sessions);
     });
 
+    // Subscribe to activity feed for real-time machine events
+    const unsubscribeActivity = subscribeToActivityFeed((events) => {
+      setActivityEvents(events);
+    });
+
     return () => {
       unsubscribeMachines();
       unsubscribeSessions();
+      unsubscribeActivity();
     };
   }, [loadData]);
 
@@ -900,6 +907,78 @@ const Dashboard: React.FC = () => {
                 ))
               ) : (
                 <div className="activity-empty">No recent activity</div>
+              )}
+            </div>
+          </div>
+
+          {/* Live Activity Feed */}
+          <div className="live-activity-feed">
+            <h3 className="section-title">
+              <span className="live-dot"></span>
+              Live Activity
+            </h3>
+            <div className="feed-list">
+              {activityEvents.length > 0 ? (
+                activityEvents.slice(0, 15).map((event, index) => {
+                  const getEventIcon = (type: string) => {
+                    switch (type) {
+                      case 'machine_start': return '🚀';
+                      case 'machine_pause': return '⏸️';
+                      case 'machine_resume': return '▶️';
+                      case 'waste_recorded': return '🗑️';
+                      case 'downtime_recorded': return '⏱️';
+                      case 'pallet_scanned': return '📦';
+                      case 'cases_added': return '📋';
+                      case 'sachet_mass_added': return '⚖️';
+                      case 'shift_submitted': return '✅';
+                      case 'speed_recorded': return '⚡';
+                      default: return '📌';
+                    }
+                  };
+
+                  const getEventColor = (type: string) => {
+                    switch (type) {
+                      case 'machine_start': return 'event-start';
+                      case 'machine_pause': return 'event-pause';
+                      case 'machine_resume': return 'event-resume';
+                      case 'waste_recorded': return 'event-waste';
+                      case 'downtime_recorded': return 'event-downtime';
+                      case 'pallet_scanned': return 'event-pallet';
+                      case 'cases_added': return 'event-cases';
+                      case 'sachet_mass_added': return 'event-sachet';
+                      case 'shift_submitted': return 'event-submit';
+                      case 'speed_recorded': return 'event-speed';
+                      default: return '';
+                    }
+                  };
+
+                  return (
+                    <motion.div
+                      key={event.id}
+                      className={`feed-item ${getEventColor(event.type)}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <span className="feed-icon">{getEventIcon(event.type)}</span>
+                      <div className="feed-content">
+                        <span className="feed-machine">{event.machine_name}</span>
+                        <span className="feed-message">{event.message}</span>
+                        {event.details && (
+                          <span className="feed-details">{event.details}</span>
+                        )}
+                      </div>
+                      <span className="feed-time">
+                        {format(new Date(event.timestamp), 'HH:mm:ss')}
+                      </span>
+                    </motion.div>
+                  );
+                })
+              ) : (
+                <div className="feed-empty">
+                  <span className="feed-empty-icon">📡</span>
+                  <span>Waiting for activity...</span>
+                </div>
               )}
             </div>
           </div>
