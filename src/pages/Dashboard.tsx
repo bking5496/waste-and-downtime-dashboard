@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import { getMachinesData, getTodayStats, getShiftHistory, initializeMachines, subscribeToMachineUpdates, maybeRunCleanup, retryFailedSubmissions, getFailedSubmissions } from '../lib/storage';
 import { fetchActiveSessions, subscribeToSessionChanges, LiveSession } from '../lib/liveSession';
-import { fetchSubmachinesForParent, isSupabaseConfigured, supabase, MachineRecord } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { Machine, ShiftData } from '../types';
 import MachineSettingsModal from '../components/MachineSettingsModal';
 import SubMachineModal from '../components/SubMachineModal';
@@ -66,10 +66,6 @@ const Dashboard: React.FC = () => {
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const LONG_PRESS_DURATION = 500; // ms
 
-  // Track submachine statuses from machines table (for cross-browser sync)
-  // Map of parentMachineId -> Set of active submachine numbers
-  const [submachineStatuses, setSubmachineStatuses] = useState<Map<string, Set<number>>>(new Map());
-
   // Cleanup long-press timer on unmount
   useEffect(() => {
     return () => {
@@ -79,12 +75,13 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Helper function to detect active sub-machine sessions from multiple sources
-  // Priority: 1. Supabase live_sessions, 2. Supabase machines table, 3. localStorage fallback
-  const getActiveSubMachines = useCallback((machineName: string, subMachineCount: number, machineId?: string): Set<number> => {
+  // Helper function to detect active sub-machine sessions
+  // live_sessions is the source of truth for cross-browser sync
+  // localStorage is only used as offline fallback
+  const getActiveSubMachines = useCallback((machineName: string, subMachineCount: number, _machineId?: string): Set<number> => {
     const activeSet = new Set<number>();
 
-    // Check Supabase live_sessions first
+    // Check Supabase live_sessions - this is the source of truth
     for (let i = 1; i <= subMachineCount; i++) {
       const fullName = `${machineName} - Machine ${i}`;
       const isActive = activeSessions.some(s => s.machine_name === fullName && s.is_locked);
@@ -93,14 +90,8 @@ const Dashboard: React.FC = () => {
       }
     }
 
-    // Also check submachine statuses from machines table (cross-browser sync)
-    if (machineId && submachineStatuses.has(machineId)) {
-      const machineTableActive = submachineStatuses.get(machineId)!;
-      machineTableActive.forEach(num => activeSet.add(num));
-    }
-
-    // If no Supabase data, fallback to localStorage (offline mode)
-    if (activeSet.size === 0) {
+    // If no Supabase data, fallback to localStorage (offline mode only)
+    if (activeSet.size === 0 && !isSupabaseConfigured) {
       const today = new Date().toISOString().split('T')[0];
       const hours = new Date().getUTCHours() + 2;
       const currentShift = hours >= 6 && hours < 18 ? 'Day' : 'Night';
@@ -121,7 +112,7 @@ const Dashboard: React.FC = () => {
     }
 
     return activeSet;
-  }, [activeSessions, submachineStatuses]);
+  }, [activeSessions]);
 
   const loadData = useCallback(() => {
     const machineData = getMachinesData();
@@ -132,41 +123,6 @@ const Dashboard: React.FC = () => {
 
     const history = getShiftHistory().slice(0, 7);
     setRecentHistory(history);
-  }, []);
-
-  // Helper to fetch submachine statuses from machines table
-  const fetchAllSubmachineStatuses = useCallback(async (machineList: Machine[]) => {
-    if (!isSupabaseConfigured) return;
-
-    const statusMap = new Map<string, Set<number>>();
-
-    // For each parent machine with subMachineCount > 0, fetch submachine statuses
-    for (const machine of machineList) {
-      if (machine.subMachineCount && machine.subMachineCount > 0) {
-        try {
-          const submachines = await fetchSubmachinesForParent(machine.id);
-          const activeSet = new Set<number>();
-
-          for (const sub of submachines) {
-            if (sub.status === 'running') {
-              // Extract submachine number from ID (e.g., "machine-4-sub-2" -> 2)
-              const match = sub.id.match(/-sub-(\d+)$/);
-              if (match) {
-                activeSet.add(parseInt(match[1], 10));
-              }
-            }
-          }
-
-          if (activeSet.size > 0) {
-            statusMap.set(machine.id, activeSet);
-          }
-        } catch (e) {
-          console.warn(`Failed to fetch submachines for ${machine.name}:`, e);
-        }
-      }
-    }
-
-    setSubmachineStatuses(statusMap);
   }, []);
 
   // Initialize machines from Supabase on mount
@@ -189,9 +145,6 @@ const Dashboard: React.FC = () => {
         // Fetch active sessions from Supabase for cross-browser sync
         const sessions = await fetchActiveSessions();
         setActiveSessions(sessions);
-
-        // Fetch submachine statuses from machines table
-        await fetchAllSubmachineStatuses(machineData);
 
         // Retry any failed submissions in background
         const failedCount = getFailedSubmissions().length;
@@ -228,35 +181,11 @@ const Dashboard: React.FC = () => {
       setActiveSessions(sessions);
     });
 
-    // Subscribe to submachine status changes (machines with parent_machine_id set)
-    let unsubscribeSubmachines = () => {};
-    if (isSupabaseConfigured) {
-      const channel = supabase
-        .channel('submachine-changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'machines', filter: 'parent_machine_id=not.is.null' },
-          (payload) => {
-            console.log('🔄 Submachine update received:', payload);
-            // Refetch submachine statuses when any submachine changes
-            // Use a ref to access current machines state
-            setMachines(current => {
-              fetchAllSubmachineStatuses(current);
-              return current;
-            });
-          }
-        )
-        .subscribe();
-
-      unsubscribeSubmachines = () => supabase.removeChannel(channel);
-    }
-
     return () => {
       unsubscribeMachines();
       unsubscribeSessions();
-      unsubscribeSubmachines();
     };
-  }, [loadData, fetchAllSubmachineStatuses]);
+  }, [loadData]);
 
   // Update time every second - no dependencies to avoid infinite recreation
   useEffect(() => {
@@ -729,21 +658,27 @@ const Dashboard: React.FC = () => {
                         {/* Today's Stats - Waste & Downtime */}
                         {machine.subMachineCount && machine.subMachineCount > 0 && activeSubMachines.size > 0 ? (
                           <div className="members-stats">
-                            {Array.from(activeSubMachines).sort((a, b) => a - b).map(num => (
-                              <div key={num} className="member-stats-row">
-                                <span className="member-label">M{num}:</span>
-                                <div className="tile-stat waste">
-                                  <span className="stat-icon">🗑️</span>
-                                  <span className="stat-value">0.0</span>
-                                  <span className="stat-unit">kg</span>
+                            {Array.from(activeSubMachines).sort((a, b) => a - b).map(num => {
+                              const memberName = `${machine.name} - Machine ${num}`;
+                              const memberSession = activeSessions.find(s => s.machine_name === memberName);
+                              const memberWaste = memberSession?.total_waste || 0;
+                              const memberDowntime = memberSession?.total_downtime || 0;
+                              return (
+                                <div key={num} className="member-stats-row">
+                                  <span className="member-label">M{num}:</span>
+                                  <div className="tile-stat waste">
+                                    <span className="stat-icon">🗑️</span>
+                                    <span className="stat-value">{memberWaste.toFixed(1)}</span>
+                                    <span className="stat-unit">kg</span>
+                                  </div>
+                                  <div className="tile-stat downtime">
+                                    <span className="stat-icon">⏱️</span>
+                                    <span className="stat-value">{memberDowntime}</span>
+                                    <span className="stat-unit">min</span>
+                                  </div>
                                 </div>
-                                <div className="tile-stat downtime">
-                                  <span className="stat-icon">⏱️</span>
-                                  <span className="stat-value">0</span>
-                                  <span className="stat-unit">min</span>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="tile-stats">

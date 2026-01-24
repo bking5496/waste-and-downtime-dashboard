@@ -14,6 +14,8 @@ export interface LiveSession {
     shift: string;
     session_date: string;
     is_locked: boolean;
+    total_waste?: number;
+    total_downtime?: number;
     created_at?: string;
     updated_at?: string;
 }
@@ -40,6 +42,8 @@ export const upsertLiveSession = async (session: {
     shift: string;
     date: string;
     locked: boolean;
+    totalWaste?: number;
+    totalDowntime?: number;
 }): Promise<boolean> => {
     const sessionId = getLiveSessionId(session.machineName, session.shift, session.date);
 
@@ -53,6 +57,8 @@ export const upsertLiveSession = async (session: {
         shift: session.shift,
         session_date: session.date,
         is_locked: session.locked,
+        total_waste: session.totalWaste || 0,
+        total_downtime: session.totalDowntime || 0,
         updated_at: new Date().toISOString(),
     };
 
@@ -74,6 +80,8 @@ export const upsertLiveSession = async (session: {
                     shift: session.shift,
                     session_date: session.date,
                     is_locked: session.locked,
+                    total_waste: session.totalWaste || 0,
+                    total_downtime: session.totalDowntime || 0,
                     updated_at: new Date().toISOString(),
                 }, { onConflict: 'id' });
 
