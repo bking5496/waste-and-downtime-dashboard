@@ -1908,6 +1908,201 @@ hr {
   transform: scale(1.05);
 }
 
+/* ========================================
+   CAPTURE SCREEN - TABBED COMPACT LAYOUT
+   ======================================== */
+
+.recording-tabs-container {
+  background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.recording-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+  padding: 8px 8px 0;
+  gap: 4px;
+}
+
+.recording-tab {
+  flex: 1;
+  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  color: rgba(248, 250, 252, 0.5);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.recording-tab .tab-icon {
+  font-size: 18px;
+}
+
+.recording-tab .tab-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recording-tab .tab-badge {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--neon-cyan);
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #030508;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recording-tab:hover {
+  color: rgba(248, 250, 252, 0.8);
+  background: rgba(0, 245, 255, 0.05);
+}
+
+.recording-tab.active {
+  color: var(--neon-cyan);
+  background: rgba(0, 245, 255, 0.1);
+  border-bottom: 2px solid var(--neon-cyan);
+}
+
+.recording-tab.has-entries .tab-badge {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.recording-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  min-height: 0;
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tab-panel .capture-add-btn {
+  width: 100%;
+}
+
+.tab-panel .capture-entries-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.tab-panel .section-total {
+  padding: 12px;
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 245, 255, 0.15);
+}
+
+/* Capture screen full-height layout */
+.capture-screen-v2.compact-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.capture-screen-v2.compact-layout .capture-main {
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+.capture-screen-v2.compact-layout .capture-form-column {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.capture-screen-v2.compact-layout .capture-form-column > section:first-child {
+  flex-shrink: 0;
+}
+
+.capture-screen-v2.compact-layout .capture-form-column > .machine-details-section {
+  flex-shrink: 0;
+}
+
+.capture-screen-v2.compact-layout .recording-tabs-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.capture-screen-v2.compact-layout .capture-summary-column {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.capture-screen-v2.compact-layout .capture-summary-column > * {
+  flex-shrink: 0;
+}
+
+.capture-screen-v2.compact-layout .capture-summary-column .submission-card {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Mobile responsive for tabs */
+@media (max-width: 768px) {
+  .recording-tabs {
+    padding: 4px 4px 0;
+  }
+
+  .recording-tab {
+    padding: 8px 4px;
+  }
+
+  .recording-tab .tab-icon {
+    font-size: 16px;
+  }
+
+  .recording-tab .tab-label {
+    font-size: 9px;
+  }
+
+  .recording-tab .tab-badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: 2px;
+    right: 4px;
+  }
+
+  .recording-tab-content {
+    padding: 12px;
+  }
+
+  .tab-panel .capture-entries-list {
+    max-height: 150px;
+  }
+}
+
 .drawer-tab {
   flex: 1;
   padding: 10px 16px;

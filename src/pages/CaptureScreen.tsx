@@ -148,6 +148,9 @@ const CaptureScreen: React.FC = () => {
   const [showOrderSelect, setShowOrderSelect] = useState(false);
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
 
+  // Tab state for compact layout
+  const [activeRecordTab, setActiveRecordTab] = useState<'waste' | 'downtime' | 'sachet' | 'product'>('waste');
+
   // Shift change detection
   const [lastKnownShift, setLastKnownShift] = useState<string | null>(null);
   const [showShiftChangeModal, setShowShiftChangeModal] = useState(false);
@@ -1246,7 +1249,7 @@ const CaptureScreen: React.FC = () => {
 
   return (
     <motion.div
-      className="capture-screen-v2"
+      className="capture-screen-v2 compact-layout"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
@@ -1453,251 +1456,269 @@ const CaptureScreen: React.FC = () => {
             </section>
           )}
 
-          {/* Waste Section - Button Based */}
-          <section className="form-section capture-section compact-capture waste-section">
-            <h2 className="section-heading">
-              <span className="section-icon">🗑️</span>
-              Record Waste
-              {wasteEntries.length > 0 && (
-                <span className="entry-count-badge waste-badge">{wasteEntries.length}</span>
-              )}
-            </h2>
-            <div className="capture-section-content">
+          {/* Recording Tabs - Compact Layout */}
+          <div className="recording-tabs-container">
+            <div className="recording-tabs">
               <button
-                className="capture-add-btn waste-btn"
-                onClick={() => setShowWasteModal(true)}
+                className={`recording-tab ${activeRecordTab === 'waste' ? 'active' : ''} ${wasteEntries.length > 0 ? 'has-entries' : ''}`}
+                onClick={() => setActiveRecordTab('waste')}
               >
-                <span className="btn-icon">+</span>
-                Record Waste
-              </button>
-              {wasteEntries.length > 0 && (
-                <div className="capture-entries-list">
-                  {wasteEntries.slice().reverse().map((entry, index) => (
-                    <div key={entry.id} className={`capture-entry-item waste-entry ${index === 0 ? 'latest' : ''}`}>
-                      <div className="entry-main">
-                        <span className="entry-value">{entry.waste}</span>
-                        <span className="entry-unit">kg</span>
-                      </div>
-                      <span className="entry-type">{entry.wasteType}</span>
-                      <span className="entry-time">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <button
-                        className="entry-delete-btn"
-                        onClick={() => handleDeleteWasteEntry(entry.id)}
-                        title="Delete this entry"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {wasteEntries.length > 0 && (
-                <div className="section-total">
-                  <span>Total Waste:</span>
-                  <strong>{wasteEntries.reduce((sum, e) => sum + e.waste, 0).toFixed(1)} kg</strong>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Downtime Section - Button Based */}
-          <section className="form-section capture-section compact-capture downtime-section">
-            <h2 className="section-heading">
-              <span className="section-icon">⏱️</span>
-              Record Downtime
-              {downtimeEntries.length > 0 && (
-                <span className="entry-count-badge downtime-badge">{downtimeEntries.length}</span>
-              )}
-            </h2>
-            <div className="capture-section-content">
-              <button
-                className="capture-add-btn downtime-btn"
-                onClick={() => setShowDowntimeModal(true)}
-              >
-                <span className="btn-icon">+</span>
-                Record Downtime
-              </button>
-              {downtimeEntries.length > 0 && (
-                <div className="capture-entries-list">
-                  {downtimeEntries.slice().reverse().map((entry, index) => (
-                    <div key={entry.id} className={`capture-entry-item downtime-entry ${index === 0 ? 'latest' : ''}`}>
-                      <div className="entry-main">
-                        <span className="entry-value">{entry.downtime}</span>
-                        <span className="entry-unit">min</span>
-                      </div>
-                      <span className="entry-reason">{entry.downtimeReason}</span>
-                      <span className="entry-time">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <button
-                        className="entry-delete-btn"
-                        onClick={() => handleDeleteDowntimeEntry(entry.id)}
-                        title="Delete this entry"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {downtimeEntries.length > 0 && (
-                <div className="section-total">
-                  <span>Total Downtime:</span>
-                  <strong>{Math.floor(downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) / 60)}h {downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) % 60}m</strong>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Sachet Mass Section */}
-          <section className="form-section capture-section compact-capture">
-            <h2 className="section-heading">
-              <span className="section-icon">⚖️</span>
-              Sachet Mass
-            </h2>
-            <div className="capture-section-content">
-              <button
-                className="capture-add-btn"
-                onClick={() => setShowSachetModal(true)}
-              >
-                <span className="btn-icon">+</span>
-                Record
-              </button>
-              {sachetMassEntries.length > 0 && (
-                <div className="capture-entries-list">
-                  {sachetMassEntries.map(entry => (
-                    <div key={entry.id} className={`capture-entry-item ${entry.ignored ? 'ignored' : ''}`}>
-                      <div className="entry-main">
-                        <span className="entry-value">{entry.mass}</span>
-                        <span className="entry-unit">g</span>
-                      </div>
-                      <span className="entry-time">
-                        {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <button
-                        className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
-                        onClick={() => handleToggleSachetIgnore(entry.id)}
-                        title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
-                      >
-                        {entry.ignored ? '↩' : '⊘'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Product Confirmation Section - Pallets and Loose Cases */}
-          <section className="form-section capture-section product-confirmation-section">
-            <h2 className="section-heading">
-              <span className="section-icon">📦</span>
-              Product Confirmation
-              {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
-                <span className="entry-count-badge">
-                  {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
-                    looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)} cases
-                </span>
-              )}
-            </h2>
-
-            {/* Action Buttons */}
-            <div className="product-action-buttons">
-              <button
-                className="capture-add-btn scan-btn"
-                onClick={() => setShowQRScanner(true)}
-              >
-                <span className="btn-icon">📷</span>
-                Scan Pallet
+                <span className="tab-icon">🗑️</span>
+                <span className="tab-label">Waste</span>
+                {wasteEntries.length > 0 && <span className="tab-badge">{wasteEntries.length}</span>}
               </button>
               <button
-                className="capture-add-btn loose-cases-btn"
-                onClick={() => setShowLooseCasesModal(true)}
+                className={`recording-tab ${activeRecordTab === 'downtime' ? 'active' : ''} ${downtimeEntries.length > 0 ? 'has-entries' : ''}`}
+                onClick={() => setActiveRecordTab('downtime')}
               >
-                <span className="btn-icon">+</span>
-                Add Loose Cases
+                <span className="tab-icon">⏱️</span>
+                <span className="tab-label">Downtime</span>
+                {downtimeEntries.length > 0 && <span className="tab-badge">{downtimeEntries.length}</span>}
               </button>
-            </div>
-
-            {/* Pallet Scans List */}
-            {palletScanEntries.length > 0 && (
-              <div className="product-entries-section">
-                <h4 className="entries-subheading">Scanned Pallets ({palletScanEntries.filter(e => !e.ignored).length})</h4>
-                <div className="capture-entries-list pallet-list">
-                  {palletScanEntries.slice().reverse().map((entry, index) => (
-                    <div key={entry.id} className={`capture-entry-item pallet-entry ${entry.ignored ? 'ignored' : ''} ${index === 0 ? 'latest' : ''}`}>
-                      <div className="entry-main">
-                        <span className="pallet-badge">P{entry.palletNumber}</span>
-                        <div className="pallet-details">
-                          <span className="pallet-batch">Batch: {entry.batchNumber}</span>
-                          <span className="pallet-cases">{entry.casesCount} cases</span>
-                        </div>
-                      </div>
-                      <span className="entry-time">
-                        {formatScanTime(entry.timestamp)}
-                      </span>
-                      <button
-                        className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
-                        onClick={() => handleTogglePalletIgnore(entry.id)}
-                        title={entry.ignored ? 'Include this pallet' : 'Ignore this pallet'}
-                      >
-                        {entry.ignored ? '↩' : '⊘'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Loose Cases List */}
-            {looseCasesEntries.length > 0 && (
-              <div className="product-entries-section">
-                <h4 className="entries-subheading">Loose Cases ({looseCasesEntries.filter(e => !e.ignored).length})</h4>
-                <div className="capture-entries-list loose-cases-list">
-                  {looseCasesEntries.slice().reverse().map((entry, index) => (
-                    <div key={entry.id} className={`capture-entry-item loose-entry ${entry.ignored ? 'ignored' : ''}`}>
-                      <div className="entry-main">
-                        <span className="loose-badge">LC</span>
-                        <div className="loose-details">
-                          <span className="loose-batch">Batch: {entry.batchNumber}</span>
-                          <span className="loose-cases">{entry.cases} cases</span>
-                        </div>
-                      </div>
-                      <span className="entry-time">
-                        {formatScanTime(entry.timestamp)}
-                      </span>
-                      <button
-                        className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
-                        onClick={() => handleToggleLooseCasesIgnore(entry.id)}
-                        title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
-                      >
-                        {entry.ignored ? '↩' : '⊘'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Summary */}
-            {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
-              <div className="product-summary">
-                <div className="summary-item">
-                  <span className="summary-label">Total Pallets:</span>
-                  <span className="summary-value">{palletScanEntries.filter(e => !e.ignored).length}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="summary-label">Total Cases:</span>
-                  <span className="summary-value">
+              <button
+                className={`recording-tab ${activeRecordTab === 'sachet' ? 'active' : ''} ${sachetMassEntries.length > 0 ? 'has-entries' : ''}`}
+                onClick={() => setActiveRecordTab('sachet')}
+              >
+                <span className="tab-icon">⚖️</span>
+                <span className="tab-label">Sachet</span>
+                {sachetMassEntries.length > 0 && <span className="tab-badge">{sachetMassEntries.length}</span>}
+              </button>
+              <button
+                className={`recording-tab ${activeRecordTab === 'product' ? 'active' : ''} ${(palletScanEntries.length > 0 || looseCasesEntries.length > 0) ? 'has-entries' : ''}`}
+                onClick={() => setActiveRecordTab('product')}
+              >
+                <span className="tab-icon">📦</span>
+                <span className="tab-label">Product</span>
+                {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
+                  <span className="tab-badge">
                     {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
                       looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
                   </span>
+                )}
+              </button>
+            </div>
+
+            <div className="recording-tab-content">
+              {/* Waste Tab Content */}
+              {activeRecordTab === 'waste' && (
+                <div className="tab-panel waste-panel">
+                  <button
+                    className="capture-add-btn waste-btn"
+                    onClick={() => setShowWasteModal(true)}
+                  >
+                    <span className="btn-icon">+</span>
+                    Record Waste
+                  </button>
+                  {wasteEntries.length > 0 && (
+                    <>
+                      <div className="capture-entries-list">
+                        {wasteEntries.slice().reverse().map((entry, index) => (
+                          <div key={entry.id} className={`capture-entry-item waste-entry ${index === 0 ? 'latest' : ''}`}>
+                            <div className="entry-main">
+                              <span className="entry-value">{entry.waste}</span>
+                              <span className="entry-unit">kg</span>
+                            </div>
+                            <span className="entry-type">{entry.wasteType}</span>
+                            <span className="entry-time">
+                              {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <button
+                              className="entry-delete-btn"
+                              onClick={() => handleDeleteWasteEntry(entry.id)}
+                              title="Delete this entry"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="section-total">
+                        <span>Total Waste:</span>
+                        <strong>{wasteEntries.reduce((sum, e) => sum + e.waste, 0).toFixed(1)} kg</strong>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-            )}
-          </section>
+              )}
+
+              {/* Downtime Tab Content */}
+              {activeRecordTab === 'downtime' && (
+                <div className="tab-panel downtime-panel">
+                  <button
+                    className="capture-add-btn downtime-btn"
+                    onClick={() => setShowDowntimeModal(true)}
+                  >
+                    <span className="btn-icon">+</span>
+                    Record Downtime
+                  </button>
+                  {downtimeEntries.length > 0 && (
+                    <>
+                      <div className="capture-entries-list">
+                        {downtimeEntries.slice().reverse().map((entry, index) => (
+                          <div key={entry.id} className={`capture-entry-item downtime-entry ${index === 0 ? 'latest' : ''}`}>
+                            <div className="entry-main">
+                              <span className="entry-value">{entry.downtime}</span>
+                              <span className="entry-unit">min</span>
+                            </div>
+                            <span className="entry-reason">{entry.downtimeReason}</span>
+                            <span className="entry-time">
+                              {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <button
+                              className="entry-delete-btn"
+                              onClick={() => handleDeleteDowntimeEntry(entry.id)}
+                              title="Delete this entry"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="section-total">
+                        <span>Total Downtime:</span>
+                        <strong>{Math.floor(downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) / 60)}h {downtimeEntries.reduce((sum, e) => sum + e.downtime, 0) % 60}m</strong>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Sachet Mass Tab Content */}
+              {activeRecordTab === 'sachet' && (
+                <div className="tab-panel sachet-panel">
+                  <button
+                    className="capture-add-btn"
+                    onClick={() => setShowSachetModal(true)}
+                  >
+                    <span className="btn-icon">+</span>
+                    Record Sachet Mass
+                  </button>
+                  {sachetMassEntries.length > 0 && (
+                    <div className="capture-entries-list">
+                      {sachetMassEntries.map(entry => (
+                        <div key={entry.id} className={`capture-entry-item ${entry.ignored ? 'ignored' : ''}`}>
+                          <div className="entry-main">
+                            <span className="entry-value">{entry.mass}</span>
+                            <span className="entry-unit">g</span>
+                          </div>
+                          <span className="entry-time">
+                            {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <button
+                            className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
+                            onClick={() => handleToggleSachetIgnore(entry.id)}
+                            title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
+                          >
+                            {entry.ignored ? '↩' : '⊘'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Product Confirmation Tab Content */}
+              {activeRecordTab === 'product' && (
+                <div className="tab-panel product-panel">
+                  {/* Action Buttons */}
+                  <div className="product-action-buttons">
+                    <button
+                      className="capture-add-btn scan-btn"
+                      onClick={() => setShowQRScanner(true)}
+                    >
+                      <span className="btn-icon">📷</span>
+                      Scan Pallet
+                    </button>
+                    <button
+                      className="capture-add-btn loose-cases-btn"
+                      onClick={() => setShowLooseCasesModal(true)}
+                    >
+                      <span className="btn-icon">+</span>
+                      Add Loose Cases
+                    </button>
+                  </div>
+
+                  {/* Pallet Scans List */}
+                  {palletScanEntries.length > 0 && (
+                    <div className="product-entries-section">
+                      <h4 className="entries-subheading">Scanned Pallets ({palletScanEntries.filter(e => !e.ignored).length})</h4>
+                      <div className="capture-entries-list pallet-list">
+                        {palletScanEntries.slice().reverse().map((entry, index) => (
+                          <div key={entry.id} className={`capture-entry-item pallet-entry ${entry.ignored ? 'ignored' : ''} ${index === 0 ? 'latest' : ''}`}>
+                            <div className="entry-main">
+                              <span className="pallet-badge">P{entry.palletNumber}</span>
+                              <div className="pallet-details">
+                                <span className="pallet-batch">Batch: {entry.batchNumber}</span>
+                                <span className="pallet-cases">{entry.casesCount} cases</span>
+                              </div>
+                            </div>
+                            <span className="entry-time">
+                              {formatScanTime(entry.timestamp)}
+                            </span>
+                            <button
+                              className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
+                              onClick={() => handleTogglePalletIgnore(entry.id)}
+                              title={entry.ignored ? 'Include this pallet' : 'Ignore this pallet'}
+                            >
+                              {entry.ignored ? '↩' : '⊘'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Loose Cases List */}
+                  {looseCasesEntries.length > 0 && (
+                    <div className="product-entries-section">
+                      <h4 className="entries-subheading">Loose Cases ({looseCasesEntries.filter(e => !e.ignored).length})</h4>
+                      <div className="capture-entries-list loose-cases-list">
+                        {looseCasesEntries.slice().reverse().map((entry, index) => (
+                          <div key={entry.id} className={`capture-entry-item loose-entry ${entry.ignored ? 'ignored' : ''}`}>
+                            <div className="entry-main">
+                              <span className="loose-badge">LC</span>
+                              <div className="loose-details">
+                                <span className="loose-batch">Batch: {entry.batchNumber}</span>
+                                <span className="loose-cases">{entry.cases} cases</span>
+                              </div>
+                            </div>
+                            <span className="entry-time">
+                              {formatScanTime(entry.timestamp)}
+                            </span>
+                            <button
+                              className={`entry-ignore-btn ${entry.ignored ? 'ignored' : ''}`}
+                              onClick={() => handleToggleLooseCasesIgnore(entry.id)}
+                              title={entry.ignored ? 'Include this entry' : 'Ignore this entry'}
+                            >
+                              {entry.ignored ? '↩' : '⊘'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  {(palletScanEntries.length > 0 || looseCasesEntries.length > 0) && (
+                    <div className="product-summary">
+                      <div className="summary-item">
+                        <span className="summary-label">Total Pallets:</span>
+                        <span className="summary-value">{palletScanEntries.filter(e => !e.ignored).length}</span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="summary-label">Total Cases:</span>
+                        <span className="summary-value">
+                          {palletScanEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.casesCount, 0) +
+                            looseCasesEntries.filter(e => !e.ignored).reduce((sum, e) => sum + e.cases, 0)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Summary & Charts */}
