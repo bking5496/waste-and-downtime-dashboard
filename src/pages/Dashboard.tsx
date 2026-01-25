@@ -396,10 +396,14 @@ const Dashboard: React.FC = () => {
   const idleCount = machineStatusCounts.idle;
   const maintenanceCount = machineStatusCounts.maintenance;
 
+  // State for activity drawer
+  const [activityDrawerOpen, setActivityDrawerOpen] = useState(false);
+  const [activeDrawerTab, setActiveDrawerTab] = useState<'submissions' | 'activity'>('activity');
+
   return (
-    <div className="dashboard-v2">
-      {/* Top Navigation Bar */}
-      <header className="top-nav">
+    <div className="dashboard-v2 layout-grid-only">
+      {/* Top Navigation Bar with Integrated Stats */}
+      <header className="top-nav compact">
         <div className="nav-brand">
           <div className="brand-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -408,8 +412,40 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="brand-text">
             <span className="brand-name">Production Control</span>
-            <span className="brand-subtitle">Waste & Downtime Tracking</span>
           </div>
+        </div>
+
+        {/* Integrated Stats Bar */}
+        <div className="nav-stats">
+          <div className="nav-stat efficiency">
+            <svg viewBox="0 0 36 36" className="efficiency-mini-ring">
+              <circle cx="18" cy="18" r="15" className="ring-bg-mini" />
+              <circle
+                cx="18" cy="18" r="15"
+                className="ring-progress-mini"
+                strokeDasharray={`${efficiency * 0.94} 94`}
+                style={{ stroke: efficiency > 70 ? '#10b981' : efficiency > 40 ? '#f59e0b' : '#ef4444' }}
+              />
+            </svg>
+            <span className="stat-value-inline">{efficiency}%</span>
+          </div>
+          <div className="nav-stat running">
+            <span className="stat-dot"></span>
+            <span className="stat-value-inline">{runningCount}</span>
+            <span className="stat-label-inline">Running</span>
+          </div>
+          <div className="nav-stat idle">
+            <span className="stat-dot"></span>
+            <span className="stat-value-inline">{idleCount}</span>
+            <span className="stat-label-inline">Idle</span>
+          </div>
+          {maintenanceCount > 0 && (
+            <div className="nav-stat maintenance">
+              <span className="stat-dot"></span>
+              <span className="stat-value-inline">{maintenanceCount}</span>
+              <span className="stat-label-inline">Maintenance</span>
+            </div>
+          )}
         </div>
 
         <div className="nav-center">
@@ -439,7 +475,6 @@ const Dashboard: React.FC = () => {
               <circle cx="12" cy="12" r="3" />
               <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
             </svg>
-            <span className="settings-text">Settings</span>
           </button>
         </div>
       </header>
@@ -460,55 +495,7 @@ const Dashboard: React.FC = () => {
         activeSubMachines={selectedMachineForSub ? getActiveSubMachines(selectedMachineForSub.name, selectedMachineForSub.subMachineCount || 0, selectedMachineForSub.id) : new Set()}
       />
 
-      <main className="dashboard-main">
-        {/* Left Panel - Stats */}
-        <aside className="stats-panel">
-          {/* Efficiency Gauge */}
-          <div className="efficiency-card">
-            <div className="efficiency-ring">
-              <svg viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="50" className="ring-bg" />
-                <circle
-                  cx="60" cy="60" r="50"
-                  className="ring-progress"
-                  strokeDasharray={`${efficiency * 3.14} 314`}
-                  style={{ stroke: efficiency > 70 ? '#10b981' : efficiency > 40 ? '#f59e0b' : '#ef4444' }}
-                />
-              </svg>
-              <div className="efficiency-value">
-                <AnimatedNumber value={efficiency} suffix="%" />
-              </div>
-            </div>
-            <span className="efficiency-label">Line Efficiency</span>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="quick-stats">
-            <div className="stat-item running">
-              <div className="stat-indicator"></div>
-              <div className="stat-info">
-                <span className="stat-value">{runningCount}</span>
-                <span className="stat-label">Running</span>
-              </div>
-            </div>
-            <div className="stat-item idle">
-              <div className="stat-indicator"></div>
-              <div className="stat-info">
-                <span className="stat-value">{idleCount}</span>
-                <span className="stat-label">Idle</span>
-              </div>
-            </div>
-            <div className="stat-item maintenance">
-              <div className="stat-indicator"></div>
-              <div className="stat-info">
-                <span className="stat-value">{maintenanceCount}</span>
-                <span className="stat-label">Maintenance</span>
-              </div>
-            </div>
-          </div>
-
-        </aside>
-
+      <main className="dashboard-main full-width">
         {/* Main Content - Machine Grid */}
         <section className={`machines-section ${multiSelectMode ? 'multi-select-mode' : ''}`}>
           <div className="section-header">
@@ -813,177 +800,217 @@ const Dashboard: React.FC = () => {
           </AnimatePresence>
         </section>
 
-        {/* Right Panel - Recent Activity */}
-        <aside className="overview-panel">
-          {/* Recent Activity */}
-          <div className="recent-activity">
-            <h3 className="section-title">Recent Submissions</h3>
-            <div className="activity-list">
-              {recentSubmissions.length > 0 ? (
-                recentSubmissions.slice(0, 5).map((item, index) => {
-                  // Calculate start time from earliest record
-                  const allTimestamps = [
-                    ...(item.waste_records || []).map(r => r.recorded_at),
-                    ...(item.downtime_records || []).map(r => r.recorded_at),
-                  ].filter(Boolean).map(t => new Date(t).getTime());
-                  const startTime = allTimestamps.length > 0
-                    ? new Date(Math.min(...allTimestamps))
-                    : null;
-                  const finishTime = new Date(item.created_at);
-                  const machineName = item.sub_machine || item.machine;
+      </main>
 
-                  // Calculate runtime in minutes
-                  const runtimeMinutes = startTime
-                    ? Math.round((finishTime.getTime() - startTime.getTime()) / 60000)
-                    : null;
-                  const runtimeHours = runtimeMinutes ? Math.floor(runtimeMinutes / 60) : 0;
-                  const runtimeMins = runtimeMinutes ? runtimeMinutes % 60 : 0;
-                  const runtimeDisplay = runtimeMinutes
-                    ? (runtimeHours > 0 ? `${runtimeHours}h ${runtimeMins}m` : `${runtimeMins}m`)
-                    : '—';
+      {/* Activity Drawer Toggle Button */}
+      <motion.button
+        className={`activity-drawer-toggle ${activityDrawerOpen ? 'open' : ''} ${activityEvents.length > 0 ? 'has-activity' : ''}`}
+        onClick={() => setActivityDrawerOpen(!activityDrawerOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {activityDrawerOpen ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        ) : (
+          <>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+            {activityEvents.length > 0 && <span className="activity-count">{activityEvents.length}</span>}
+          </>
+        )}
+      </motion.button>
 
-                  return (
-                    <motion.div
-                      key={item.id}
-                      className="activity-item enhanced"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <div className="activity-header">
-                        <span className="activity-order">#{item.order_number}</span>
-                        <span className="activity-machine-name">{machineName}</span>
-                      </div>
-                      <div className="activity-product-info">
-                        <span className="product-name">{item.product}</span>
-                        <span className="batch-number">Batch: {item.batch_number}</span>
-                      </div>
-                      <div className="activity-stats">
-                        <span className="activity-stat waste">
-                          <span className="stat-icon">🗑️</span>
-                          {(item.total_waste || 0).toFixed(1)}kg
-                        </span>
-                        <span className="activity-stat downtime">
-                          <span className="stat-icon">⏱️</span>
-                          {item.total_downtime || 0}m
-                        </span>
-                        <span className="activity-stat runtime">
-                          <span className="stat-icon">⏲️</span>
-                          {runtimeDisplay}
-                        </span>
-                      </div>
-                      <div className="activity-times">
-                        <span className="time-label">Start:</span>
-                        <span className="time-value">{startTime ? format(startTime, 'HH:mm') : '—'}</span>
-                        <span className="time-label">End:</span>
-                        <span className="time-value">{format(finishTime, 'HH:mm')}</span>
-                      </div>
-                    </motion.div>
-                  );
-                })
-              ) : recentHistory.length > 0 ? (
-                // Fallback to localStorage data if Supabase data not available
-                recentHistory.slice(0, 5).map((item, index) => (
-                  <motion.div
-                    key={item.id || index}
-                    className="activity-item"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div className="activity-icon">
-                      <span className="icon-dot"></span>
-                    </div>
-                    <div className="activity-details">
-                      <span className="activity-machine">{item.machine}</span>
-                      <span className="activity-meta">
-                        {item.totalWaste.toFixed(1)}kg waste · {item.totalDowntime}m downtime
-                      </span>
-                    </div>
-                    <div className="activity-time">
-                      {format(new Date(item.submittedAt), 'HH:mm')}
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <div className="activity-empty">No recent activity</div>
-              )}
+      {/* Activity Drawer */}
+      <AnimatePresence>
+        {activityDrawerOpen && (
+          <motion.aside
+            className="activity-drawer"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          >
+            <div className="drawer-header">
+              <div className="drawer-tabs">
+                <button
+                  className={`drawer-tab ${activeDrawerTab === 'activity' ? 'active' : ''}`}
+                  onClick={() => setActiveDrawerTab('activity')}
+                >
+                  <span className="live-dot"></span>
+                  Live Activity
+                </button>
+                <button
+                  className={`drawer-tab ${activeDrawerTab === 'submissions' ? 'active' : ''}`}
+                  onClick={() => setActiveDrawerTab('submissions')}
+                >
+                  Submissions
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Live Activity Feed */}
-          <div className="live-activity-feed">
-            <h3 className="section-title">
-              <span className="live-dot"></span>
-              Live Activity
-            </h3>
-            <div className="feed-list">
-              {activityEvents.length > 0 ? (
-                activityEvents.slice(0, 15).map((event, index) => {
-                  const getEventIcon = (type: string) => {
-                    switch (type) {
-                      case 'machine_start': return '🚀';
-                      case 'machine_pause': return '⏸️';
-                      case 'machine_resume': return '▶️';
-                      case 'waste_recorded': return '🗑️';
-                      case 'downtime_recorded': return '⏱️';
-                      case 'pallet_scanned': return '📦';
-                      case 'cases_added': return '📋';
-                      case 'sachet_mass_added': return '⚖️';
-                      case 'shift_submitted': return '✅';
-                      case 'speed_recorded': return '⚡';
-                      default: return '📌';
-                    }
-                  };
+            <div className="drawer-content">
+              {activeDrawerTab === 'activity' ? (
+                <div className="feed-list">
+                  {activityEvents.length > 0 ? (
+                    activityEvents.slice(0, 20).map((event, index) => {
+                      const getEventIcon = (type: string) => {
+                        switch (type) {
+                          case 'machine_start': return '🚀';
+                          case 'machine_pause': return '⏸️';
+                          case 'machine_resume': return '▶️';
+                          case 'waste_recorded': return '🗑️';
+                          case 'downtime_recorded': return '⏱️';
+                          case 'pallet_scanned': return '📦';
+                          case 'cases_added': return '📋';
+                          case 'sachet_mass_added': return '⚖️';
+                          case 'shift_submitted': return '✅';
+                          case 'speed_recorded': return '⚡';
+                          default: return '📌';
+                        }
+                      };
 
-                  const getEventColor = (type: string) => {
-                    switch (type) {
-                      case 'machine_start': return 'event-start';
-                      case 'machine_pause': return 'event-pause';
-                      case 'machine_resume': return 'event-resume';
-                      case 'waste_recorded': return 'event-waste';
-                      case 'downtime_recorded': return 'event-downtime';
-                      case 'pallet_scanned': return 'event-pallet';
-                      case 'cases_added': return 'event-cases';
-                      case 'sachet_mass_added': return 'event-sachet';
-                      case 'shift_submitted': return 'event-submit';
-                      case 'speed_recorded': return 'event-speed';
-                      default: return '';
-                    }
-                  };
+                      const getEventColor = (type: string) => {
+                        switch (type) {
+                          case 'machine_start': return 'event-start';
+                          case 'machine_pause': return 'event-pause';
+                          case 'machine_resume': return 'event-resume';
+                          case 'waste_recorded': return 'event-waste';
+                          case 'downtime_recorded': return 'event-downtime';
+                          case 'pallet_scanned': return 'event-pallet';
+                          case 'cases_added': return 'event-cases';
+                          case 'sachet_mass_added': return 'event-sachet';
+                          case 'shift_submitted': return 'event-submit';
+                          case 'speed_recorded': return 'event-speed';
+                          default: return '';
+                        }
+                      };
 
-                  return (
-                    <motion.div
-                      key={event.id}
-                      className={`feed-item ${getEventColor(event.type)}`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <span className="feed-icon">{getEventIcon(event.type)}</span>
-                      <div className="feed-content">
-                        <span className="feed-machine">{event.machine_name}</span>
-                        <span className="feed-message">{event.message}</span>
-                        {event.details && (
-                          <span className="feed-details">{event.details}</span>
-                        )}
-                      </div>
-                      <span className="feed-time">
-                        {format(new Date(event.timestamp), 'HH:mm:ss')}
-                      </span>
-                    </motion.div>
-                  );
-                })
+                      return (
+                        <motion.div
+                          key={event.id}
+                          className={`feed-item ${getEventColor(event.type)}`}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                        >
+                          <span className="feed-icon">{getEventIcon(event.type)}</span>
+                          <div className="feed-content">
+                            <span className="feed-machine">{event.machine_name}</span>
+                            <span className="feed-message">{event.message}</span>
+                            {event.details && (
+                              <span className="feed-details">{event.details}</span>
+                            )}
+                          </div>
+                          <span className="feed-time">
+                            {format(new Date(event.timestamp), 'HH:mm:ss')}
+                          </span>
+                        </motion.div>
+                      );
+                    })
+                  ) : (
+                    <div className="feed-empty">
+                      <span className="feed-empty-icon">📡</span>
+                      <span>Waiting for activity...</span>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <div className="feed-empty">
-                  <span className="feed-empty-icon">📡</span>
-                  <span>Waiting for activity...</span>
+                <div className="activity-list">
+                  {recentSubmissions.length > 0 ? (
+                    recentSubmissions.slice(0, 10).map((item, index) => {
+                      const allTimestamps = [
+                        ...(item.waste_records || []).map(r => r.recorded_at),
+                        ...(item.downtime_records || []).map(r => r.recorded_at),
+                      ].filter(Boolean).map(t => new Date(t).getTime());
+                      const startTime = allTimestamps.length > 0
+                        ? new Date(Math.min(...allTimestamps))
+                        : null;
+                      const finishTime = new Date(item.created_at);
+                      const machineName = item.sub_machine || item.machine;
+
+                      const runtimeMinutes = startTime
+                        ? Math.round((finishTime.getTime() - startTime.getTime()) / 60000)
+                        : null;
+                      const runtimeHours = runtimeMinutes ? Math.floor(runtimeMinutes / 60) : 0;
+                      const runtimeMins = runtimeMinutes ? runtimeMinutes % 60 : 0;
+                      const runtimeDisplay = runtimeMinutes
+                        ? (runtimeHours > 0 ? `${runtimeHours}h ${runtimeMins}m` : `${runtimeMins}m`)
+                        : '—';
+
+                      return (
+                        <motion.div
+                          key={item.id}
+                          className="activity-item enhanced"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <div className="activity-header">
+                            <span className="activity-order">#{item.order_number}</span>
+                            <span className="activity-machine-name">{machineName}</span>
+                          </div>
+                          <div className="activity-product-info">
+                            <span className="product-name">{item.product}</span>
+                            <span className="batch-number">Batch: {item.batch_number}</span>
+                          </div>
+                          <div className="activity-stats">
+                            <span className="activity-stat waste">
+                              <span className="stat-icon">🗑️</span>
+                              {(item.total_waste || 0).toFixed(1)}kg
+                            </span>
+                            <span className="activity-stat downtime">
+                              <span className="stat-icon">⏱️</span>
+                              {item.total_downtime || 0}m
+                            </span>
+                            <span className="activity-stat runtime">
+                              <span className="stat-icon">⏲️</span>
+                              {runtimeDisplay}
+                            </span>
+                          </div>
+                          <div className="activity-times">
+                            <span className="time-label">Start:</span>
+                            <span className="time-value">{startTime ? format(startTime, 'HH:mm') : '—'}</span>
+                            <span className="time-label">End:</span>
+                            <span className="time-value">{format(finishTime, 'HH:mm')}</span>
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  ) : recentHistory.length > 0 ? (
+                    recentHistory.slice(0, 10).map((item, index) => (
+                      <motion.div
+                        key={item.id || index}
+                        className="activity-item"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <div className="activity-icon">
+                          <span className="icon-dot"></span>
+                        </div>
+                        <div className="activity-details">
+                          <span className="activity-machine">{item.machine}</span>
+                          <span className="activity-meta">
+                            {item.totalWaste.toFixed(1)}kg waste · {item.totalDowntime}m downtime
+                          </span>
+                        </div>
+                        <div className="activity-time">
+                          {format(new Date(item.submittedAt), 'HH:mm')}
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="activity-empty">No recent submissions</div>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-        </aside>
-      </main>
+          </motion.aside>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

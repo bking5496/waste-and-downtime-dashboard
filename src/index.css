@@ -1640,6 +1640,318 @@ hr {
   min-height: 0;
 }
 
+/* Full-Width Grid Layout (Option D) */
+.dashboard-main.full-width {
+  grid-template-columns: 1fr;
+  padding: 20px 24px;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.layout-grid-only .machines-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.layout-grid-only .machines-grid-v2 {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding-right: 8px;
+  align-content: start;
+}
+
+/* Custom scrollbar for machine grid */
+.layout-grid-only .machines-grid-v2::-webkit-scrollbar {
+  width: 6px;
+}
+
+.layout-grid-only .machines-grid-v2::-webkit-scrollbar-track {
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 3px;
+}
+
+.layout-grid-only .machines-grid-v2::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 255, 0.2);
+  border-radius: 3px;
+}
+
+.layout-grid-only .machines-grid-v2::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.3);
+}
+
+/* Compact Header with Integrated Stats */
+.top-nav.compact {
+  padding: 10px 24px;
+  gap: 16px;
+}
+
+.top-nav.compact .brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-nav.compact .brand-subtitle {
+  display: none;
+}
+
+.nav-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  border-left: 1px solid rgba(0, 245, 255, 0.15);
+  border-right: 1px solid rgba(0, 245, 255, 0.15);
+}
+
+.nav-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-stat.efficiency {
+  position: relative;
+}
+
+.efficiency-mini-ring {
+  width: 32px;
+  height: 32px;
+  transform: rotate(-90deg);
+}
+
+.ring-bg-mini {
+  fill: none;
+  stroke: rgba(0, 245, 255, 0.15);
+  stroke-width: 4;
+}
+
+.ring-progress-mini {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.nav-stat.running .stat-dot {
+  background: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green);
+}
+
+.nav-stat.idle .stat-dot {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.nav-stat.maintenance .stat-dot {
+  background: var(--neon-red);
+  box-shadow: 0 0 8px var(--neon-red);
+}
+
+.stat-value-inline {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.nav-stat.running .stat-value-inline {
+  color: var(--neon-green);
+}
+
+.nav-stat.idle .stat-value-inline {
+  color: var(--neon-cyan);
+}
+
+.nav-stat.maintenance .stat-value-inline {
+  color: var(--neon-red);
+}
+
+.stat-label-inline {
+  font-size: 11px;
+  color: rgba(248, 250, 252, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Activity Drawer Toggle Button */
+.activity-drawer-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 245, 255, 0.1) 100%);
+  border: 2px solid rgba(0, 245, 255, 0.4);
+  color: var(--neon-cyan);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  box-shadow:
+    0 4px 20px rgba(0, 245, 255, 0.2),
+    0 0 40px rgba(0, 245, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.activity-drawer-toggle:hover {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.3) 0%, rgba(0, 245, 255, 0.15) 100%);
+  border-color: rgba(0, 245, 255, 0.6);
+  box-shadow:
+    0 4px 30px rgba(0, 245, 255, 0.3),
+    0 0 60px rgba(0, 245, 255, 0.15);
+}
+
+.activity-drawer-toggle.open {
+  background: rgba(255, 71, 87, 0.2);
+  border-color: rgba(255, 71, 87, 0.5);
+  color: var(--neon-red);
+}
+
+.activity-drawer-toggle.has-activity::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  background: var(--neon-green);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--neon-green);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.activity-drawer-toggle.open::after {
+  display: none;
+}
+
+.activity-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--neon-green);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #030508;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Activity Drawer */
+.activity-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: linear-gradient(180deg, rgba(10, 25, 40, 0.98) 0%, rgba(5, 15, 30, 0.99) 100%);
+  border-left: 1px solid rgba(0, 245, 255, 0.2);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    -10px 0 40px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(0, 245, 255, 0.05);
+}
+
+.drawer-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+  background: rgba(0, 245, 255, 0.02);
+}
+
+.drawer-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.drawer-tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(248, 250, 252, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.drawer-tab:hover {
+  background: rgba(0, 245, 255, 0.05);
+  border-color: rgba(0, 245, 255, 0.3);
+  color: rgba(248, 250, 252, 0.8);
+}
+
+.drawer-tab.active {
+  background: rgba(0, 245, 255, 0.1);
+  border-color: rgba(0, 245, 255, 0.5);
+  color: var(--neon-cyan);
+}
+
+.drawer-tab .live-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--neon-green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--neon-green);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.drawer-content .feed-list,
+.drawer-content .activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Drawer scrollbar */
+.drawer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-content::-webkit-scrollbar-track {
+  background: rgba(0, 245, 255, 0.05);
+}
+
+.drawer-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 255, 0.2);
+  border-radius: 3px;
+}
+
+.drawer-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.3);
+}
+
 /* Left Panel - Stats */
 .stats-panel {
   display: flex;
@@ -14156,5 +14468,129 @@ nav,
   .card,
   .panel {
     border-radius: 12px !important;
+  }
+}
+
+/* ========================================
+   GRID-ONLY LAYOUT RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablet and smaller - adjust nav stats */
+@media (max-width: 1200px) {
+  .nav-stats {
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .stat-label-inline {
+    display: none;
+  }
+
+  .activity-drawer {
+    width: 320px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .top-nav.compact {
+    padding: 8px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .nav-stats {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    border: none;
+    padding: 8px 0 0 0;
+    border-top: 1px solid rgba(0, 245, 255, 0.1);
+  }
+
+  .nav-center {
+    order: 2;
+  }
+
+  .nav-actions {
+    order: 1;
+  }
+
+  .layout-grid-only .machines-grid-v2 {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .dashboard-main.full-width {
+    height: calc(100vh - 110px);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-nav.compact {
+    padding: 8px 12px;
+  }
+
+  .nav-brand .brand-name {
+    font-size: 14px;
+  }
+
+  .nav-stats {
+    gap: 16px;
+  }
+
+  .stat-value-inline {
+    font-size: 14px;
+  }
+
+  .efficiency-mini-ring {
+    width: 28px;
+    height: 28px;
+  }
+
+  .activity-drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .activity-drawer-toggle {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .layout-grid-only .machines-grid-v2 {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .dashboard-main.full-width {
+    padding: 12px;
+    height: calc(100vh - 120px);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-stats .nav-stat.efficiency {
+    display: none;
+  }
+
+  .layout-grid-only .machines-grid-v2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .layout-grid-only .machine-tile {
+    padding: 12px;
+  }
+
+  .layout-grid-only .tile-name {
+    font-size: 12px;
+  }
+
+  .layout-grid-only .sub-machine-inline-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 }
