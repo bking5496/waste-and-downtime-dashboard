@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/waste-and-downtime-dashboard/static/css/main.6a3aa3ed.css",
-    "main.js": "/waste-and-downtime-dashboard/static/js/main.dd92541a.js",
+    "main.js": "/waste-and-downtime-dashboard/static/js/main.c64a048b.js",
     "static/js/82.4183a8d3.chunk.js": "/waste-and-downtime-dashboard/static/js/82.4183a8d3.chunk.js",
     "static/css/640.46f94d2d.chunk.css": "/waste-and-downtime-dashboard/static/css/640.46f94d2d.chunk.css",
-    "static/js/640.7f4bc238.chunk.js": "/waste-and-downtime-dashboard/static/js/640.7f4bc238.chunk.js",
+    "static/js/640.58792cc2.chunk.js": "/waste-and-downtime-dashboard/static/js/640.58792cc2.chunk.js",
     "static/js/692.61ab4365.chunk.js": "/waste-and-downtime-dashboard/static/js/692.61ab4365.chunk.js",
     "static/js/455.752205ee.chunk.js": "/waste-and-downtime-dashboard/static/js/455.752205ee.chunk.js",
     "static/js/206.f64eefd6.chunk.js": "/waste-and-downtime-dashboard/static/js/206.f64eefd6.chunk.js",
@@ -17,10 +17,10 @@
     "static/js/283.52c938bb.chunk.js": "/waste-and-downtime-dashboard/static/js/283.52c938bb.chunk.js",
     "index.html": "/waste-and-downtime-dashboard/index.html",
     "main.6a3aa3ed.css.map": "/waste-and-downtime-dashboard/static/css/main.6a3aa3ed.css.map",
-    "main.dd92541a.js.map": "/waste-and-downtime-dashboard/static/js/main.dd92541a.js.map",
+    "main.c64a048b.js.map": "/waste-and-downtime-dashboard/static/js/main.c64a048b.js.map",
     "82.4183a8d3.chunk.js.map": "/waste-and-downtime-dashboard/static/js/82.4183a8d3.chunk.js.map",
     "640.46f94d2d.chunk.css.map": "/waste-and-downtime-dashboard/static/css/640.46f94d2d.chunk.css.map",
-    "640.7f4bc238.chunk.js.map": "/waste-and-downtime-dashboard/static/js/640.7f4bc238.chunk.js.map",
+    "640.58792cc2.chunk.js.map": "/waste-and-downtime-dashboard/static/js/640.58792cc2.chunk.js.map",
     "692.61ab4365.chunk.js.map": "/waste-and-downtime-dashboard/static/js/692.61ab4365.chunk.js.map",
     "455.752205ee.chunk.js.map": "/waste-and-downtime-dashboard/static/js/455.752205ee.chunk.js.map",
     "206.f64eefd6.chunk.js.map": "/waste-and-downtime-dashboard/static/js/206.f64eefd6.chunk.js.map",
@@ -34,6 +34,6 @@
   },
   "entrypoints": [
     "static/css/main.6a3aa3ed.css",
-    "static/js/main.dd92541a.js"
+    "static/js/main.c64a048b.js"
   ]
 }
