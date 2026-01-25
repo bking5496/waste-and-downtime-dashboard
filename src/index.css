@@ -1785,11 +1785,11 @@ hr {
   letter-spacing: 0.5px;
 }
 
-/* Activity Drawer Toggle Button - positioned left of chat widget */
+/* Activity Drawer Toggle Button - positioned above chat widget */
 .activity-drawer-toggle {
   position: fixed;
-  bottom: 24px;
-  right: 100px; /* Leave room for chat widget (chat is at right: 16px, ~70px wide) */
+  bottom: 80px; /* Stack above chat widget (chat is at bottom: 16px, ~50px tall) */
+  right: 16px; /* Align with chat widget */
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -14553,13 +14553,12 @@ nav,
   }
 
   .activity-drawer-toggle {
-    bottom: 16px;
-    right: 80px; /* Leave room for chat on mobile */
+    bottom: 70px; /* Stack above chat on mobile */
+    right: 12px;
     width: 48px;
     height: 48px;
   }
 
-  /* Ensure chat widget doesn't overlap activity button */
   .chat-widget {
     right: 12px;
     bottom: 12px;
