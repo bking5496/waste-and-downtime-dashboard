@@ -1876,11 +1876,36 @@ hr {
   padding: 16px;
   border-bottom: 1px solid rgba(0, 245, 255, 0.15);
   background: rgba(0, 245, 255, 0.02);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .drawer-tabs {
   display: flex;
   gap: 8px;
+  flex: 1;
+}
+
+.drawer-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: var(--neon-red);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.drawer-close:hover {
+  background: rgba(255, 71, 87, 0.2);
+  border-color: rgba(255, 71, 87, 0.5);
+  transform: scale(1.05);
 }
 
 .drawer-tab {
